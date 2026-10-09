@@ -1,0 +1,101 @@
+<header class="calendar-toolbar">
+  <h2>{{ title() }}</h2>
+  @if (view() !== 'agenda') {
+    <div class="calendar-navigation">
+      <button
+        type="button"
+        class="tasksmart-icon-button focus-ring"
+        (click)="navigate(-1)"
+        [attr.aria-label]="T.F.PLANNER.CALENDAR.PREVIOUS | translate"
+      >
+        <mat-icon aria-hidden="true">chevron_left</mat-icon>
+      </button>
+      <button
+        type="button"
+        class="tasksmart-button tasksmart-button--quiet focus-ring"
+        (click)="goToToday()"
+      >
+        {{ T.G.TODAY_TAG_TITLE | translate }}
+      </button>
+      <button
+        type="button"
+        class="tasksmart-icon-button focus-ring"
+        (click)="navigate(1)"
+        [attr.aria-label]="T.F.PLANNER.CALENDAR.NEXT | translate"
+      >
+        <mat-icon aria-hidden="true">chevron_right</mat-icon>
+      </button>
+    </div>
+  }
+  <div
+    class="tasksmart-view-switch"
+    role="group"
+    [attr.aria-label]="T.F.PLANNER.CALENDAR.VIEW | translate"
+  >
+    @for (option of views; track option.id) {
+      <button
+        type="button"
+        class="tasksmart-button tasksmart-button--quiet focus-ring"
+        [attr.aria-pressed]="view() === option.id"
+        (click)="view.set(option.id)"
+      >
+        {{ option.label | translate }}
+      </button>
+    }
+  </div>
+</header>
+@if (view() === 'agenda') {
+  @if (layout.isXs()) {
+    <planner-calendar-nav
+      [visibleDayDate]="planView.visibleDayDate()"
+      [daysWithTasks]="daysWithTasks()"
+      (dayTapped)="planView.scrollToDay($event)"
+    />
+  }
+  <planner-plan-view
+    #planView
+    cdkDropListGroup
+    cdkScrollable
+  />
+} @else {
+  <div
+    class="calendar-content"
+    cdkScrollable
+    cdkDropListGroup
+  >
+    @if (view() === 'month') {
+      <div class="month-grid tasksmart-card">
+        @for (weekday of weekdays(); track $index) {
+          <div class="weekday">{{ weekday }}</div>
+        }
+        @for (cell of cells(); track cell.day.dayDate) {
+          <button
+            type="button"
+            class="month-day focus-ring"
+            [class.outside-month]="cell.isOutsideMonth"
+            [class.today]="cell.day.dayDate === today()"
+            [attr.aria-pressed]="cell.day.dayDate === anchor()"
+            [attr.aria-label]="cell.label"
+            (click)="selectDay(cell.day.dayDate)"
+          >
+            <span>{{ cell.number }}</span>
+            @if (cell.day.itemsTotal) {
+              <span class="day-count">{{ cell.day.itemsTotal }}</span>
+            }
+          </button>
+        }
+      </div>
+    }
+    <div
+      class="calendar-days"
+      [class.week-view]="view() === 'week'"
+    >
+      @for (day of visibleDays(); track day.dayDate) {
+        <planner-day
+          class="tasksmart-card"
+          [day]="day"
+        />
+      }
+    </div>
+  </div>
+}

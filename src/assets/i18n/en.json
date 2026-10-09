@@ -331,6 +331,7 @@
       }
     },
     "FOCUS_MODE": {
+      "SESSION_PROGRESS": "Focus session progress",
       "ADD_TIME_MINUTE": "Add 1 minute",
       "B": {
         "BREAK_RUNNING": "Break is running",
@@ -970,6 +971,15 @@
       }
     },
     "PLANNER": {
+      "CALENDAR": {
+        "MONTH": "Month",
+        "WEEK": "Week",
+        "DAY": "Day",
+        "AGENDA": "Agenda",
+        "VIEW": "Calendar view",
+        "PREVIOUS": "Previous period",
+        "NEXT": "Next period"
+      },
       "D": {
         "ADD_PLANNED": {
           "RE_PLAN_ALL": "Reschedule all"
@@ -2416,6 +2426,84 @@
         "NO_DATA": "No tasks this week yet.",
         "TITLE": "Title"
       }
+    },
+    "TASK_PAGE": {
+      "ANYTIME": "Anytime",
+      "MORNING": "Morning",
+      "AFTERNOON": "Afternoon",
+      "EVENING": "Evening",
+      "COMPLETED": "Completed",
+      "EMPTY_PERIOD": "No tasks planned for this period.",
+      "VIEW": "Task view",
+      "LIST": "List",
+      "MATRIX": "Matrix",
+      "BY_TIME": "By time",
+      "FOCUS": "Focus",
+      "INBOX_TITLE": "Capture now.",
+      "INBOX_SUBTITLE": "Organize later.",
+      "ORGANIZE": "Organize a task",
+      "SELECT_TASK": "Select a task",
+      "PROJECT_MATRIX_DATE": "Project · Matrix · Date"
+    },
+    "MATRIX": {
+      "HOME": "Home",
+      "PAGE_TITLE": "Eisenhower Matrix",
+      "LOADING": "Loading tasks…",
+      "VIEW_ALL": "View all",
+      "BACK_TO_MATRIX": "Back to matrix",
+      "FILTERS": "Filters",
+      "RESET_FILTERS": "Reset filters",
+      "PREVIOUS_WEEK": "Previous week",
+      "NEXT_WEEK": "Next week",
+      "START_TRACKING": "Start timer",
+      "SUGGESTED": "Suggested quadrant",
+      "CURRENT_TASK": "Timer running",
+      "OVERDUE": "Overdue",
+      "REPEATING": "Repeating task",
+      "EMPTY_COMPLETED": "All tasks are complete. Make room for your next priority.",
+      "EMPTY_SHORT": "No tasks",
+      "SUBTITLE": "Make room for what matters. Organize tasks by importance and urgency.",
+      "DO_FIRST": "Do first",
+      "SCHEDULE": "Schedule",
+      "DELEGATE": "Delegate",
+      "ELIMINATE": "Eliminate",
+      "IMPORTANT_URGENT": "Important & urgent",
+      "IMPORTANT_NOT_URGENT": "Important & not urgent",
+      "NOT_IMPORTANT_URGENT": "Not important & urgent",
+      "NOT_IMPORTANT_NOT_URGENT": "Not important & not urgent",
+      "UNCLASSIFIED": "Unclassified",
+      "UNCLASSIFIED_DESCRIPTION": "Choose a quadrant when you are ready.",
+      "ADD_TASK": "Add task",
+      "TITLE": "Task title",
+      "TITLE_PLACEHOLDER": "What do you need to do?",
+      "PROJECT": "Project",
+      "TAGS": "Tags",
+      "QUADRANT": "Quadrant",
+      "DATE": "Planned date",
+      "TIME": "Time (optional)",
+      "ESTIMATE_MINUTES": "Estimated time (minutes)",
+      "COMPLETE": "Complete task",
+      "MORE": "More task actions",
+      "SUBTASK": "Subtask",
+      "DEADLINE": "Deadline",
+      "FOCUS": "Focus",
+      "PAUSE": "Pause",
+      "DETAILS": "Task details",
+      "MOVE_TO": "Move to quadrant",
+      "ALL": "All tasks",
+      "THIS_WEEK": "This week",
+      "PERIOD": "Period",
+      "ALL_PROJECTS": "All projects",
+      "ALL_TAGS": "All tags",
+      "AUTO_CLASSIFY": "Auto classify",
+      "HIDE_SUGGESTIONS": "Hide suggestions",
+      "USE_SUGGESTION": "Use suggestion",
+      "SUGGESTION_NOTICE": "Preview only. High priority means important; tasks planned or due today (including overdue tasks) are urgent. Use a suggestion or move a task to save its quadrant.",
+      "EMPTY_QUADRANT": "No tasks here yet.",
+      "EMPTY_FILTER": "No open tasks match these filters.",
+      "SET_DEFAULT_HOME": "Set as default home",
+      "DEFAULT_HOME": "Default home",
+      "CONFIRM_DELETE": "Delete this task and its subtasks?"
     }
   },
   "FILE_IMEX": {

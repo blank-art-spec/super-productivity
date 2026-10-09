@@ -73,7 +73,7 @@ import { distinctUntilChanged, observeOn } from 'rxjs/operators';
         [matTooltip]="tooltipText() | translate"
         [attr.aria-label]="tooltipText() | translate"
         matTooltipPosition="below"
-        class="play-btn tour-playBtn mat-elevation-z3"
+        class="play-btn tour-playBtn mat-elevation-z3 tasksmart-fab"
         mat-mini-fab
         [disabled]="isDisabled()"
       >

@@ -61,75 +61,39 @@
 
 .schedule-nav-controls {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--s);
-  min-height: 48px;
+  gap: var(--s2);
+  padding: var(--s2) var(--s3);
   color: var(--text-color);
-  background: transparent;
-  padding-right: $schedule-header-scrollbar-padding;
-  @include extraBorder('-top');
-  @include extraBorder('-bottom');
-
   .title {
-    margin-left: auto;
-    padding-right: var(--s);
-    font-weight: 600;
-    font-size: 18px;
-    text-align: right;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-
-    @include mq(xs, max) {
-      font-size: 14px;
-    }
+    flex: 1;
+    min-width: 120px;
+    margin: 0;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
   }
-
-  button {
-    flex-shrink: 0;
-  }
-
-  mat-icon {
-    flex-shrink: 0;
-  }
-
   .date-nav-group {
     display: flex;
     align-items: center;
+    gap: var(--s-half);
   }
-
-  .time-view-selector {
-    display: flex;
-    margin-left: var(--s);
-    border-radius: var(--card-border-radius);
-    overflow: hidden;
-    border: 1px solid var(--extra-border-color);
-    background: var(--bg-lighter);
+  button,
+  mat-icon {
+    flex-shrink: 0;
   }
-
-  .time-view-btn {
-    border: none;
-    border-radius: 0;
-    transition: var(--transition-standard);
-    background: transparent;
-    color: var(--text-color);
-    box-shadow: none;
-
-    &:hover:not(.active) {
-      background: var(--separator-color);
+  @include mq(xs, max) {
+    padding: var(--s2);
+    gap: var(--s);
+    .title {
+      flex-basis: 100%;
     }
-
-    &.active {
-      background: var(--c-primary);
-      color: white;
-    }
-
-    &:not(:last-child) {
-      border-right: 1px solid var(--extra-border-color);
+    .time-view-selector {
+      flex: 1;
+      justify-content: space-between;
     }
   }
 }
-
 .cal-color-dot {
   display: inline-block;
   width: 8px;

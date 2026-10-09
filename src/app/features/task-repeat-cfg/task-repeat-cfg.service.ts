@@ -1,4 +1,5 @@
 import { inject, Injectable } from '@angular/core';
+import { getRepeatQuadrant } from './get-repeat-quadrant.util';
 import { select, Store } from '@ngrx/store';
 import {
   addTaskRepeatCfgToTask,
@@ -249,9 +250,10 @@ export class TaskRepeatCfgService {
     }
 
     // If waitForCompletion is enabled, only create the next task after the previous one is completed
+    let archivedInstances: Task[] | undefined;
     if (taskRepeatCfg.waitForCompletion) {
       // Check both live and archived instances for uncompleted tasks
-      const archivedInstances = await this._taskService.getArchiveTasksForRepeatCfgId(
+      archivedInstances = await this._taskService.getArchiveTasksForRepeatCfgId(
         taskRepeatCfg.id,
       );
       const allInstances = [...existingTaskInstances, ...archivedInstances];
@@ -283,12 +285,24 @@ export class TaskRepeatCfgService {
       ];
     }
 
+    // Once preceding instances have left the live store, use the archive so
+    // classification edits on completed tasks also reach the next occurrence.
+    const quadrantInstances = [
+      ...existingTaskInstances,
+      ...(archivedInstances ??
+        (await this._taskService.getArchiveTasksForRepeatCfgId(taskRepeatCfg.id))),
+    ];
     const { task, isAddToBottom } = this._getTaskRepeatTemplate(
       taskRepeatCfg,
       targetDateStr,
     );
     const taskWithTargetDates: Task = {
       ...task,
+      eisenhowerQuadrant: getRepeatQuadrant(
+        taskRepeatCfg,
+        quadrantInstances,
+        targetCreated.getTime(),
+      ),
       // NOTE if moving this to top isCreateNew check above would not work as intended
       // we use created also for the repeat day label for past tasks
       created: targetCreated.getTime(),
@@ -364,6 +378,7 @@ export class TaskRepeatCfgService {
           additional: {
             notes: subTask.notes ?? '',
             timeEstimate: subTask.timeEstimate ?? 0,
+            eisenhowerQuadrant: subTask.eisenhowerQuadrant ?? null,
             parentId: task.id,
             projectId: taskRepeatCfg.projectId || undefined,
             isDone: false, // Always start fresh
@@ -396,6 +411,7 @@ export class TaskRepeatCfgService {
         id: taskId,
         additional: {
           repeatCfgId: taskRepeatCfg.id,
+          eisenhowerQuadrant: taskRepeatCfg.eisenhowerQuadrant ?? null,
           timeEstimate: taskRepeatCfg.defaultEstimate || 0,
           projectId: taskRepeatCfg.projectId || undefined,
           notes: taskRepeatCfg.notes || '',

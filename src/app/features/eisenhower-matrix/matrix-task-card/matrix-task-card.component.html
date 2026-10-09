@@ -1,0 +1,147 @@
+<article
+  class="matrix-task"
+  [class.is-current]="isCurrent()"
+  [class.is-compact]="compact()"
+  [class.is-overdue]="isOverdue()"
+>
+  <div class="task-heading">
+    <button
+      type="button"
+      class="tasksmart-icon-button focus-ring"
+      [attr.aria-label]="(T.F.MATRIX.COMPLETE | translate) + ': ' + task().title"
+      (click)="complete.emit(task())"
+    >
+      <mat-icon aria-hidden="true">radio_button_unchecked</mat-icon>
+    </button>
+    <button
+      type="button"
+      class="task-title focus-ring"
+      (click)="edit.emit(task())"
+    >
+      <span>{{ task().title }}</span>
+    </button>
+    @if (!compact()) {
+      <button
+        type="button"
+        class="tasksmart-icon-button focus-ring"
+        [attr.aria-label]="(T.F.MATRIX.MORE | translate) + ': ' + task().title"
+        [matMenuTriggerFor]="taskMenu"
+      >
+        <mat-icon aria-hidden="true">more_horiz</mat-icon>
+      </button>
+    }
+  </div>
+  @if (!compact()) {
+    <div class="task-meta">
+      <span class="project-name">{{ projectTitle() | translate }}</span>
+      @if (task().parentId) {
+        <span>{{ T.F.MATRIX.SUBTASK | translate }}</span>
+      }
+      @if (planned(); as plannedDate) {
+        <span
+          >{{ plannedDate | localeDate: dateFormat().raw : undefined : dateLocale() }}
+          @if (hasPlannedTime()) {
+            · {{ plannedDate | localeDate: 'shortTime' : undefined : dateLocale() }}
+          }
+        </span>
+      }
+      @if (deadline(); as deadlineDate) {
+        <span
+          >{{ T.F.MATRIX.DEADLINE | translate }}:
+          {{ deadlineDate | localeDate: dateFormat().raw : undefined : dateLocale() }}
+          @if (hasDeadlineTime()) {
+            · {{ deadlineDate | localeDate: 'shortTime' : undefined : dateLocale() }}
+          }
+        </span>
+      }
+      @if (task().timeEstimate) {
+        <span>{{ task().timeEstimate | msToString }}</span>
+      }
+    </div>
+  }
+  @if (compact() && planned(); as plannedDate) {
+    <span class="task-status">{{
+      plannedDate | localeDate: 'MMM d' : undefined : dateLocale()
+    }}</span>
+  }
+  @if (isOverdue()) {
+    <span class="task-status overdue-label">{{ T.F.MATRIX.OVERDUE | translate }}</span>
+  }
+  @if (task().parentId && compact()) {
+    <span class="task-status">{{ T.F.MATRIX.SUBTASK | translate }}</span>
+  }
+  @if (task().repeatCfgId) {
+    <span class="task-status">{{ T.F.MATRIX.REPEATING | translate }}</span>
+  }
+  @if (isCurrent()) {
+    <span class="task-status">{{ T.F.MATRIX.CURRENT_TASK | translate }}</span>
+  }
+  @if (isSuggested() && !compact()) {
+    <button
+      type="button"
+      class="tasksmart-button tasksmart-button--quiet focus-ring"
+      (click)="acceptSuggestion.emit(task())"
+    >
+      <mat-icon aria-hidden="true">check</mat-icon>
+      {{ T.F.MATRIX.USE_SUGGESTION | translate }}
+    </button>
+  }
+  @if (isSuggested() && compact()) {
+    <span class="task-status">{{ T.F.MATRIX.SUGGESTED | translate }}</span>
+  }
+  @if (isFocusEnabled() && !compact()) {
+    <button
+      type="button"
+      class="tasksmart-icon-button focus-ring focus-action"
+      [attr.aria-label]="
+        (isCurrent()
+          ? T.F.MATRIX.PAUSE
+          : isFocusModeEnabled()
+            ? T.F.MATRIX.FOCUS
+            : T.F.MATRIX.START_TRACKING
+        ) | translate
+      "
+      (click)="focusTask.emit(task())"
+    >
+      <mat-icon aria-hidden="true">{{ isCurrent() ? 'pause' : 'play_arrow' }}</mat-icon>
+    </button>
+  }
+</article>
+
+<mat-menu #taskMenu="matMenu">
+  <button
+    mat-menu-item
+    (click)="edit.emit(task())"
+  >
+    <mat-icon>edit</mat-icon>{{ T.G.EDIT | translate }}
+  </button>
+  <button
+    mat-menu-item
+    (click)="details.emit(task())"
+  >
+    <mat-icon>notes</mat-icon>{{ T.F.MATRIX.DETAILS | translate }}
+  </button>
+  <button
+    mat-menu-item
+    [matMenuTriggerFor]="quadrantMenu"
+  >
+    <mat-icon>grid_view</mat-icon>{{ T.F.MATRIX.MOVE_TO | translate }}
+  </button>
+  <button
+    mat-menu-item
+    (click)="remove.emit(task())"
+  >
+    <mat-icon class="color-warn-i">delete</mat-icon>{{ T.G.DELETE | translate }}
+  </button>
+</mat-menu>
+<mat-menu #quadrantMenu="matMenu">
+  @for (quadrant of quadrants; track quadrant.id) {
+    <button
+      mat-menu-item
+      (click)="classify.emit(quadrant.id)"
+    >
+      <mat-icon>{{ quadrant.icon }}</mat-icon
+      >{{ quadrant.title | translate }}
+    </button>
+  }
+</mat-menu>

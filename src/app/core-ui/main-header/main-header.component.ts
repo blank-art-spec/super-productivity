@@ -7,6 +7,8 @@ import {
   effect,
   ElementRef,
   inject,
+  Injector,
+  HostListener,
   OnDestroy,
   signal,
   untracked,
@@ -45,9 +47,12 @@ import { TrackedTaskPillComponent } from './tracked-task-pill/tracked-task-pill.
 import { RemoteTrackingPillComponent } from '../../features/tracking-presence/remote-tracking-pill/remote-tracking-pill.component';
 import { TrackingPresenceService } from '../../features/tracking-presence/tracking-presence.service';
 import { DesktopPanelButtonsComponent } from './desktop-panel-buttons/desktop-panel-buttons.component';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FocusButtonComponent } from './focus-button/focus-button.component';
 import { EmlDropDirective } from '../../core/drop-paste-input/eml-drop.directive';
+import { RouterLink } from '@angular/router';
+import { TasksmartDateComponent } from '../../ui/tasksmart-date/tasksmart-date.component';
+import { DOCUMENT } from '@angular/common';
 
 /** One `DOM_DELTA_LINE` notch, in CSS pixels. Matches the row's icon metrics. */
 const WHEEL_LINE_HEIGHT_PX = 16;
@@ -66,6 +71,8 @@ const ACTION_ROW_REVEAL_PIN_MS = 400;
   styleUrls: ['./main-header.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    RouterLink,
+    TasksmartDateComponent,
     MatIconButton,
     MatIcon,
     MatTooltip,
@@ -86,6 +93,11 @@ const ACTION_ROW_REVEAL_PIN_MS = 400;
   ],
 })
 export class MainHeaderComponent implements OnDestroy {
+  private readonly _document = inject(DOCUMENT);
+  private readonly _injector = inject(Injector);
+  readonly supportsPopover =
+    typeof this._document.createElement('div').showPopover === 'function';
+  private _fallbackMorePanel: HTMLElement | null = null;
   private readonly _elRef = inject(ElementRef<HTMLElement>);
   private readonly _destroyRef = inject(DestroyRef);
   private _teleportedNav: HTMLElement | null = null;
@@ -238,40 +250,61 @@ export class MainHeaderComponent implements OnDestroy {
    * forget.
    */
   readonly hasBottomNav = this.layoutService.isShowMobileBottomNav;
-
-  /**
-   * Counters collapse behind one button below 600px.
-   *
-   * The one group whose length the app does not bound — a user may define any
-   * number — so on a phone it is the only thing that can push the row into a
-   * long scroll on its own. Everything else in the row is a fixed set.
-   *
-   * Keyed off `isXs` rather than `hasBottomNav`, which happens to be the same
-   * signal today: the panel buttons key off the nav because they *move into*
-   * it, whereas this is a header-width decision and the counters stay in the
-   * header. Same breakpoint, different reason.
-   *
-   * Gated on a counter that actually renders, not on `length`: a set of
-   * counters all carrying `isHideButton` would otherwise put a trigger on the
-   * row that opens an empty tray.
-   */
-  readonly hasCounterDropdown = computed(
-    () => this.isXs() && this.enabledSimpleCounters().some((c) => !c.isHideButton),
+  readonly isSearchEnabled = computed(
+    () => this.globalConfigService.appFeatures().isSearchEnabled,
   );
+  readonly isMoreOpen = signal(false);
 
-  /**
-   * Whether the tray is open. Reset when the trigger goes away — see the effect
-   * in the constructor, which is what enforces that.
-   */
-  readonly isShowSimpleCounterBtnsDropdown = signal(false);
+  toggleMoreFallback(): void {
+    if (this.supportsPopover) return;
+    this.isMoreOpen.update((open) => !open);
+    if (this.isMoreOpen())
+      afterNextRender(
+        () => {
+          if (this.isMoreOpen()) this._morePanel()?.nativeElement.focus();
+        },
+        { injector: this._injector },
+      );
+  }
 
-  /**
-   * Accent the trigger while a collapsed counter is still running.
-   *
-   * Same `!isHideButton` filter the tray itself renders through, or a running
-   * hidden counter accents a trigger whose tray contains nothing that explains
-   * the accent.
-   */
+  closeMore(restoreFocus = false): void {
+    if (this.supportsPopover) this._morePanel()?.nativeElement.hidePopover();
+    else {
+      const wasOpen = this.isMoreOpen();
+      this.isMoreOpen.set(false);
+      if (wasOpen && restoreFocus) this._moreTrigger()?.nativeElement.focus();
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onMoreEscape(): void {
+    this.closeMore(true);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onMoreOutsideClick(event: Event): void {
+    if (this.supportsPopover || !this.isMoreOpen() || !(event.target instanceof Node))
+      return;
+    if (
+      !this._morePanel()?.nativeElement.contains(event.target) &&
+      !this._moreTrigger()?.nativeElement.contains(event.target)
+    )
+      this.closeMore();
+  }
+
+  onMoreToggle(event: Event): void {
+    this.isMoreOpen.set((event as ToggleEvent).newState === 'open');
+  }
+
+  onMoreAction(event: Event, panel: HTMLElement): void {
+    // Close before a dialog/menu takes focus; counters remain mounted.
+    if (event.target instanceof Element && event.target.closest('button, a'))
+      if (this.supportsPopover) panel.hidePopover();
+      else this.closeMore();
+  }
+  private readonly _morePanel = viewChild<ElementRef<HTMLElement>>('morePanel');
+  private readonly _moreTrigger = viewChild<ElementRef<HTMLElement>>('moreTrigger');
+
   readonly isAnyCounterRunning = computed(() =>
     this.enabledSimpleCounters().some((c) => c.isOn && !c.isHideButton),
   );
@@ -457,24 +490,22 @@ export class MainHeaderComponent implements OnDestroy {
   }
 
   constructor() {
-    /**
-     * Widening past 600px removes the trigger, so the open flag must not
-     * outlive it — or the tray springs open by itself the next time the window
-     * narrows, with nothing on screen to close it. (Master had no such reset:
-     * rotating to landscape and back reopened it.)
-     *
-     * An effect rather than a `linkedSignal` off `hasCounterDropdown`, because
-     * this has to survive a round trip. A linked computation only runs when
-     * something reads it, and the template reads this flag *only* while the
-     * trigger exists — so mobile → desktop → mobile never evaluates it in the
-     * one state that would clear it, and it comes back still open.
-     */
+    // Older embedded WebViews have no Popover API. Hoist the persistent panel
+    // to the body so it escapes the header's scrolling/containment there too.
     effect(() => {
-      if (!this.hasCounterDropdown()) {
-        this.isShowSimpleCounterBtnsDropdown.set(false);
+      const panel = this._morePanel()?.nativeElement;
+      if (!this.supportsPopover && panel) {
+        this._document.body.appendChild(panel);
+        this._fallbackMorePanel = panel;
       }
     });
-
+    // Long-press counter edits open dialogs without a click. A native top-layer
+    // popover must close then too, or it would cover the Material dialog.
+    this.matDialog.afterOpened
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe(() => {
+        this.closeMore();
+      });
     // Teleport the action nav to document.body (and back) so the fixed
     // vertical strip escapes any ancestor containing-block
     // (transform/filter/contain) and reliably anchors to the viewport.
@@ -616,6 +647,8 @@ export class MainHeaderComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this._fallbackMorePanel?.remove();
+    this._fallbackMorePanel = null;
     this._subs.unsubscribe();
     this._teleportObserver?.disconnect();
     this._teleportedNav?.remove();

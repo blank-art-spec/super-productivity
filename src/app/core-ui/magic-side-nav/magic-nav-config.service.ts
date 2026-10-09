@@ -37,6 +37,7 @@ import { GlobalConfigService } from '../../features/config/global-config.service
 import { AppFeaturesConfig } from '../../features/config/global-config.model';
 import { SnackService } from '../../core/snack/snack.service';
 import { IS_DONATION_UI_RESTRICTED } from '../../app.constants';
+import { FocusModeService } from '../../features/focus-mode/focus-mode.service';
 
 @Injectable({
   providedIn: 'root',
@@ -53,6 +54,7 @@ export class MagicNavConfigService {
   private readonly _configService = inject(GlobalConfigService);
   private readonly _snackService = inject(SnackService);
   private readonly _router = inject(Router);
+  private readonly _focusMode = inject(FocusModeService);
 
   // Simple state signals
   private readonly _isProjectsExpanded = signal(
@@ -145,6 +147,13 @@ export class MagicNavConfigService {
   // Main navigation configuration
   readonly navConfig = computed<NavConfig>(() => ({
     items: [
+      {
+        type: 'route',
+        id: 'matrix',
+        label: T.F.MATRIX.HOME,
+        icon: 'home',
+        route: '/matrix',
+      },
       // Work Context Items
       ...this._buildWorkContextItems(),
 
@@ -422,6 +431,17 @@ export class MagicNavConfigService {
         icon: 'schedule',
         route: '/schedule',
         featureConfigKey: 'isSchedulerEnabled',
+      });
+    }
+
+    if (this._configService.appFeatures().isFocusModeEnabled) {
+      items.push({
+        type: 'action',
+        id: 'focus',
+        label: T.F.TASK_PAGE.FOCUS,
+        icon: 'center_focus_strong',
+        action: () => this._focusMode.openOverlay(),
+        featureConfigKey: 'isFocusModeEnabled',
       });
     }
 

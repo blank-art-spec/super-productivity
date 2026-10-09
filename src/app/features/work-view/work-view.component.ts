@@ -106,6 +106,8 @@ import { PluginIndexComponent } from '../../plugins/ui/plugin-index/plugin-index
 import { PluginBridgeService } from '../../plugins/plugin-bridge.service';
 import { PlainspaceClaimPoolComponent } from '../plainspace/claim-pool/claim-pool.component';
 import { PlainspaceSharedTask } from '../plainspace/plainspace-shared-task.model';
+import { groupTodayTasks } from './today-periods.util';
+import { TasksmartDateComponent } from '../../ui/tasksmart-date/tasksmart-date.component';
 
 // Stable reference used as the toSignal initial value below so the deselect
 // effect can tell "the customized list hasn't emitted yet" apart from a
@@ -124,6 +126,7 @@ const INITIAL_CUSTOMIZED_UNDONE_TASKS: CustomizedUndoneTasks = { list: [] };
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    TasksmartDateComponent,
     CdkDropListGroup,
     CdkDropList,
     CdkDrag,
@@ -293,6 +296,34 @@ export class WorkViewComponent implements OnInit, OnDestroy {
   });
   selectedTaskId = this.taskService.selectedTaskId;
   isOnTodayList = toSignal(this.workContextService.isTodayList$, { initialValue: false });
+  readonly isPeriodView = signal(true);
+  readonly isPeriodGroupingActive = computed(
+    () =>
+      this.isOnTodayList() &&
+      this.isPeriodView() &&
+      !this.customizedUndoneTasks().grouped &&
+      !this.customizerService.isCustomized() &&
+      this.sections().length === 0,
+  );
+  readonly todayPeriodGroups = computed(() =>
+    groupTodayTasks([...this.customizedUndoneTasks().list, ...this.laterTodayTasks()]),
+  );
+  readonly todayTaskTotal = computed(
+    () =>
+      new Set(
+        [...this.undoneTasks(), ...this.laterTodayTasks(), ...this.doneTasks()].map(
+          (task) => task.id,
+        ),
+      ).size,
+  );
+  readonly todayCompletion = computed(() =>
+    this.todayTaskTotal()
+      ? Math.round((this.doneTasks().length / this.todayTaskTotal()) * 100)
+      : 0,
+  );
+  readonly visibleLaterTodayTasks = computed(() =>
+    this.isPeriodGroupingActive() ? [] : this.laterTodayTasks(),
+  );
   isDoneHidden = signal(!!localStorage.getItem(LS.DONE_TASKS_HIDDEN));
   isLaterTodayHidden = signal(!!localStorage.getItem(LS.LATER_TODAY_TASKS_HIDDEN));
   isOverdueHidden = signal(!!localStorage.getItem(LS.OVERDUE_TASKS_HIDDEN));
@@ -810,7 +841,7 @@ export class WorkViewComponent implements OnInit, OnDestroy {
     } else if (
       this.isOnTodayList() &&
       this.isLaterTodayHidden() &&
-      this._hasTaskInList(this.laterTodayTasks(), taskId)
+      this._hasTaskInList(this.visibleLaterTodayTasks(), taskId)
     ) {
       this.isLaterTodayHidden.set(false);
     }

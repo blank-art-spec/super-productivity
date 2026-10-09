@@ -139,6 +139,8 @@ export class TaskListComponent implements OnDestroy, AfterViewInit {
   isHideDone = input(false);
   isHideAll = input(false);
   isSortingDisabled = input(false);
+  // Derived views can keep task controls without exposing misleading reorders.
+  isDragDisabled = input(false);
 
   listId = input.required<TaskListId>();
   listModelId = input.required<ListModelId>();

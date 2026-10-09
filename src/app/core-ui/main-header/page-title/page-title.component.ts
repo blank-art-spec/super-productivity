@@ -367,6 +367,7 @@ export class PageTitleComponent {
   // Routes that get their own title and have no work-context menu.
   // Order is irrelevant — patterns are mutually exclusive end-anchors.
   private static readonly _ROUTE_TITLE_KEYS: ReadonlyArray<readonly [RegExp, string]> = [
+    [/^\/matrix$/, T.F.MATRIX.HOME],
     [/schedule$/, T.MH.SCHEDULE],
     [/planner$/, T.MH.PLANNER],
     [/boards$/, T.MH.BOARDS],

@@ -1,0 +1,45 @@
+<section
+  class="tasksmart-card quadrant"
+  [attr.data-tone]="tone()"
+  [class.is-compact]="compact()"
+  [attr.aria-label]="description() | translate"
+>
+  <header>
+    <div>
+      <h2>
+        {{ title() | translate }}
+      </h2>
+      <p>{{ description() | translate }}</p>
+    </div>
+    <span class="count">{{ count() }}</span>
+    <button
+      #addButton
+      type="button"
+      class="tasksmart-icon-button focus-ring"
+      [attr.aria-label]="(T.F.MATRIX.ADD_TASK | translate) + ': ' + (title() | translate)"
+      (click)="add.emit(groupId())"
+    >
+      <mat-icon aria-hidden="true">add</mat-icon>
+    </button>
+  </header>
+  <div class="quadrant-tasks">
+    <ng-content></ng-content>
+    @if (count() === 0) {
+      <p class="empty">
+        {{ (compact() ? T.F.MATRIX.EMPTY_SHORT : T.F.MATRIX.EMPTY_QUADRANT) | translate }}
+      </p>
+    }
+  </div>
+  @if (compact()) {
+    <button
+      #viewAllButton
+      type="button"
+      class="tasksmart-button tasksmart-button--quiet focus-ring"
+      [attr.aria-label]="(T.F.MATRIX.VIEW_ALL | translate) + ': ' + (title() | translate)"
+      (click)="viewAll.emit(groupId())"
+    >
+      {{ T.F.MATRIX.VIEW_ALL | translate
+      }}<mat-icon aria-hidden="true">chevron_right</mat-icon>
+    </button>
+  }
+</section>

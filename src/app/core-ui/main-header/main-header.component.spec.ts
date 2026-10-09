@@ -506,7 +506,10 @@ describe('MainHeaderComponent action placement', () => {
             misc: signal({ isVerticalActionBar: false }),
           },
         },
-        { provide: MatDialog, useValue: { open: jasmine.createSpy('open') } },
+        {
+          provide: MatDialog,
+          useValue: { open: jasmine.createSpy('open'), afterOpened: EMPTY },
+        },
         { provide: Store, useValue: { dispatch: jasmine.createSpy('dispatch') } },
         {
           provide: TrackingPresenceService,
@@ -815,12 +818,6 @@ describe('MainHeaderComponent action placement', () => {
     expect(fixture.nativeElement.querySelector('.counters-action-group')).toBeFalsy();
   });
 
-  // --- Collapsed counters below 600px -------------------------------------
-  // Counters are the one group the app does not bound -- a user may define any
-  // number -- so on a phone they are the only action that can push the row into
-  // a long scroll on its own. Above the breakpoint they stay inline, because the
-  // readout on the button face is what a counter is for.
-
   const counter = (id: string, over: Partial<SimpleCounter> = {}): SimpleCounter => ({
     id,
     title: id,
@@ -832,82 +829,66 @@ describe('MainHeaderComponent action placement', () => {
     ...over,
   });
 
-  it('collapses the counters behind one trigger below 600px', async () => {
-    isXs = signal(true);
-    enabledSimpleCounters = [counter('a'), counter('b')];
+  for (const width of [404, 1400]) {
+    it(`keeps every counter mounted once inside More at ${width}px`, async () => {
+      isXs = signal(width < 600);
+      enabledSimpleCounters = [counter('a'), counter('b')];
+      const host = await mountAtWidth(width);
+      const panel = host.querySelector('#header-more-actions');
+      expect(host.querySelectorAll('simple-counter-button').length).toBe(2);
+      expect(panel!.querySelectorAll('simple-counter-button').length).toBe(2);
+      expect(host.querySelector('.action-nav-scroll')!.contains(panel)).toBe(false);
+      fixture!.componentInstance.onMoreToggle({ newState: 'open' } as ToggleEvent);
+      fixture!.componentInstance.onMoreToggle({ newState: 'closed' } as ToggleEvent);
+      expect(fixture!.componentInstance.isMoreOpen()).toBe(false);
+      expect(panel!.querySelectorAll('simple-counter-button').length).toBe(2);
+    });
+  }
 
-    const host = await mountAtWidth(404);
-
-    // Not inline...
-    expect(
-      host.querySelectorAll('.counters-action-group simple-counter-button').length,
-    ).toBe(0);
-    // ...but all of them still mounted, inside the tray. They own their
-    // countdown-completion subscription, so a counter that existed only while
-    // the tray was open would stop firing reminders.
-    expect(
-      host.querySelectorAll('#mobile-simple-counter-menu simple-counter-button').length,
-    ).toBe(2);
-    // Outside the scroller, or `overflow-x: auto` would clip the tray to the
-    // row's own height and the trigger would scroll away from a running counter.
-    const wrapper = host.querySelector('.mobile-dropdown-wrapper');
-    expect(wrapper).toBeTruthy();
-    expect(host.querySelector('.action-nav-scroll')!.contains(wrapper)).toBe(false);
-  });
-
-  it('keeps the counters inline above 600px', async () => {
-    enabledSimpleCounters = [counter('a'), counter('b')];
-
-    const host = await mountAtWidth(1400);
-
-    expect(
-      host.querySelectorAll('.counters-action-group simple-counter-button').length,
-    ).toBe(2);
-    expect(host.querySelector('.mobile-dropdown-wrapper')).toBeFalsy();
-  });
-
-  it('offers no trigger when every counter hides its button', async () => {
-    // A trigger opening an empty tray is worse than no trigger: `length` alone
-    // would have offered one.
-    isXs = signal(true);
+  it('omits hidden counters while retaining the other More actions', async () => {
     enabledSimpleCounters = [counter('a', { isHideButton: true })];
-
     const host = await mountAtWidth(404);
-
-    expect(host.querySelector('.mobile-dropdown-wrapper')).toBeFalsy();
+    expect(host.querySelectorAll('simple-counter-button').length).toBe(0);
+    expect(host.querySelector('.header-more-trigger')).toBeTruthy();
   });
 
-  it('does not leave the tray open behind a trigger that is gone', async () => {
-    // Widening removes the trigger, so the open flag must not outlive it --
-    // otherwise the tray springs open by itself the next time the window
-    // narrows, with nothing on screen to close it.
-    isXs = signal(true);
-    enabledSimpleCounters = [counter('a')];
-
-    await mountAtWidth(404);
-    fixture!.componentInstance.isShowSimpleCounterBtnsDropdown.set(true);
-    expect(fixture!.componentInstance.isShowSimpleCounterBtnsDropdown()).toBe(true);
-
-    isXs.set(false);
-    await settle();
-    expect(fixture!.componentInstance.hasCounterDropdown()).toBe(false);
-
-    isXs.set(true);
-    await settle();
-    expect(fixture!.componentInstance.isShowSimpleCounterBtnsDropdown()).toBe(false);
-  });
-
-  it('accents the trigger while a collapsed counter is running', async () => {
-    // The trigger is the only thing on screen that can say a counter is still
-    // going once they are behind it.
-    isXs = signal(true);
+  it('accents More when a visible counter is running', async () => {
     enabledSimpleCounters = [counter('a', { isOn: true })];
-
-    await mountAtWidth(404);
-
-    expect(fixture!.componentInstance.isAnyCounterRunning()).toBe(true);
+    const host = await mountAtWidth(404);
+    expect(
+      host.querySelector('.header-more-trigger')!.classList.contains('counter-running'),
+    ).toBe(true);
   });
 
+  it('closes More for an action, without unmounting its components', () => {
+    component = createComponent();
+    Object.defineProperty(component, 'supportsPopover', { value: true });
+    const panel = document.createElement('div');
+    const button = document.createElement('button');
+    panel.appendChild(button);
+    panel.hidePopover = jasmine.createSpy('hidePopover');
+    const event = new MouseEvent('click');
+    Object.defineProperty(event, 'target', { value: button });
+    component.onMoreAction(event, panel);
+    expect(panel.hidePopover).toHaveBeenCalled();
+    expect(panel.contains(button)).toBe(true);
+  });
+  it('toggles and closes More without native popover methods on older WebViews', () => {
+    component = createComponent();
+    Object.defineProperty(component, 'supportsPopover', { value: false });
+    component.toggleMoreFallback();
+    expect(component.isMoreOpen()).toBeTrue();
+    const panel = document.createElement('div');
+    const button = document.createElement('button');
+    panel.appendChild(button);
+    panel.hidePopover = jasmine.createSpy('hidePopover');
+    const event = new MouseEvent('click');
+    Object.defineProperty(event, 'target', { value: button });
+    component.onMoreAction(event, panel);
+    expect(component.isMoreOpen()).toBeFalse();
+    expect(panel.hidePopover).not.toHaveBeenCalled();
+    expect(panel.contains(button)).toBeTrue();
+  });
   it('keeps a persistent recovery action instead of showing routine sync success', async () => {
     component = createComponent();
     const syncWrapperService = TestBed.inject(

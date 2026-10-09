@@ -1,0 +1,90 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.matrix-task {
+  position: relative;
+  padding-block: var(--s);
+  border-bottom: 1px solid var(--tasksmart-border);
+  color: var(--text-color);
+}
+
+.is-current {
+  background: var(--tasksmart-selected);
+  border-radius: var(--tasksmart-control-radius);
+}
+
+.task-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-quarter);
+}
+
+.task-title {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--tasksmart-control-height);
+  border: 0;
+  padding: var(--s) 0;
+  background: transparent;
+  color: var(--text-color);
+  font: inherit;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+  text-align: start;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-half) var(--s);
+  padding-inline-start: var(--s6);
+  padding-inline-end: var(--s6);
+  color: var(--text-color-muted);
+  font-size: var(--font-size-sm);
+}
+
+.project-name {
+  overflow-wrap: anywhere;
+}
+
+.task-status {
+  display: block;
+  margin-inline-start: var(--s6);
+  color: var(--tasksmart-accent-text);
+  font-size: var(--font-size-xs);
+}
+
+.focus-action {
+  position: absolute;
+  inset-inline-end: 0;
+  bottom: 0;
+}
+
+.overdue-label {
+  color: var(--tasksmart-danger-text);
+}
+
+.is-compact {
+  padding-block: 0;
+
+  .task-title {
+    padding-block: var(--s-half);
+    align-content: center;
+
+    span {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+    }
+  }
+
+  .task-status {
+    margin-inline-start: 0;
+  }
+}

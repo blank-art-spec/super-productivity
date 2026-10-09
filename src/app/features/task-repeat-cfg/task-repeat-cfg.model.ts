@@ -1,6 +1,7 @@
 import { EntityState } from '@ngrx/entity';
 import { TaskReminderOptionId } from '../tasks/task.model';
 import { getDbDateStr } from '../../util/get-db-date-str';
+import { EisenhowerQuadrant } from '../eisenhower-matrix/eisenhower-matrix.model';
 
 export const TASK_REPEAT_WEEKDAY_MAP: (keyof TaskRepeatCfg)[] = [
   'sunday',
@@ -46,6 +47,7 @@ export interface TaskRepeatCfgCopy {
    */
   order: number;
   defaultEstimate?: number;
+  eisenhowerQuadrant?: EisenhowerQuadrant | null;
   startTime?: string;
   remindAt?: TaskReminderOptionId;
 
@@ -94,6 +96,7 @@ export interface TaskRepeatCfgCopy {
     title: string;
     timeEstimate?: number;
     notes?: string;
+    eisenhowerQuadrant?: EisenhowerQuadrant | null;
   }[];
   // Exception list for deleted instances (ISO date strings YYYY-MM-DD)
   deletedInstanceDates?: string[];
@@ -110,6 +113,7 @@ export const DEFAULT_TASK_REPEAT_CFG: Omit<TaskRepeatCfgCopy, 'id'> = {
   lastTaskCreationDay: getDbDateStr(),
   title: null,
   defaultEstimate: undefined,
+  eisenhowerQuadrant: null,
 
   // id: undefined,
   projectId: null,

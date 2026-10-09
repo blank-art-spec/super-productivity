@@ -1,37 +1,38 @@
 <div class="schedule-nav-controls">
-  <div class="time-view-selector">
+  <h2 class="title">{{ headerTitle() }}</h2>
+  <div class="time-view-selector tasksmart-view-switch">
     <button
-      mat-icon-button
-      class="time-view-btn e2e-day-view-btn"
+      type="button"
+      class="tasksmart-button tasksmart-button--quiet focus-ring time-view-btn e2e-day-view-btn"
       [class.active]="isDayView()"
       [attr.aria-pressed]="isDayView()"
       (click)="selectTimeView('day')"
       [matTooltip]="T.F.SCHEDULE.VIEW_DAY | translate"
       [attr.aria-label]="T.F.SCHEDULE.VIEW_DAY | translate"
     >
-      <mat-icon>calendar_view_day</mat-icon>
+      {{ T.F.PLANNER.CALENDAR.DAY | translate }}
     </button>
     <button
-      mat-icon-button
-      class="time-view-btn"
+      type="button"
+      class="tasksmart-button tasksmart-button--quiet focus-ring time-view-btn"
       [class.active]="isWeekView()"
       [attr.aria-pressed]="isWeekView()"
       (click)="selectTimeView('week')"
       [matTooltip]="T.F.SCHEDULE.VIEW_WEEK | translate"
       [attr.aria-label]="T.F.SCHEDULE.VIEW_WEEK | translate"
     >
-      <mat-icon>view_week</mat-icon>
+      {{ T.F.PLANNER.CALENDAR.WEEK | translate }}
     </button>
     <button
-      mat-icon-button
-      class="time-view-btn"
+      type="button"
+      class="tasksmart-button tasksmart-button--quiet focus-ring time-view-btn"
       [class.active]="isMonthView()"
       [attr.aria-pressed]="isMonthView()"
       (click)="selectTimeView('month')"
       [matTooltip]="T.F.SCHEDULE.VIEW_MONTH | translate"
       [attr.aria-label]="T.F.SCHEDULE.VIEW_MONTH | translate"
     >
-      <mat-icon>calendar_month</mat-icon>
+      {{ T.F.PLANNER.CALENDAR.MONTH | translate }}
     </button>
   </div>
 
@@ -75,7 +76,8 @@
 
   <div class="date-nav-group">
     <button
-      mat-icon-button
+      type="button"
+      class="tasksmart-icon-button focus-ring"
       (click)="goToPreviousPeriod()"
       [disabled]="isViewingToday()"
       [attr.aria-label]="
@@ -99,18 +101,19 @@
     </button>
 
     <button
-      mat-icon-button
-      class="today-btn"
+      type="button"
+      class="today-btn tasksmart-button tasksmart-button--quiet focus-ring"
       (click)="goToToday()"
       [disabled]="isViewingToday()"
       [attr.aria-label]="T.G.TODAY_TAG_TITLE | translate"
       [matTooltip]="T.G.TODAY_TAG_TITLE | translate"
     >
-      <mat-icon>wb_sunny</mat-icon>
+      {{ T.G.TODAY_TAG_TITLE | translate }}
     </button>
 
     <button
-      mat-icon-button
+      type="button"
+      class="tasksmart-icon-button focus-ring"
       (click)="goToNextPeriod()"
       [attr.aria-label]="
         (isMonthView()
@@ -132,8 +135,6 @@
       <mat-icon>chevron_right</mat-icon>
     </button>
   </div>
-
-  <div class="title">{{ headerTitle() }}</div>
 </div>
 
 <div

@@ -121,4 +121,18 @@ describe('getStartPageUrlPath', () => {
       ).toBe(TODAY_URL);
     });
   });
+
+  it('resolves Matrix independently of Planner, Schedule and Boards feature flags', () => {
+    expect(
+      getStartPageUrlPath(
+        DefaultStartPage.Matrix,
+        features({
+          isPlannerEnabled: false,
+          isSchedulerEnabled: false,
+          isBoardsEnabled: false,
+        }),
+        undefined,
+      ),
+    ).toBe('/matrix');
+  });
 });

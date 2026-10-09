@@ -13,6 +13,45 @@ import {
 } from '../../features/issue/issue.model';
 import { Task, TaskState } from '../../features/tasks/task.model';
 import { ArchiveModel } from '../../features/time-tracking/time-tracking.model';
+import { EisenhowerQuadrant } from '../../features/eisenhower-matrix/eisenhower-matrix.model';
+import { DEFAULT_TASK_REPEAT_CFG } from '../../features/task-repeat-cfg/task-repeat-cfg.model';
+
+describe('validation-fn — optional matrix fields', () => {
+  for (const quadrant of [undefined, null, ...Object.values(EisenhowerQuadrant)]) {
+    it(`accepts live, archived and repeat templates with quadrant ${quadrant}`, () => {
+      const data = createValidAppData();
+      const task = createValidTask('matrix', { eisenhowerQuadrant: quadrant });
+      data.task = { ...data.task, ids: [task.id], entities: { [task.id]: task } };
+      data.archiveYoung = {
+        ...data.archiveYoung,
+        task: { ids: [task.id], entities: { [task.id]: task } },
+      };
+      data.taskRepeatCfg = {
+        ids: ['repeat'],
+        entities: {
+          repeat: {
+            ...DEFAULT_TASK_REPEAT_CFG,
+            id: 'repeat',
+            eisenhowerQuadrant: quadrant,
+            subTaskTemplates: [
+              { title: 'Legacy subtask' },
+              { title: 'Classified subtask', eisenhowerQuadrant: quadrant },
+            ],
+          },
+        },
+      };
+      // Property validators are the actual hydration/import model boundary;
+      // relationship validation is tested separately by validateFull.
+      expect(validateAppDataProperty('task', data.task).success).toBeTrue();
+      expect(
+        validateAppDataProperty('archiveYoung', data.archiveYoung).success,
+      ).toBeTrue();
+      expect(
+        validateAppDataProperty('taskRepeatCfg', data.taskRepeatCfg).success,
+      ).toBeTrue();
+    });
+  }
+});
 
 /**
  * Regression guard for the forward-compatibility break that surfaced as a false

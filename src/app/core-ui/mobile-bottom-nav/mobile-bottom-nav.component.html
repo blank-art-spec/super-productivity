@@ -1,8 +1,18 @@
 <nav
-  class="mobile-bottom-nav"
+  class="mobile-bottom-nav tasksmart-navigation"
   [class.entrance]="isEntrance()"
   (animationend)="onEntranceAnimationEnd($event)"
 >
+  <button
+    mat-button
+    class="nav-button"
+    routerLink="/matrix"
+    routerLinkActive="active"
+    [attr.aria-label]="T.F.MATRIX.HOME | translate"
+  >
+    <mat-icon>home</mat-icon
+    ><span class="nav-caption">{{ T.F.MATRIX.HOME | translate }}</span>
+  </button>
   <button
     mat-button
     class="nav-button"
@@ -12,21 +22,25 @@
     [attr.aria-label]="T.G.TODAY_TAG_TITLE | translate"
   >
     <mat-icon>wb_sunny</mat-icon>
+    <span class="nav-caption">{{ T.G.TODAY_TAG_TITLE | translate }}</span>
   </button>
 
-  <button
-    mat-button
-    class="nav-button"
-    routerLink="/planner"
-    routerLinkActive="active"
-    [attr.aria-label]="T.MH.PLANNER | translate"
-  >
-    <mat-icon>edit_calendar</mat-icon>
-  </button>
+  @if (isPlannerEnabled()) {
+    <button
+      mat-button
+      class="nav-button"
+      routerLink="/planner"
+      routerLinkActive="active"
+      [attr.aria-label]="T.MH.PLANNER | translate"
+    >
+      <mat-icon>edit_calendar</mat-icon>
+      <span class="nav-caption">{{ T.MH.PLANNER | translate }}</span>
+    </button>
+  }
 
   <button
     mat-fab
-    class="add-task-button"
+    class="add-task-button tasksmart-fab"
     [class.smaller]="hasProjectBacklog()"
     [class.hide-for-native]="isEntranceAnimating()"
     color="primary"

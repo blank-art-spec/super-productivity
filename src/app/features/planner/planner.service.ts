@@ -86,6 +86,11 @@ export class PlannerService {
     selectAllTasksWithDueTime,
   );
 
+  // Reuse the existing planning selector for bounded calendar windows.
+  selectCalendarDays$(dayDates$: Observable<string[]>): Observable<PlannerDay[]> {
+    return this._selectPlannerDaysFor$(dayDates$);
+  }
+
   // TODO this needs to be more performant
   private _selectPlannerDaysFor$(
     dayDates$: Observable<string[]>,

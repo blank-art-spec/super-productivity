@@ -1,0 +1,351 @@
+<div
+  class="matrix-page"
+  role="region"
+  cdkDropListGroup
+  [attr.aria-busy]="!isDataLoaded()"
+  [attr.aria-label]="T.F.MATRIX.PAGE_TITLE | translate"
+>
+  <header class="matrix-calendar-heading">
+    <h1>{{ calendarTitle() }}</h1>
+    <div class="matrix-calendar-actions">
+      <button
+        type="button"
+        class="tasksmart-icon-button focus-ring"
+        [attr.aria-label]="T.F.MATRIX.PREVIOUS_WEEK | translate"
+        (click)="navigateWeek(-1)"
+      >
+        <mat-icon aria-hidden="true">chevron_left</mat-icon>
+      </button>
+      <button
+        type="button"
+        class="tasksmart-button tasksmart-button--quiet focus-ring"
+        (click)="goToToday()"
+      >
+        {{ T.G.TODAY_TAG_TITLE | translate }}
+      </button>
+      <button
+        type="button"
+        class="tasksmart-icon-button focus-ring"
+        [attr.aria-label]="T.F.MATRIX.NEXT_WEEK | translate"
+        (click)="navigateWeek(1)"
+      >
+        <mat-icon aria-hidden="true">chevron_right</mat-icon>
+      </button>
+    </div>
+  </header>
+  <div
+    class="tasksmart-week-strip"
+    role="group"
+    [attr.aria-label]="T.F.MATRIX.DATE | translate"
+  >
+    @for (day of days(); track day.day) {
+      <button
+        type="button"
+        class="tasksmart-day-button focus-ring"
+        [attr.aria-label]="day.label"
+        [attr.aria-current]="day.day === today() ? 'date' : null"
+        [attr.aria-pressed]="
+          (timeFilter() === 'day' || timeFilter() === 'today') && anchor() === day.day
+        "
+        (click)="selectDay(day.day)"
+      >
+        <small>{{ day.weekday }}</small>
+        <time [attr.datetime]="day.day">{{ day.number }}</time>
+        <span
+          class="day-indicator"
+          [class.has-tasks]="day.hasTasks"
+          aria-hidden="true"
+        ></span>
+      </button>
+    }
+  </div>
+  <div class="matrix-toolbar">
+    <div
+      class="matrix-periods"
+      role="group"
+      [attr.aria-label]="T.F.MATRIX.PERIOD | translate"
+    >
+      @for (period of periods; track period.id) {
+        <button
+          type="button"
+          class="tasksmart-button tasksmart-button--quiet focus-ring"
+          [attr.aria-pressed]="timeFilter() === period.id"
+          (click)="setPeriod(period.id)"
+        >
+          {{ period.label | translate }}
+        </button>
+      }
+    </div>
+    <details class="matrix-filters">
+      <summary
+        class="focus-ring"
+        [attr.aria-label]="T.F.MATRIX.FILTERS | translate"
+        [class.is-active]="hasActiveFilters() || previewSuggestions()"
+      >
+        <mat-icon aria-hidden="true">tune</mat-icon
+        ><span>{{ T.F.MATRIX.FILTERS | translate }}</span>
+      </summary>
+      <div class="matrix-filter-fields tasksmart-card">
+        @if (isPhone()) {
+          <div
+            class="matrix-filter-periods"
+            role="group"
+            [attr.aria-label]="T.F.MATRIX.PERIOD | translate"
+          >
+            @for (period of periods; track period.id) {
+              <button
+                type="button"
+                class="tasksmart-button tasksmart-button--quiet focus-ring"
+                [attr.aria-pressed]="timeFilter() === period.id"
+                (click)="setPeriod(period.id)"
+              >
+                {{ period.label | translate }}
+              </button>
+            }
+          </div>
+        }
+        @if (!scopeProjectId()) {
+          <label class="tasksmart-field">
+            <span>{{ T.F.MATRIX.PROJECT | translate }}</span>
+            <select
+              [ngModel]="projectId()"
+              (ngModelChange)="projectId.set($event)"
+            >
+              <option value="">{{ T.F.MATRIX.ALL_PROJECTS | translate }}</option>
+              @for (project of projects(); track project.id) {
+                <option [value]="project.id">{{ project.title | translate }}</option>
+              }
+            </select>
+          </label>
+        }
+        <label class="tasksmart-field">
+          <span>{{ T.F.MATRIX.TAGS | translate }}</span>
+          <select
+            [ngModel]="tagId()"
+            (ngModelChange)="tagId.set($event)"
+          >
+            <option value="">{{ T.F.MATRIX.ALL_TAGS | translate }}</option>
+            @for (tag of tags(); track tag.id) {
+              <option [value]="tag.id">{{ tag.title | translate }}</option>
+            }
+          </select>
+        </label>
+        <button
+          type="button"
+          class="tasksmart-button tasksmart-button--quiet focus-ring"
+          [attr.aria-pressed]="previewSuggestions()"
+          (click)="previewSuggestions.set(!previewSuggestions())"
+        >
+          <mat-icon aria-hidden="true">auto_awesome</mat-icon>
+          {{
+            (previewSuggestions()
+              ? T.F.MATRIX.HIDE_SUGGESTIONS
+              : T.F.MATRIX.AUTO_CLASSIFY
+            ) | translate
+          }}
+        </button>
+        <button
+          type="button"
+          class="tasksmart-button tasksmart-button--quiet focus-ring"
+          (click)="resetFilters()"
+        >
+          {{ T.F.MATRIX.RESET_FILTERS | translate }}
+        </button>
+        @if (!scopeProjectId()) {
+          <button
+            type="button"
+            class="tasksmart-button tasksmart-button--quiet focus-ring"
+            [disabled]="isDefaultHome()"
+            (click)="setDefaultHome()"
+          >
+            {{
+              (isDefaultHome() ? T.F.MATRIX.DEFAULT_HOME : T.F.MATRIX.SET_DEFAULT_HOME)
+                | translate
+            }}
+          </button>
+        }
+      </div>
+    </details>
+    @if (!isPhone()) {
+      <button
+        type="button"
+        class="tasksmart-button tasksmart-button--primary focus-ring"
+        (click)="add(null)"
+      >
+        <mat-icon aria-hidden="true">add</mat-icon>{{ T.F.MATRIX.ADD_TASK | translate }}
+      </button>
+    }
+  </div>
+  @if (previewSuggestions()) {
+    <div
+      class="callout"
+      role="status"
+    >
+      <p>{{ T.F.MATRIX.SUGGESTION_NOTICE | translate }}</p>
+    </div>
+  }
+  @if (!isDataLoaded()) {
+    <p
+      class="matrix-empty"
+      role="status"
+    >
+      {{ T.F.MATRIX.LOADING | translate }}
+    </p>
+  } @else if (phoneExpandedGroup(); as group) {
+    <ng-container
+      [ngTemplateOutlet]="expandedList"
+      [ngTemplateOutletContext]="{ group: group }"
+    ></ng-container>
+  } @else {
+    <div class="matrix-grid">
+      @for (group of quadrants(); track group.id) {
+        <matrix-quadrant
+          cdkDropList
+          [cdkDropListData]="group.id"
+          [cdkDropListSortingDisabled]="true"
+          [cdkDropListDisabled]="isPhone()"
+          (cdkDropListDropped)="drop($event)"
+          [groupId]="group.id"
+          [title]="group.title"
+          [description]="group.description"
+          [icon]="group.icon"
+          [tone]="group.tone"
+          [count]="group.tasks.length"
+          [compact]="isPhone()"
+          (add)="add($event)"
+          (viewAll)="expandGroup($event)"
+        >
+          @for (task of isPhone() ? group.previewTasks : group.tasks; track task.id) {
+            <matrix-task-card
+              cdkDrag
+              [cdkDragData]="task"
+              [cdkDragDisabled]="isPhone()"
+              [cdkDragStartDelay]="dragStartDelay"
+              cdkDragPreviewClass="matrix-drag-preview"
+              [task]="task"
+              [compact]="isPhone()"
+              [projectTitle]="projectTitles()[task.projectId] || ''"
+              [today]="today()"
+              [dayOffset]="dayOffset()"
+              [currentTaskId]="taskService.currentTaskId()"
+              [isFocusEnabled]="isFocusEnabled()"
+              [isFocusModeEnabled]="isFocusModeEnabled()"
+              [isSuggested]="previewSuggestions() && !task.eisenhowerQuadrant"
+              (complete)="complete($event)"
+              (edit)="edit($event)"
+              (focusTask)="focus($event)"
+              (details)="taskService.setSelectedId($event.id)"
+              (remove)="remove($event)"
+              (classify)="classify(task, $event)"
+              (acceptSuggestion)="acceptSuggestion($event)"
+            >
+            </matrix-task-card>
+          }
+        </matrix-quadrant>
+      }
+    </div>
+    <button
+      #unclassifiedButton
+      type="button"
+      class="unclassified-entry tasksmart-button tasksmart-button--quiet focus-ring"
+      cdkDropList
+      [cdkDropListData]="null"
+      [cdkDropListSortingDisabled]="true"
+      [cdkDropListDisabled]="isPhone()"
+      (cdkDropListDropped)="drop($event)"
+      (click)="expandGroup(null)"
+    >
+      <mat-icon aria-hidden="true">inbox</mat-icon
+      ><span>{{ T.F.MATRIX.UNCLASSIFIED | translate }}</span>
+      <strong>{{ unclassified().tasks.length }}</strong
+      ><mat-icon aria-hidden="true">chevron_right</mat-icon>
+    </button>
+    @if (desktopExpandedGroup(); as group) {
+      <ng-container
+        [ngTemplateOutlet]="expandedList"
+        [ngTemplateOutletContext]="{ group: group }"
+      ></ng-container>
+    }
+    @if (visibleTasks().length === 0) {
+      <p
+        class="matrix-empty"
+        role="status"
+      >
+        {{ emptyMessage() | translate }}
+      </p>
+    }
+  }
+  <ng-template
+    #expandedList
+    let-group="group"
+  >
+    <section
+      class="matrix-expanded tasksmart-card"
+      cdkDropList
+      [cdkDropListData]="group.id"
+      [cdkDropListSortingDisabled]="true"
+      [cdkDropListDisabled]="isPhone()"
+      (cdkDropListDropped)="drop($event)"
+    >
+      <header class="expanded-heading">
+        <button
+          type="button"
+          class="tasksmart-icon-button focus-ring"
+          [attr.aria-label]="T.F.MATRIX.BACK_TO_MATRIX | translate"
+          (click)="closeGroup()"
+        >
+          <mat-icon aria-hidden="true">arrow_back</mat-icon>
+        </button>
+        <div>
+          <h2
+            #expandedHeading
+            tabindex="-1"
+          >
+            {{ group.title | translate }} <span>{{ group.tasks.length }}</span>
+          </h2>
+          <p>{{ group.description | translate }}</p>
+        </div>
+        <button
+          type="button"
+          class="tasksmart-icon-button focus-ring"
+          [attr.aria-label]="T.F.MATRIX.ADD_TASK | translate"
+          (click)="add(group.id)"
+        >
+          <mat-icon aria-hidden="true">add</mat-icon>
+        </button>
+      </header>
+      @for (task of group.tasks; track task.id) {
+        <matrix-task-card
+          cdkDrag
+          [cdkDragData]="task"
+          [cdkDragDisabled]="isPhone()"
+          [cdkDragStartDelay]="dragStartDelay"
+          cdkDragPreviewClass="matrix-drag-preview"
+          [task]="task"
+          [projectTitle]="projectTitles()[task.projectId] || ''"
+          [today]="today()"
+          [dayOffset]="dayOffset()"
+          [currentTaskId]="taskService.currentTaskId()"
+          [isFocusEnabled]="isFocusEnabled()"
+          [isFocusModeEnabled]="isFocusModeEnabled()"
+          [isSuggested]="previewSuggestions() && !task.eisenhowerQuadrant"
+          (complete)="complete($event)"
+          (edit)="edit($event)"
+          (focusTask)="focus($event)"
+          (details)="taskService.setSelectedId($event.id)"
+          (remove)="remove($event)"
+          (classify)="classify(task, $event)"
+          (acceptSuggestion)="acceptSuggestion($event)"
+        >
+        </matrix-task-card>
+      } @empty {
+        <p
+          class="matrix-empty"
+          role="status"
+        >
+          {{ T.F.MATRIX.EMPTY_QUADRANT | translate }}
+        </p>
+      }
+    </section>
+  </ng-template>
+</div>

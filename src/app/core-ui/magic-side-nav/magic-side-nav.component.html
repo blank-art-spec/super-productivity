@@ -96,6 +96,21 @@
       </button>
     }
 
+    <a
+      class="nav-brand focus-ring"
+      routerLink="/matrix"
+      (click)="isMobile() && toggleMobileNav()"
+      [attr.aria-label]="T.F.MATRIX.HOME | translate"
+    >
+      <span
+        class="nav-brand-mark"
+        aria-hidden="true"
+        ><i></i><i></i><i></i><i></i
+      ></span>
+      @if (showText()) {
+        <span>Super Productivity</span>
+      }
+    </a>
     @if (isDataLoaded()) {
       <!-- Navigation Items -->
       <ul

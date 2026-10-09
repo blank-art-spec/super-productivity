@@ -41,6 +41,7 @@ const OPTIONAL_TASK_FIELDS = Object.keys({
   issuePoints: true,
   issueLastSyncedValues: true,
   priority: true,
+  eisenhowerQuadrant: true,
   dueWithTime: true,
   dueDay: true,
   hasPlannedTime: true,

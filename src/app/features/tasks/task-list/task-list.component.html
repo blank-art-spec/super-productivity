@@ -26,6 +26,7 @@
   cdkDropList
   [cdkDropListConnectedTo]="dropListService.dropLists | async"
   [cdkDropListSortingDisabled]="isSortingDisabled()"
+  [cdkDropListDisabled]="isDragDisabled()"
   [cdkDropListEnterPredicate]="enterPredicate"
   [cdkDropListData]="dropModelDataForList()"
   (cdkDropListDropped)="drop($event)"
@@ -45,7 +46,9 @@
       cdkDrag
       [cdkDragStartDelay]="dragDelayForTouch()"
       [cdkDragLockAxis]="isXs() ? 'y' : ''"
-      [cdkDragDisabled]="listModelId() === 'LATER_TODAY' || isTouchSelectionMode()"
+      [cdkDragDisabled]="
+        isDragDisabled() || listModelId() === 'LATER_TODAY' || isTouchSelectionMode()
+      "
       [cdkDragData]="task"
       [class.multi-drag-source]="multiDrag.draggedIds().has(task.id)"
       (pointerdown)="onDragPointerDown(task, $event)"

@@ -80,3 +80,12 @@
   height: var(--focus-mode-edge-row-height);
   padding-top: var(--s2);
 }
+
+.progress {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  &:empty {
+    display: none;
+  }
+}

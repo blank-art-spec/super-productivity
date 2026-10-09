@@ -1,4 +1,6 @@
 import { DEFAULT_TASK } from '../../features/tasks/task.model';
+import { EisenhowerQuadrant } from '../../features/eisenhower-matrix/eisenhower-matrix.model';
+import { isLwwUpdatePayload } from '../core/operation.types';
 import { ActionType, EntityConflict, Operation, OpType } from '../core/operation.types';
 import { timeDeltasSurvivingLww } from './conflict-field-patch.util';
 import { selectTaskReplacementCompensations } from './lww-compensation-selection.util';
@@ -45,6 +47,34 @@ const snapshot = op({
 const resolution = { conflict, localWinOp: snapshot, winner: 'local' as const };
 
 describe('source task snapshots preserve additive time', () => {
+  it('retains explicit quadrant values and clears missing quadrants in task snapshots', () => {
+    for (const quadrant of [EisenhowerQuadrant.SCHEDULE, null, undefined]) {
+      const source = op({
+        ...snapshot,
+        payload: {
+          entityChanges: [],
+          actionPayload: {
+            ...DEFAULT_TASK,
+            id: 'task',
+            projectId: '',
+            eisenhowerQuadrant: quadrant,
+          },
+          lwwUpdateMode: 'replace',
+        },
+      });
+      const [actual] = preserveTaskSnapshotTimes(
+        [{ ...resolution, localWinOp: source }],
+        [],
+      );
+      const payload = actual.localWinOp.payload;
+      if (!isLwwUpdatePayload(payload)) throw new Error('Expected LWW task payload');
+      expect(payload.actionPayload['eisenhowerQuadrant']).toBe(quadrant);
+      expect(payload.clearedFields?.includes('eisenhowerQuadrant') ?? false).toBe(
+        quadrant === undefined,
+      );
+      expect(isTimePreservingTaskSnapshot(actual.localWinOp)).toBeTrue();
+    }
+  });
   it('changes only the existing winner payload, retaining identity, stamp and position', () => {
     const [actual] = preserveTaskSnapshotTimes([resolution], []);
     expect(actual.conflict).toBe(conflict);

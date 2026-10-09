@@ -1,5 +1,24 @@
 :host {
   overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+work-view,
+.project-matrix {
+  flex: 1;
+  min-height: 0;
+}
+work-view {
+  position: relative;
+  display: block;
+}
+.project-matrix {
+  overflow: auto;
+}
+.project-view-toolbar {
+  padding: var(--s) var(--s2);
 }
 
 .archived-notice {

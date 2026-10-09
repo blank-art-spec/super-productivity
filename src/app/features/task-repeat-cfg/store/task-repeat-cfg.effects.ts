@@ -64,6 +64,7 @@ const SCHEDULE_AFFECTING_BY_FIELD: Record<keyof TaskRepeatCfgCopy, boolean> = {
   tagIds: false,
   order: false,
   defaultEstimate: false,
+  eisenhowerQuadrant: false,
   startTime: false,
   remindAt: false,
   isPaused: true,
@@ -878,7 +879,8 @@ export class TaskRepeatCfgEffects {
       if (
         ai.title !== bi.title ||
         (ai.notes || '') !== (bi.notes || '') ||
-        (ai.timeEstimate || 0) !== (bi.timeEstimate || 0)
+        (ai.timeEstimate || 0) !== (bi.timeEstimate || 0) ||
+        (ai.eisenhowerQuadrant ?? null) !== (bi.eisenhowerQuadrant ?? null)
       ) {
         return false;
       }
@@ -934,6 +936,9 @@ export class TaskRepeatCfgEffects {
       title: st.title,
       notes: st.notes,
       timeEstimate: st.timeEstimate,
+      ...(st.eisenhowerQuadrant !== undefined && {
+        eisenhowerQuadrant: st.eisenhowerQuadrant,
+      }),
     }));
   }
 

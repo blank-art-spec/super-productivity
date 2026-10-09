@@ -27,6 +27,7 @@ import { remindOptionToMilliseconds } from '../../tasks/util/remind-option-to-mi
 import { isToday } from '../../../util/is-today.util';
 import { getFirstRepeatOccurrence } from './get-first-repeat-occurrence.util';
 import { getNextRepeatOccurrence } from './get-next-repeat-occurrence.util';
+import { EisenhowerQuadrant } from '../../eisenhower-matrix/eisenhower-matrix.model';
 
 describe('TaskRepeatCfgEffects - Repeatable Subtasks', () => {
   let actions$: Observable<Action>;
@@ -143,6 +144,27 @@ describe('TaskRepeatCfgEffects - Repeatable Subtasks', () => {
   });
 
   describe('Helper Methods', () => {
+    it('preserves quadrant assignments and detects changes including explicit clears', () => {
+      const templates = effects['_toSubTaskTemplates']([
+        { ...mockSubTask1, eisenhowerQuadrant: EisenhowerQuadrant.SCHEDULE },
+        { ...mockSubTask2, eisenhowerQuadrant: null },
+      ]);
+      expect(templates[0].eisenhowerQuadrant).toBe(EisenhowerQuadrant.SCHEDULE);
+      expect(templates[1].eisenhowerQuadrant).toBeNull();
+      expect(effects['_templatesEqual'](templates, templates)).toBeTrue();
+      expect(
+        effects['_templatesEqual'](templates, [
+          { ...templates[0], eisenhowerQuadrant: null },
+          templates[1],
+        ]),
+      ).toBeFalse();
+      expect(
+        effects['_templatesEqual'](
+          [{ title: 'Legacy' }],
+          [{ title: 'Legacy', eisenhowerQuadrant: null }],
+        ),
+      ).toBeTrue();
+    });
     it('should convert tasks to subtask templates', () => {
       const subs = [mockSubTask1, mockSubTask2];
       const templates = (effects as any)._toSubTaskTemplates(subs);

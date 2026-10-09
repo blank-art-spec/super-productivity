@@ -30,6 +30,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     <div class="task"><ng-content select="[fmTask]"></ng-content></div>
     <div class="clock"><ng-content select="[fmClock]"></ng-content></div>
     <div class="bottom"><ng-content select="[fmBottom]"></ng-content></div>
+    <div class="progress"><ng-content select="[fmProgress]"></ng-content></div>
   `,
   styleUrl: './focus-mode-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

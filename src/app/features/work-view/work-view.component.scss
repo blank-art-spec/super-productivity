@@ -1,5 +1,48 @@
 @use '../../../styles/_globals.scss' as *;
 
+.today-overview {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2);
+  padding: var(--s3);
+  margin-bottom: var(--s2);
+
+  h2,
+  p {
+    margin: 0 0 var(--s);
+  }
+  p {
+    color: var(--text-color-muted);
+  }
+  progress {
+    display: block;
+    width: 240px;
+    max-width: 100%;
+    height: var(--s);
+    margin-top: var(--s);
+    accent-color: var(--brand);
+  }
+}
+
+.today-period {
+  margin-bottom: var(--s3);
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: var(--s);
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    margin: var(--s2) 0;
+    span {
+      color: var(--text-color-muted);
+      font-weight: 400;
+    }
+  }
+}
+
 :host {
   overflow: hidden !important;
 }
@@ -35,6 +78,7 @@ h2 {
   position: relative;
   min-height: var(--bar-height-small);
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   @include mq(xs) {

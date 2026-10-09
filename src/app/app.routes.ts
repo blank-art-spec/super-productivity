@@ -12,6 +12,15 @@ import {
 import { TagTaskPageComponent } from './pages/tag-task-page/tag-task-page.component';
 
 export const APP_ROUTES: Routes = [
+  {
+    path: 'matrix',
+    loadComponent: () =>
+      import('./features/eisenhower-matrix/eisenhower-matrix-page.component').then(
+        (m) => m.EisenhowerMatrixPageComponent,
+      ),
+    data: { page: 'matrix' },
+    canActivate: [FocusOverlayOpenGuard],
+  },
   // Eagerly loaded — this is the main view
   {
     path: 'tag/:id/tasks',

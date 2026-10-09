@@ -120,6 +120,9 @@ export class MobileBottomNavComponent {
   readonly isIssuesPanelEnabled = computed(
     () => this._globalConfigService.appFeatures().isIssuesPanelEnabled,
   );
+  readonly isPlannerEnabled = computed(
+    () => this._globalConfigService.appFeatures().isPlannerEnabled,
+  );
   readonly isProjectNotesEnabled = computed(
     () => this._globalConfigService.appFeatures().isProjectNotesEnabled,
   );

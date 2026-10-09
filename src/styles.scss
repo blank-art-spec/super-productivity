@@ -13,6 +13,7 @@
 @include meta.load-css('styles/page');
 @include meta.load-css('styles/util');
 @include meta.load-css('styles/components/components');
+@include meta.load-css('styles/components/tasksmart');
 
 * {
   //box-shadow: none !important;

@@ -1,0 +1,102 @@
+<h2 mat-dialog-title>{{ (data.task ? T.G.EDIT : T.F.MATRIX.ADD_TASK) | translate }}</h2>
+<form
+  #editorForm="ngForm"
+  (ngSubmit)="save()"
+>
+  <mat-dialog-content>
+    <div class="editor-fields">
+      <label class="tasksmart-field">
+        <span>{{ T.F.MATRIX.TITLE | translate }}</span>
+        <input
+          name="title"
+          [(ngModel)]="title"
+          required
+          [placeholder]="T.F.MATRIX.TITLE_PLACEHOLDER | translate"
+        />
+      </label>
+      <label class="tasksmart-field">
+        <span>{{ T.F.MATRIX.PROJECT | translate }}</span>
+        <select
+          name="projectId"
+          [(ngModel)]="projectId"
+          required
+          [disabled]="!!data.task?.parentId"
+        >
+          @for (project of data.projects; track project.id) {
+            <option [value]="project.id">{{ project.title | translate }}</option>
+          }
+        </select>
+      </label>
+      <label class="tasksmart-field">
+        <span>{{ T.F.MATRIX.QUADRANT | translate }}</span>
+        <select
+          name="quadrant"
+          [(ngModel)]="quadrant"
+        >
+          @for (option of quadrants; track option.id) {
+            <option [ngValue]="option.id">{{ option.title | translate }}</option>
+          }
+        </select>
+      </label>
+      <div class="schedule-fields">
+        <label class="tasksmart-field">
+          <span>{{ T.F.MATRIX.DATE | translate }}</span>
+          <input
+            type="date"
+            name="day"
+            [(ngModel)]="day"
+          />
+        </label>
+        <label class="tasksmart-field">
+          <span>{{ T.F.MATRIX.TIME | translate }}</span>
+          <input
+            type="time"
+            name="time"
+            [(ngModel)]="time"
+          />
+        </label>
+      </div>
+      <label class="tasksmart-field">
+        <span>{{ T.F.MATRIX.ESTIMATE_MINUTES | translate }}</span>
+        <input
+          type="number"
+          name="minutes"
+          [(ngModel)]="minutes"
+          min="0"
+          step="any"
+        />
+      </label>
+      @if (data.tags.length) {
+        <label class="tasksmart-field">
+          <span>{{ T.F.MATRIX.TAGS | translate }}</span>
+          <select
+            multiple
+            name="tagIds"
+            [(ngModel)]="tagIds"
+          >
+            @for (tag of data.tags; track tag.id) {
+              <option [value]="tag.id">{{ tag.title | translate }}</option>
+            }
+          </select>
+        </label>
+      }
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button
+      mat-button
+      type="button"
+      mat-dialog-close
+    >
+      {{ T.G.CANCEL | translate }}
+    </button>
+    <button
+      mat-flat-button
+      color="primary"
+      type="submit"
+      [disabled]="editorForm.invalid || !title.trim() || (!!time && !day)"
+    >
+      {{ T.G.SAVE | translate }}
+    </button>
+  </mat-dialog-actions>
+</form>

@@ -693,17 +693,48 @@ describe('WorkViewComponent', () => {
       expect(cmp.isOverdueHidden()).toBe(false);
     });
 
-    it('expands the collapsed Later Today panel for a later-today task', () => {
+    it('expands the collapsed Later Today panel in List view', () => {
+      const { cmp } = setup({
+        focusItem: 'later-1',
+        laterTodayTasks: [buildTask('later-1')],
+        isTodayList: true,
+      });
+      cmp.isPeriodView.set(false);
+      cmp.isLaterTodayHidden.set(true);
+
+      retriggerFocusAttempt(cmp);
+
+      expect(cmp.isLaterTodayHidden()).toBe(false);
+    });
+
+    it('reveals later tasks in periods without opening an absent Later Today panel', () => {
       const { cmp } = setup({
         focusItem: 'later-1',
         laterTodayTasks: [buildTask('later-1')],
         isTodayList: true,
       });
       cmp.isLaterTodayHidden.set(true);
-
       retriggerFocusAttempt(cmp);
+      expect(cmp.isPeriodGroupingActive()).toBe(true);
+      expect(
+        cmp
+          .todayPeriodGroups()
+          .flatMap((group) => group.tasks)
+          .map((task) => task.id),
+      ).toContain('later-1');
+      expect(cmp.visibleLaterTodayTasks()).toEqual([]);
+      expect(cmp.isLaterTodayHidden()).toBe(true);
+    });
 
-      expect(cmp.isLaterTodayHidden()).toBe(false);
+    it('counts completed, current and later tasks once for Today progress', () => {
+      const { cmp } = setup({
+        undone: [buildTask('later-1')],
+        doneTasks: [buildTask('done-1')],
+        laterTodayTasks: [buildTask('later-1')],
+        isTodayList: true,
+      });
+      expect(cmp.todayTaskTotal()).toBe(2);
+      expect(cmp.todayCompletion()).toBe(50);
     });
 
     it('leaves the Today-only panels alone outside the Today list', () => {

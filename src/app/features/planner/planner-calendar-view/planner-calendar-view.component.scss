@@ -1,0 +1,113 @@
+@use '../../../../styles/mixins/media-queries' as *;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.calendar-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s2) var(--s3);
+}
+h2 {
+  margin: 0 auto 0 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+}
+.calendar-navigation {
+  display: flex;
+  align-items: center;
+  gap: var(--s-half);
+}
+.calendar-content {
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+  padding: var(--s) var(--s3) var(--s3);
+}
+planner-plan-view {
+  flex: 1;
+  min-height: 0;
+}
+.calendar-days {
+  display: grid;
+  gap: var(--s2);
+}
+.week-view {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+planner-day {
+  width: 100%;
+  margin: 0;
+  padding: var(--s2);
+  min-width: 0;
+}
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  padding: var(--s);
+  margin-bottom: var(--s3);
+}
+.weekday {
+  text-align: center;
+  padding: var(--s);
+  color: var(--text-color-muted);
+  font-size: var(--font-size-sm);
+}
+.month-day {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-half);
+  min-height: 64px;
+  padding: var(--s);
+  background: transparent;
+  color: var(--text-color);
+  border: 1px solid var(--tasksmart-border);
+  border-radius: var(--tasksmart-control-radius);
+  font: inherit;
+  cursor: pointer;
+}
+.month-day[aria-pressed='true'] {
+  background: var(--sidenav-item-active-bg);
+  border-color: var(--brand);
+}
+.outside-month {
+  color: var(--text-color-muted);
+}
+.today > span:first-child {
+  color: var(--brand);
+  font-weight: var(--font-weight-semibold);
+}
+.day-count {
+  color: var(--text-color-muted);
+  font-size: var(--font-size-sm);
+}
+@include mq(xs, max) {
+  .calendar-toolbar {
+    padding: var(--s2);
+    gap: var(--s);
+  }
+  .calendar-content {
+    padding: var(--s) var(--s2) var(--s2);
+  }
+  .tasksmart-view-switch {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .month-day {
+    flex-direction: column;
+    min-height: 56px;
+    padding: var(--s-half);
+  }
+  .weekday {
+    padding-inline: 0;
+  }
+  .week-view {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

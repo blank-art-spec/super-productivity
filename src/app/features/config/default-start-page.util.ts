@@ -32,6 +32,8 @@ export const getStartPageUrlPath = (
   }
 
   switch (defaultStartPage ?? DefaultStartPage.Today) {
+    case DefaultStartPage.Matrix:
+      return '/matrix';
     case DefaultStartPage.Inbox:
       // Legacy numeric value preserved for old configs.
       return `/project/${INBOX_PROJECT.id}/tasks`;

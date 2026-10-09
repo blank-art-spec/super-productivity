@@ -3,6 +3,7 @@ import { EntityState } from '@ngrx/entity';
 import { TaskAttachment } from './task-attachment/task-attachment.model';
 // Import the unified Task type from plugin-api
 import { Task as PluginTask } from '@super-productivity/plugin-api';
+import { EisenhowerQuadrant } from '../eisenhower-matrix/eisenhower-matrix.model';
 
 export enum HideSubTasksMode {
   // Show is undefined
@@ -91,6 +92,9 @@ export interface TaskCopy
   // Override required fields that are optional in plugin type
   projectId: string;
   timeSpentOnDay: TimeSpentOnDay;
+
+  /** Missing/null means unclassified. Older clients can ignore this optional field. */
+  eisenhowerQuadrant?: EisenhowerQuadrant | null;
 
   // Additional app-specific fields
 

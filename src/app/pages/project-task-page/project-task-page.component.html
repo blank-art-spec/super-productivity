@@ -21,10 +21,46 @@
     </button>
   </div>
 }
-<work-view
-  [unclaimedTasks]="unclaimedTasks()"
-  [backlogTasks]="backlogTasks()"
-  [doneTasks]="doneTasks()"
-  [isShowBacklog]="isShowBacklog()"
-  [undoneTasks]="undoneTasks()"
-></work-view>
+@if (isInbox() && !currentProject()?.isArchived) {
+  <inbox-capture [tasks]="inboxTasks()"></inbox-capture>
+} @else if (currentProject() && !currentProject()?.isArchived) {
+  <div class="project-view-toolbar">
+    <div
+      class="tasksmart-view-switch"
+      role="group"
+      [attr.aria-label]="T.F.TASK_PAGE.VIEW | translate"
+    >
+      <button
+        type="button"
+        class="tasksmart-button tasksmart-button--quiet focus-ring"
+        [attr.aria-pressed]="!isMatrixView()"
+        (click)="isMatrixView.set(false)"
+      >
+        {{ T.F.TASK_PAGE.LIST | translate }}
+      </button>
+      <button
+        type="button"
+        class="tasksmart-button tasksmart-button--quiet focus-ring"
+        [attr.aria-pressed]="isMatrixView()"
+        (click)="isMatrixView.set(true)"
+      >
+        {{ T.F.TASK_PAGE.MATRIX | translate }}
+      </button>
+    </div>
+  </div>
+}
+@if (isMatrixView() && !isInbox() && !currentProject()?.isArchived) {
+  <div class="project-matrix">
+    <eisenhower-matrix-page
+      [scopeProjectId]="currentProject()!.id"
+    ></eisenhower-matrix-page>
+  </div>
+} @else {
+  <work-view
+    [unclaimedTasks]="unclaimedTasks()"
+    [backlogTasks]="backlogTasks()"
+    [doneTasks]="doneTasks()"
+    [isShowBacklog]="isShowBacklog()"
+    [undoneTasks]="undoneTasks()"
+  ></work-view>
+}

@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  linkedSignal,
+} from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { TranslatePipe } from '@ngx-translate/core';
 import { WorkContextService } from '../../features/work-context/work-context.service';
@@ -10,13 +16,23 @@ import { ProjectService } from '../../features/project/project.service';
 import { PlainspaceClaimPoolService } from '../../features/plainspace/plainspace-claim-pool.service';
 import { PlainspaceSharedTask } from '../../features/plainspace/plainspace-shared-task.model';
 import { T } from '../../t.const';
+import { INBOX_PROJECT } from '../../features/project/project.const';
+import { InboxCaptureComponent } from '../../features/work-view/inbox-capture/inbox-capture.component';
+import { EisenhowerMatrixPageComponent } from '../../features/eisenhower-matrix/eisenhower-matrix-page.component';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'work-view-page',
   templateUrl: './project-task-page.component.html',
   styleUrls: ['./project-task-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatButton, TranslatePipe, WorkViewComponent],
+  imports: [
+    MatButton,
+    TranslatePipe,
+    WorkViewComponent,
+    InboxCaptureComponent,
+    EisenhowerMatrixPageComponent,
+  ],
 })
 export class ProjectTaskPageComponent {
   workContextService = inject(WorkContextService);
@@ -56,6 +72,17 @@ export class ProjectTaskPageComponent {
 
   readonly currentProject = toSignal(this._projectService.currentProject$, {
     initialValue: null,
+  });
+  readonly isInbox = computed(() => this.currentProject()?.id === INBOX_PROJECT.id);
+  private readonly _queryParams = toSignal(inject(ActivatedRoute).queryParamMap);
+  readonly inboxTasks = computed(() => [...this.undoneTasks(), ...this.backlogTasks()]);
+  private readonly _viewContext = computed(
+    () =>
+      `${this.currentProject()?.id ?? ''}\0${this._queryParams()?.get('focusItem') ?? ''}`,
+  );
+  readonly isMatrixView = linkedSignal({
+    source: this._viewContext,
+    computation: () => false,
   });
 
   restoreProject(): void {

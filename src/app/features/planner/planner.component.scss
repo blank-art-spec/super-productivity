@@ -1,10 +1,5 @@
 :host {
-  display: flex;
-  flex-direction: column;
+  display: block;
   height: 100%;
-
-  planner-plan-view {
-    flex: 1;
-    min-height: 0;
-  }
+  min-height: 0;
 }

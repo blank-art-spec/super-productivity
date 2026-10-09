@@ -1,0 +1,93 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.quadrant {
+  box-sizing: border-box;
+  height: 100%;
+  padding: var(--s2);
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: var(--s);
+  border-bottom: 2px solid var(--tasksmart-quadrant-color);
+  margin-bottom: var(--s);
+
+  > div {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+h2 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+p {
+  margin: var(--s-half) 0 var(--s);
+  color: var(--text-color-muted);
+  font-size: var(--font-size-sm);
+}
+
+.count {
+  color: var(--text-color-muted);
+  font-size: var(--font-size-sm);
+}
+
+.quadrant-tasks {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 160px;
+}
+
+.empty {
+  margin: auto;
+  padding: var(--s2) var(--s);
+  text-align: center;
+}
+
+.is-compact {
+  padding: 0 var(--s);
+
+  header {
+    gap: var(--s-quarter);
+    margin-bottom: 0;
+  }
+
+  header p {
+    display: none;
+  }
+
+  h2 {
+    font-size: var(--font-size-sm);
+  }
+
+  header .tasksmart-icon-button {
+    width: var(--s6);
+    padding: 0;
+  }
+
+  .quadrant-tasks {
+    min-height: var(--s6);
+  }
+
+  > .tasksmart-button {
+    justify-content: space-between;
+    padding-inline: 0;
+    font-size: var(--font-size-sm);
+  }
+}
+
+:host(.cdk-drop-list-dragging) .quadrant-tasks {
+  outline: var(--focus-ring-width) dashed var(--tasksmart-quadrant-color);
+  outline-offset: var(--focus-ring-offset);
+}

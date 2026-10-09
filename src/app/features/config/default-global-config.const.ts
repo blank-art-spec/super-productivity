@@ -7,6 +7,7 @@ import {
 import { TaskReminderOptionId } from '../tasks/task.model';
 import { GlobalConfigState } from './global-config.model';
 import { INBOX_PROJECT } from '../project/project.const';
+import { DefaultStartPage } from './default-start-page.const';
 import { DEFAULT_MAX_BACKUP_FILES } from '../../../../electron/shared-with-frontend/backup-file-cleanup.util';
 
 const minute = 60 * 1000;
@@ -72,7 +73,7 @@ export const DEFAULT_GLOBAL_CONFIG: GlobalConfigState = {
     // in misc-settings-form (#7891).
     isShowProductivityTipLonger: false,
     customTheme: 'default',
-    defaultStartPage: 0,
+    defaultStartPage: DefaultStartPage.Matrix,
     backgroundImageDark: null,
     backgroundImageLight: null,
   },

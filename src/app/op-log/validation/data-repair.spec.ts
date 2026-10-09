@@ -17,6 +17,7 @@ import { EMPTY_SIMPLE_COUNTER } from '../../features/simple-counter/simple-count
 import { AppDataComplete } from '../model/model-config';
 import { dirtyDeepCopy } from '../../util/dirtyDeepCopy';
 import { OP_LOG_SYNC_LOGGER } from '../core/sync-logger.adapter';
+import { EisenhowerQuadrant } from '../../features/eisenhower-matrix/eisenhower-matrix.model';
 
 const FAKE_PROJECT_ID = 'FAKE_PROJECT_ID';
 describe('dataRepair()', () => {
@@ -45,6 +46,45 @@ describe('dataRepair()', () => {
     };
     // to prevent side effects
     mock = dirtyDeepCopy(mock);
+  });
+
+  it('preserves quadrant fields on imported live, archived and repeating tasks', () => {
+    const live: Task = {
+      ...DEFAULT_TASK,
+      id: 'matrix-live',
+      projectId: FAKE_PROJECT_ID,
+      eisenhowerQuadrant: EisenhowerQuadrant.DO_FIRST,
+    };
+    const archived: Task = {
+      ...DEFAULT_TASK,
+      id: 'matrix-archive',
+      projectId: FAKE_PROJECT_ID,
+      isDone: true,
+      eisenhowerQuadrant: EisenhowerQuadrant.SCHEDULE,
+    };
+    mock.task = { ...mock.task, ids: [live.id], entities: { [live.id]: live } };
+    mock.archiveYoung = {
+      ...mock.archiveYoung,
+      task: { ids: [archived.id], entities: { [archived.id]: archived } },
+    };
+    mock.taskRepeatCfg = fakeEntityStateFromArray([
+      {
+        ...DEFAULT_TASK_REPEAT_CFG,
+        id: 'matrix-repeat',
+        projectId: FAKE_PROJECT_ID,
+        eisenhowerQuadrant: EisenhowerQuadrant.SCHEDULE,
+      },
+    ]);
+    const result = dataRepair(mock);
+    expect(result.data.task.entities[live.id]!.eisenhowerQuadrant).toBe(
+      EisenhowerQuadrant.DO_FIRST,
+    );
+    expect(result.data.archiveYoung.task.entities[archived.id]!.eisenhowerQuadrant).toBe(
+      EisenhowerQuadrant.SCHEDULE,
+    );
+    expect(result.data.taskRepeatCfg.entities['matrix-repeat']!.eisenhowerQuadrant).toBe(
+      EisenhowerQuadrant.SCHEDULE,
+    );
   });
 
   // Regression for #8333: production builds disable NgRx runtime freezing, so

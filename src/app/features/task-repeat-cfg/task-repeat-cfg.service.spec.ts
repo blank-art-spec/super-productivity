@@ -32,6 +32,7 @@ import { getRepeatableTaskId } from './get-repeatable-task-id.util';
 import { DateService } from '../../core/date/date.service';
 import { getDateTimeFromClockString } from '../../util/get-date-time-from-clock-string';
 import { remindOptionToMilliseconds } from '../tasks/util/remind-option-to-milliseconds';
+import { EisenhowerQuadrant } from '../eisenhower-matrix/eisenhower-matrix.model';
 
 describe('TaskRepeatCfgService', () => {
   let service: TaskRepeatCfgService;
@@ -114,6 +115,7 @@ describe('TaskRepeatCfgService', () => {
     store = TestBed.inject(MockStore);
     matDialog = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
     taskService = TestBed.inject(TaskService) as jasmine.SpyObj<TaskService>;
+    taskService.getArchiveTasksForRepeatCfgId.and.resolveTo([]);
 
     dispatchSpy = spyOn(store, 'dispatch');
   });
@@ -334,6 +336,48 @@ describe('TaskRepeatCfgService', () => {
   });
 
   describe('createRepeatableTask', () => {
+    it('carries the most recent archived classification into the next daily occurrence', async () => {
+      const cfg: TaskRepeatCfg = {
+        ...mockTaskRepeatCfg,
+        repeatCycle: 'DAILY',
+        repeatEvery: 1,
+        startDate: '2026-10-01',
+        lastTaskCreationDay: '2026-10-08',
+        eisenhowerQuadrant: EisenhowerQuadrant.DO_FIRST,
+      };
+      taskService.getTasksWithSubTasksByRepeatCfgId$.and.returnValue(
+        of([
+          {
+            ...mockTaskWithSubTasks,
+            created: new Date(2026, 9, 7, 12).getTime(),
+            eisenhowerQuadrant: EisenhowerQuadrant.DO_FIRST,
+          },
+        ]),
+      );
+      taskService.getArchiveTasksForRepeatCfgId.and.resolveTo([
+        {
+          ...mockTask,
+          id: 'archived',
+          created: new Date(2026, 9, 8, 12).getTime(),
+          eisenhowerQuadrant: EisenhowerQuadrant.SCHEDULE,
+        },
+      ]);
+      taskService.createNewTaskWithDefaults.and.callFake((args) => ({
+        ...mockTask,
+        id: args.id || 'new',
+        ...args.additional,
+      }));
+      const actions = await service._getActionsForTaskRepeatCfg(
+        cfg,
+        new Date(2026, 9, 9, 12).getTime(),
+      );
+      const added = actions.find(
+        (action) => action.type === TaskSharedActions.addTask.type,
+      ) as ReturnType<typeof TaskSharedActions.addTask>;
+      expect(added.task.eisenhowerQuadrant).toBe(EisenhowerQuadrant.SCHEDULE);
+      expect(added.task.repeatCfgId).toBe(cfg.id);
+    });
+
     it('should create actions for a new repeatable task', async () => {
       const today = new Date();
       const targetDayDate = today.getTime();
@@ -999,6 +1043,32 @@ describe('TaskRepeatCfgService', () => {
   });
 
   describe('Subtask Templates', () => {
+    it('inherits each subtask quadrant and defaults legacy templates to unclassified', async () => {
+      taskService.getTasksWithSubTasksByRepeatCfgId$.and.returnValue(of([]));
+      const cfg: TaskRepeatCfg = {
+        ...mockTaskRepeatCfg,
+        shouldInheritSubtasks: true,
+        subTaskTemplates: [
+          { title: 'Classified', eisenhowerQuadrant: EisenhowerQuadrant.SCHEDULE },
+          { title: 'Legacy' },
+          { title: 'Cleared', eisenhowerQuadrant: null },
+        ],
+      };
+      await service._getActionsForTaskRepeatCfg(cfg, Date.now());
+      const calls = taskService.createNewTaskWithDefaults.calls.allArgs();
+      expect(
+        calls.find(([args]) => args.title === 'Classified')?.[0].additional
+          ?.eisenhowerQuadrant,
+      ).toBe(EisenhowerQuadrant.SCHEDULE);
+      expect(
+        calls.find(([args]) => args.title === 'Legacy')?.[0].additional
+          ?.eisenhowerQuadrant,
+      ).toBeNull();
+      expect(
+        calls.find(([args]) => args.title === 'Cleared')?.[0].additional
+          ?.eisenhowerQuadrant,
+      ).toBeNull();
+    });
     const mockRepeatCfgWithSubtasks: TaskRepeatCfg = {
       ...mockTaskRepeatCfg,
       shouldInheritSubtasks: true,

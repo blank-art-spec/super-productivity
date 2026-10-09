@@ -12,6 +12,51 @@
     >
       @if (!pluginEmbedId()) {
         <header class="work-view-header task-list-wrapper">
+          @if (isOnTodayList()) {
+            <div class="today-overview tasksmart-card">
+              <div>
+                <h2>{{ T.G.TODAY_TAG_TITLE | translate }}</h2>
+                <p><tasksmart-date></tasksmart-date></p>
+                <span
+                  >{{ doneTasks().length }} / {{ todayTaskTotal() }}
+                  {{ T.F.TASK_PAGE.COMPLETED | translate }}</span
+                >
+                <progress
+                  [value]="todayCompletion()"
+                  max="100"
+                  [attr.aria-label]="T.F.TASK_PAGE.COMPLETED | translate"
+                ></progress>
+              </div>
+              @if (
+                !customizerService.isCustomized() &&
+                sections().length === 0 &&
+                !customizedUndoneTasks().grouped
+              ) {
+                <div
+                  class="tasksmart-view-switch"
+                  [attr.aria-label]="T.F.TASK_PAGE.VIEW | translate"
+                  role="group"
+                >
+                  <button
+                    type="button"
+                    class="tasksmart-button tasksmart-button--quiet focus-ring"
+                    [attr.aria-pressed]="!isPeriodView()"
+                    (click)="isPeriodView.set(false)"
+                  >
+                    {{ T.F.TASK_PAGE.LIST | translate }}
+                  </button>
+                  <button
+                    type="button"
+                    class="tasksmart-button tasksmart-button--quiet focus-ring"
+                    [attr.aria-pressed]="isPeriodView()"
+                    (click)="isPeriodView.set(true)"
+                  >
+                    {{ T.F.TASK_PAGE.BY_TIME | translate }}
+                  </button>
+                </div>
+              }
+            </div>
+          }
           @if (estimateRemainingToday() || workingToday()) {
             <div
               @fade
@@ -97,7 +142,10 @@
         ></plugin-index>
       } @else {
         <div class="task-list-wrapper">
-          @if (!(workContextService.isHasTasksToWorkOn$ | async)) {
+          @if (
+            !(workContextService.isHasTasksToWorkOn$ | async) &&
+            !(isPeriodGroupingActive() && laterTodayTasks().length)
+          ) {
             <div
               @expandFade
               class="add-more-or-finish"
@@ -244,6 +292,24 @@
                   </div>
                 }
               </div>
+            } @else if (isPeriodGroupingActive()) {
+              @for (group of todayPeriodGroups(); track group.id) {
+                @if (group.tasks.length || group.id !== 'anytime') {
+                  <section class="today-period">
+                    <h3>
+                      <mat-icon aria-hidden="true">{{ group.icon }}</mat-icon
+                      >{{ group.title | translate }}<span>{{ group.tasks.length }}</span>
+                    </h3>
+                    <task-list
+                      [tasks]="group.tasks"
+                      listId="PARENT"
+                      listModelId="UNDONE"
+                      [isDragDisabled]="true"
+                      [noTasksMsg]="T.F.TASK_PAGE.EMPTY_PERIOD | translate"
+                    ></task-list>
+                  </section>
+                }
+              }
             } @else {
               <task-list
                 class="tour-undoneList"
@@ -301,7 +367,8 @@
           }
 
           @if (
-            (laterTodayTasks().length > 0 || laterTodayCalendarEvents().length > 0) &&
+            (visibleLaterTodayTasks().length > 0 ||
+              laterTodayCalendarEvents().length > 0) &&
             isOnTodayList()
           ) {
             <div
@@ -313,7 +380,7 @@
                 [title]="
                   (T.WW.LATER_TODAY | translate) +
                   ' (' +
-                  (laterTodayTasks().length + laterTodayCalendarEvents().length) +
+                  (visibleLaterTodayTasks().length + laterTodayCalendarEvents().length) +
                   ')'
                 "
                 [isExpanded]="!isLaterTodayHidden()"
@@ -322,7 +389,7 @@
                 [isGroup]="true"
               >
                 <task-list
-                  [tasks]="laterTodayTasks()"
+                  [tasks]="visibleLaterTodayTasks()"
                   [isSortingDisabled]="true"
                   listId="PARENT"
                   listModelId="LATER_TODAY"

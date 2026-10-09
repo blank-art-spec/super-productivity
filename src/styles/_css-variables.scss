@@ -42,6 +42,19 @@
 // ===============================
 
 :root {
+  // TaskSmart reference palette. Components consume semantic aliases below;
+  // user themes can override those aliases without replacing the palette.
+  --tasksmart-page-max-width: 1440px;
+  --tasksmart-radius: var(--s2);
+  --tasksmart-control-radius: var(--s);
+  --tasksmart-control-height: var(--s6);
+  --tasksmart-font-stack: 'Inter', var(--font-primary-stack);
+  --tasksmart-accent-base: #ca95c4;
+  --tasksmart-accent-ink-base: #302230;
+  --tasksmart-red-base: #ed6b64;
+  --tasksmart-green-base: #45c9a5;
+  --tasksmart-blue-base: #559ae9;
+  --tasksmart-gray-base: #a6a9b3;
   // -----------------------------
   // Safe Areas (iOS notch, home indicator)
   // Uses env() for native iOS safe areas
@@ -187,7 +200,7 @@
   --radius-lg: 12px;
   --radius-xl: 16px;
   --radius-pill: 9999px;
-  --card-border-radius: var(--radius-md);
+  --card-border-radius: var(--tasksmart-radius);
   --window-controls-width: 140px; // Fallback for non-WCO contexts; main-header uses env() directly
 
   // Z-index layers
@@ -322,7 +335,7 @@
   --task-icon-default-opacity: 0.7;
   --task-inner-padding-top-bottom: 4px;
   --task-is-done-dim-opacity: 0.3;
-  --task-border-radius: 0px;
+  --task-border-radius: var(--tasksmart-control-radius);
 
   // Task z-indexes
   --z-drag-handle: 1;
@@ -468,6 +481,23 @@ body.isDarkTheme {
 // Later `body` / `body.isDarkTheme` theme rules win. A `:root` declaration is
 // inherited and cannot replace a value declared directly on the body.
 :where(body, body.isDarkTheme) {
+  // These aliases must resolve on body, where the theme primitives are declared.
+  --tasksmart-surface: var(--card-bg);
+  --tasksmart-accent: var(--tasksmart-accent-base);
+  --tasksmart-on-accent: var(--tasksmart-accent-ink-base);
+  --tasksmart-accent-text: color-mix(in srgb, var(--tasksmart-accent) 45%, var(--ink));
+  --tasksmart-danger-text: color-mix(in srgb, var(--color-danger) 70%, var(--ink));
+  --tasksmart-canvas: color-mix(in srgb, var(--tasksmart-accent) 16%, var(--bg));
+  --tasksmart-selected: color-mix(in srgb, var(--tasksmart-accent) 24%, var(--card-bg));
+  --tasksmart-hover: color-mix(in srgb, var(--tasksmart-accent) 12%, var(--card-bg));
+  --tasksmart-border: color-mix(in srgb, var(--ink) 12%, var(--card-bg));
+  --tasksmart-shadow: none;
+  --tasksmart-overlay-shadow: var(--whiteframe-shadow-4dp);
+  --tasksmart-quadrant-color: var(--text-color-muted);
+  --tasksmart-do-first: var(--tasksmart-red-base);
+  --tasksmart-schedule: var(--tasksmart-green-base);
+  --tasksmart-delegate: var(--tasksmart-blue-base);
+  --tasksmart-eliminate: var(--tasksmart-gray-base);
   // Public themes set `--focus-ring`; existing components consume the older
   // `--focus-ring-color` name.
   --focus-ring-color: var(--focus-ring);
@@ -603,7 +633,7 @@ body.isDarkTheme {
   // Input fields semantic aliases
   --input-border-color-focus: var(--focus-ring-color);
   --input-border-color-invalid: var(--palette-warn-500);
-  --input-border-radius: var(--card-border-radius);
+  --input-border-radius: var(--tasksmart-control-radius);
 }
 
 // -----------------------------

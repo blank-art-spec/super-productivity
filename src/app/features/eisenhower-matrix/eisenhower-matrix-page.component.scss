@@ -1,0 +1,223 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.matrix-page {
+  position: relative;
+  box-sizing: border-box;
+  max-width: var(--tasksmart-page-max-width);
+  margin-inline: auto;
+  padding: var(--s2) var(--s3);
+  border-radius: var(--tasksmart-radius);
+  background: var(--tasksmart-canvas);
+  font-family: var(--tasksmart-font-stack);
+}
+
+.matrix-calendar-heading,
+.matrix-calendar-actions,
+.matrix-toolbar,
+.matrix-periods,
+.expanded-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--s);
+}
+
+.matrix-calendar-heading {
+  justify-content: space-between;
+}
+
+h1,
+h2 {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+h2 span,
+p {
+  color: var(--text-color-muted);
+}
+
+p {
+  margin: var(--s-half) 0;
+  font-size: var(--font-size-sm);
+}
+
+.day-indicator {
+  width: var(--s-half);
+  height: var(--s-half);
+  border-radius: 50%;
+  background: transparent;
+}
+
+.has-tasks {
+  background: var(--tasksmart-accent-text);
+}
+
+.matrix-toolbar {
+  flex-wrap: wrap;
+  margin-block: var(--s) var(--s2);
+}
+
+.matrix-periods {
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 0;
+
+  [aria-pressed='true'] {
+    background: var(--tasksmart-selected);
+    color: var(--tasksmart-accent-text);
+  }
+}
+
+.matrix-filters {
+  margin-inline-start: auto;
+
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--tasksmart-control-height);
+    gap: var(--s-half);
+    padding-inline: var(--s);
+    border-radius: var(--tasksmart-control-radius);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary:hover,
+  summary.is-active {
+    background: var(--tasksmart-selected);
+  }
+
+  // The filter fields occupy a full row, never cover a quadrant or trap focus.
+  &[open] {
+    flex: 1 0 100%;
+    order: 1;
+  }
+}
+
+.matrix-filter-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--s);
+  padding: var(--s2);
+
+  .tasksmart-field {
+    flex: 1 1 160px;
+  }
+}
+
+.matrix-filter-periods {
+  display: flex;
+  flex: 1 0 100%;
+  flex-wrap: wrap;
+
+  [aria-pressed='true'] {
+    background: var(--tasksmart-selected);
+  }
+}
+
+.matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s2);
+}
+
+.unclassified-entry {
+  width: 100%;
+  margin-top: var(--s);
+  text-align: start;
+
+  span {
+    flex: 1;
+  }
+}
+
+.matrix-expanded {
+  margin-top: var(--s);
+  padding: var(--s2);
+}
+
+.expanded-heading {
+  margin-bottom: var(--s2);
+
+  > div {
+    flex: 1;
+    min-width: 0;
+  }
+
+  h2:focus {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+  }
+}
+
+.matrix-empty {
+  padding: var(--s);
+  text-align: center;
+}
+
+@media (max-width: 767px) {
+  .matrix-page {
+    padding: var(--s);
+  }
+
+  .matrix-calendar-heading {
+    gap: 0;
+    padding-inline-end: var(--s6);
+  }
+
+  h1 {
+    font-size: var(--font-size-lg);
+  }
+
+  .matrix-calendar-actions {
+    gap: 0;
+  }
+
+  .matrix-calendar-actions .tasksmart-button {
+    display: none;
+  }
+
+  .matrix-grid {
+    gap: var(--s);
+  }
+
+  .matrix-periods {
+    display: none;
+  }
+
+  .matrix-toolbar {
+    margin-block: 0;
+  }
+
+  .matrix-filters summary {
+    position: absolute;
+    inset-inline-end: var(--s);
+    top: var(--s);
+    width: var(--s6);
+    padding: 0;
+
+    span {
+      display: none;
+    }
+  }
+
+  .matrix-filter-fields {
+    margin-bottom: var(--s);
+  }
+
+  .matrix-expanded {
+    padding: var(--s);
+  }
+}

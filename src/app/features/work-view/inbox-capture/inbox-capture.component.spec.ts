@@ -7,6 +7,7 @@ import { InboxCaptureComponent } from './inbox-capture.component';
 import { EisenhowerMatrixService } from '../../eisenhower-matrix/eisenhower-matrix.service';
 import { DEFAULT_TASK, TaskWithSubTasks } from '../../tasks/task.model';
 import { INBOX_PROJECT } from '../../project/project.const';
+import { TaskService } from '../../tasks/task.service';
 import { EisenhowerQuadrant } from '../../eisenhower-matrix/eisenhower-matrix.model';
 
 describe('Inbox quick capture and organization', () => {
@@ -32,6 +33,7 @@ describe('Inbox quick capture and organization', () => {
       providers: [
         { provide: MatDialog, useValue: { open } },
         { provide: Store, useValue: { selectSignal: () => signal([]) } },
+        { provide: TaskService, useValue: { add } },
       ],
     }).overrideComponent(InboxCaptureComponent, {
       set: {
@@ -48,7 +50,17 @@ describe('Inbox quick capture and organization', () => {
   it('captures explicitly in Inbox, without inheriting a project or a scheduled day', () => {
     component.title = '  An idea  ';
     component.capture();
-    expect(add).toHaveBeenCalledWith('An idea', { projectId: INBOX_PROJECT.id });
+    expect(add).toHaveBeenCalledWith(
+      'An idea',
+      false,
+      {
+        projectId: INBOX_PROJECT.id,
+        dueDay: null,
+        dueWithTime: null,
+        tagIds: [],
+      },
+      true,
+    );
     expect(component.title).toBe('');
   });
 
@@ -56,6 +68,13 @@ describe('Inbox quick capture and organization', () => {
     component.title = '  ';
     component.capture();
     expect(add).not.toHaveBeenCalled();
+  });
+
+  it('passes short syntax to the original task entry point without disabling it', () => {
+    component.title = 'Read #learning 20m';
+    component.capture();
+    expect(add.calls.mostRecent().args[0]).toBe('Read #learning 20m');
+    expect(add.calls.mostRecent().args[4]).toBeUndefined();
   });
 
   it('applies an organization edit through one existing task update', async () => {

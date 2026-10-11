@@ -122,8 +122,10 @@
         [ngClass]="scheduledItem.type"
       >
         @if (scheduledItem.type === SCHEDULE_ITEM_TYPE.Task) {
-          <div
-            class="time"
+          <button
+            type="button"
+            class="time focus-ring"
+            [attr.aria-label]="T.F.MATRIX.EDIT_SCHEDULE | translate"
             (click)="editTaskReminderOrReScheduleIfPossible(scheduledItem.task)"
           >
             <span
@@ -131,7 +133,7 @@
               [innerHTML]="scheduledItem.start | roundDuration | shortTimeHtml"
             ></span>
             <mat-icon>alarm</mat-icon>
-          </div>
+          </button>
         } @else {
           <div
             class="time time-time"

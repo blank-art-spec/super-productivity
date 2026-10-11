@@ -68,11 +68,25 @@ export class PlannerCalendarViewComponent {
     initialValue: [],
   });
   readonly title = computed(() =>
-    parseDbDateStr(this.anchor()).toLocaleDateString(this._format.textLocale(), {
-      month: 'long',
-      year: 'numeric',
-    }),
+    parseDbDateStr(this.anchor()).toLocaleDateString(
+      this._format.textLocale(),
+      this.view() === 'day' ? { dateStyle: 'full' } : { month: 'long', year: 'numeric' },
+    ),
   );
+  readonly weekDays = computed(() => {
+    const locale = this._format.textLocale();
+    const counts = new Map(this.days().map((day) => [day.dayDate, day.itemsTotal]));
+    return this.dates().map((day) => {
+      const date = parseDbDateStr(day);
+      return {
+        day,
+        number: date.getDate(),
+        weekday: date.toLocaleDateString(locale, { weekday: 'short' }),
+        label: date.toLocaleDateString(locale, { dateStyle: 'full' }),
+        hasItems: !!counts.get(day),
+      };
+    });
+  });
   readonly weekdays = computed(() =>
     this.dates()
       .slice(0, 7)
@@ -93,7 +107,7 @@ export class PlannerCalendarViewComponent {
     })),
   );
   readonly visibleDays = computed(() =>
-    this.view() === 'month'
+    this.view() === 'month' || (this.view() === 'week' && this.layout.isXs())
       ? this.days().filter((day) => day.dayDate === this.anchor())
       : this.days(),
   );

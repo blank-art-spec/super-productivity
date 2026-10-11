@@ -2,10 +2,13 @@
   display: block;
 }
 .inbox-capture {
+  box-sizing: border-box;
   padding: var(--s3);
   margin: var(--s2);
 }
 h2 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
   margin: 0 0 var(--s);
 }
 p {
@@ -22,6 +25,36 @@ p {
     flex: 1 1 220px;
   }
 }
-.organize-form {
+
+@media (max-width: 600px) {
+  .inbox-capture {
+    padding: var(--s2);
+    margin: var(--s);
+  }
+  .capture-form {
+    flex-wrap: nowrap;
+    .tasksmart-field {
+      flex: 1 1 0;
+    }
+    > button {
+      flex: 0 0 var(--tasksmart-control-height);
+      width: var(--tasksmart-control-height);
+      padding-inline: 0;
+    }
+    .capture-label {
+      display: none;
+    }
+  }
+  .organize-form {
+    .tasksmart-field {
+      flex-basis: 100%;
+    }
+    > button {
+      width: 100%;
+      white-space: normal;
+    }
+  }
+}
+.organize-disclosure {
   margin-top: var(--s2);
 }

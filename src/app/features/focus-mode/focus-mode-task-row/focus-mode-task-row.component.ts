@@ -82,7 +82,7 @@ import { T } from '../../../t.const';
         mat-fab
         extended
         color="primary"
-        class="select-task-cta task-title-placeholder"
+        class="select-task-cta task-title-placeholder tasksmart-fab"
         (click)="$event.stopPropagation(); selectTask.emit()"
       >
         <mat-icon>add_task</mat-icon>

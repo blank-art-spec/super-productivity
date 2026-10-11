@@ -150,8 +150,9 @@
   left: 0;
   bottom: 0;
   width: var(--sidenav-width-expanded);
-  background: var(--sidenav-bg);
-  border-right: 1px solid var(--sidenav-border-color);
+  background: var(--tasksmart-surface);
+  border-inline-end: 1px solid var(--tasksmart-border);
+  font-family: var(--tasksmart-font-stack);
   // Default: don't animate width
   transition: none;
   z-index: 1002;
@@ -219,7 +220,7 @@
   &.mobile {
     width: var(--sidenav-width-expanded);
     background: var(--sidenav-bg-mobile);
-    box-shadow: 4px 0 16px var(--c-dark-30);
+    box-shadow: var(--tasksmart-overlay-shadow);
     // Remove CSS transitions - let Angular animations handle it
     transition: none !important;
   }

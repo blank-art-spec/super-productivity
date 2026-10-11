@@ -192,7 +192,7 @@
         "
         [disabled]="isPlayButtonDisabled() || isLaunching()"
         (click)="startSession()"
-        class="play-button"
+        class="play-button tasksmart-fab"
       >
         <mat-icon>play_arrow</mat-icon>
       </button>
@@ -254,27 +254,27 @@
       </button>
 
       <!-- Pause / resume the session (the task-row time stack is read-only). -->
-      @if (focusModeService.isSessionPaused()) {
-        <button
-          type="button"
-          class="tasksmart-icon-button tasksmart-button--primary focus-ring pause-resume-btn"
-          [matTooltip]="T.F.FOCUS_MODE.RESUME_SESSION | translate"
-          [attr.aria-label]="T.F.FOCUS_MODE.RESUME_SESSION | translate"
-          (click)="resumeSession()"
-        >
-          <mat-icon>play_arrow</mat-icon>
-        </button>
-      } @else {
-        <button
-          type="button"
-          class="tasksmart-icon-button tasksmart-button--primary focus-ring pause-resume-btn"
-          [matTooltip]="T.F.FOCUS_MODE.PAUSE_SESSION | translate"
-          [attr.aria-label]="T.F.FOCUS_MODE.PAUSE_SESSION | translate"
-          (click)="pauseSession()"
-        >
-          <mat-icon>pause</mat-icon>
-        </button>
-      }
+      <button
+        type="button"
+        class="tasksmart-icon-button tasksmart-button--primary focus-ring pause-resume-btn"
+        [matTooltip]="
+          (focusModeService.isSessionPaused()
+            ? T.F.FOCUS_MODE.RESUME_SESSION
+            : T.F.FOCUS_MODE.PAUSE_SESSION
+          ) | translate
+        "
+        [attr.aria-label]="
+          (focusModeService.isSessionPaused()
+            ? T.F.FOCUS_MODE.RESUME_SESSION
+            : T.F.FOCUS_MODE.PAUSE_SESSION
+          ) | translate
+        "
+        (click)="focusModeService.isSessionPaused() ? resumeSession() : pauseSession()"
+      >
+        <mat-icon aria-hidden="true">{{
+          focusModeService.isSessionPaused() ? 'play_arrow' : 'pause'
+        }}</mat-icon>
+      </button>
 
       @if (isShowCompleteSessionButton()) {
         <button

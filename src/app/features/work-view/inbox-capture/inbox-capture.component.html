@@ -17,35 +17,40 @@
     /></label>
     <button
       type="submit"
-      class="tasksmart-button focus-ring"
+      class="tasksmart-button tasksmart-button--primary focus-ring"
+      [attr.aria-label]="T.F.MATRIX.ADD_TASK | translate"
       [disabled]="!title.trim()"
     >
-      <mat-icon aria-hidden="true">add</mat-icon>{{ T.F.MATRIX.ADD_TASK | translate }}
+      <mat-icon aria-hidden="true">add</mat-icon
+      ><span class="capture-label">{{ T.F.MATRIX.ADD_TASK | translate }}</span>
     </button>
   </form>
   @if (tasks().length) {
-    <div class="organize-form">
-      <label class="tasksmart-field"
-        ><span>{{ T.F.TASK_PAGE.ORGANIZE | translate }}</span
-        ><select
-          [ngModel]="taskId()"
-          (ngModelChange)="taskId.set($event)"
+    <details class="tasksmart-disclosure organize-disclosure">
+      <summary class="focus-ring">{{ T.F.TASK_PAGE.ORGANIZE | translate }}</summary>
+      <div class="organize-form">
+        <label class="tasksmart-field"
+          ><span>{{ T.F.TASK_PAGE.ORGANIZE | translate }}</span
+          ><select
+            [ngModel]="taskId()"
+            (ngModelChange)="taskId.set($event)"
+          >
+            <option value="">{{ T.F.TASK_PAGE.SELECT_TASK | translate }}</option>
+            @for (task of tasks(); track task.id) {
+              <option [value]="task.id">{{ task.title }}</option>
+            }
+          </select></label
         >
-          <option value="">{{ T.F.TASK_PAGE.SELECT_TASK | translate }}</option>
-          @for (task of tasks(); track task.id) {
-            <option [value]="task.id">{{ task.title }}</option>
-          }
-        </select></label
-      >
-      <button
-        type="button"
-        class="tasksmart-button tasksmart-button--quiet focus-ring"
-        [disabled]="!selectedTask()"
-        (click)="organize()"
-      >
-        <mat-icon aria-hidden="true">tune</mat-icon
-        >{{ T.F.TASK_PAGE.PROJECT_MATRIX_DATE | translate }}
-      </button>
-    </div>
+        <button
+          type="button"
+          class="tasksmart-button tasksmart-button--quiet focus-ring"
+          [disabled]="!selectedTask()"
+          (click)="organize()"
+        >
+          <mat-icon aria-hidden="true">tune</mat-icon
+          >{{ T.F.TASK_PAGE.PROJECT_MATRIX_DATE | translate }}
+        </button>
+      </div>
+    </details>
   }
 </section>

@@ -66,16 +66,16 @@
   position: absolute;
   left: 100%;
   margin-left: var(--s2);
-  width: 56px !important;
-  height: 56px !important;
+  width: var(--tasksmart-control-height);
+  height: var(--tasksmart-control-height);
   opacity: var(--revealed-opacity);
   transition: var(--transition-standard);
   pointer-events: var(--revealed-pointer-events);
 
   mat-icon {
-    font-size: 32px !important;
-    width: 32px !important;
-    height: 32px !important;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
   }
 }
 
@@ -102,7 +102,7 @@
 .focus-progress {
   width: min(320px, 80vw);
   height: var(--s);
-  accent-color: var(--brand);
+  accent-color: var(--tasksmart-accent);
   border: 0;
   border-radius: var(--tasksmart-control-radius);
   overflow: hidden;
@@ -111,11 +111,11 @@
     border-radius: inherit;
   }
   &::-webkit-progress-value {
-    background: var(--brand);
+    background: var(--tasksmart-accent);
     border-radius: inherit;
   }
   &::-moz-progress-bar {
-    background: var(--brand);
+    background: var(--tasksmart-accent);
     border-radius: inherit;
   }
 }
@@ -240,17 +240,17 @@
 }
 
 .play-button {
-  width: var(--s8);
-  height: var(--s8);
+  width: var(--s7);
+  height: var(--s7);
   // Smoothly cross-fade out when the launch starts (see .is-launching below).
   transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
+    opacity var(--transition-duration-m) var(--ani-standard-timing),
+    transform var(--transition-duration-m) var(--ani-standard-timing);
 
   mat-icon {
-    font-size: 36px;
-    width: 36px;
-    height: 36px;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
   }
 }
 
@@ -339,14 +339,14 @@
 
   a,
   button {
-    width: 56px !important;
-    height: 56px !important;
+    width: var(--tasksmart-control-height);
+    height: var(--tasksmart-control-height);
     position: relative;
 
     mat-icon {
-      font-size: 32px !important;
-      width: 32px !important;
-      height: 32px !important;
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
     }
 
     .extend-label {

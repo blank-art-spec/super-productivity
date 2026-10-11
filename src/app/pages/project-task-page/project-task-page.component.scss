@@ -14,11 +14,20 @@ work-view {
   position: relative;
   display: block;
 }
+inbox-capture {
+  flex-shrink: 0;
+  max-height: 50%;
+  overflow-y: auto;
+}
 .project-matrix {
   overflow: auto;
 }
 .project-view-toolbar {
   padding: var(--s) var(--s2);
+  .tasksmart-view-switch {
+    max-width: 100%;
+    overflow-x: auto;
+  }
 }
 
 .archived-notice {

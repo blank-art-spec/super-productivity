@@ -14,6 +14,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { T } from '../../../t.const';
 import { TaskWithSubTasks } from '../../tasks/task.model';
+import { TaskService } from '../../tasks/task.service';
 import { INBOX_PROJECT } from '../../project/project.const';
 import { selectUnarchivedProjects } from '../../project/store/project.selectors';
 import { selectAllTagsWithoutMyDay } from '../../tag/store/tag.reducer';
@@ -34,6 +35,7 @@ import {
 })
 export class InboxCaptureComponent {
   private readonly _matrix = inject(EisenhowerMatrixService);
+  private readonly _taskService = inject(TaskService);
   private readonly _dialog = inject(MatDialog);
   private readonly _store = inject(Store);
   private readonly _projects = this._store.selectSignal(selectUnarchivedProjects);
@@ -49,7 +51,18 @@ export class InboxCaptureComponent {
   capture(): void {
     const title = this.title.trim();
     if (!title) return;
-    this._matrix.add(title, { projectId: INBOX_PROJECT.id });
+    // Use the original capture path so #tags, estimates and date short syntax work.
+    this._taskService.add(
+      title,
+      false,
+      {
+        projectId: INBOX_PROJECT.id,
+        dueDay: null,
+        dueWithTime: null,
+        tagIds: [],
+      },
+      true,
+    );
     this.title = '';
   }
 
@@ -63,6 +76,7 @@ export class InboxCaptureComponent {
           {
             width: '520px',
             maxWidth: '95vw',
+            panelClass: 'tasksmart-editor-dialog',
             restoreFocus: true,
             data: {
               task,

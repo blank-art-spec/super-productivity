@@ -1,4 +1,4 @@
-<header class="calendar-toolbar">
+<header class="calendar-toolbar tasksmart-page-toolbar">
   <h2>{{ title() }}</h2>
   @if (view() !== 'agenda') {
     <div class="calendar-navigation">
@@ -58,6 +58,32 @@
     cdkScrollable
   />
 } @else {
+  @if (view() === 'week') {
+    <div
+      class="calendar-week-strip tasksmart-week-strip"
+      role="group"
+      [attr.aria-label]="T.F.PLANNER.CALENDAR.DAY | translate"
+    >
+      @for (day of weekDays(); track day.day) {
+        <button
+          type="button"
+          class="tasksmart-day-button focus-ring"
+          [attr.aria-label]="day.label"
+          [attr.aria-current]="day.day === today() ? 'date' : null"
+          [attr.aria-pressed]="day.day === anchor()"
+          (click)="selectDay(day.day)"
+        >
+          <small>{{ day.weekday }}</small>
+          <time [attr.datetime]="day.day">{{ day.number }}</time>
+          <span
+            class="calendar-day-dot"
+            [class.has-items]="day.hasItems"
+            aria-hidden="true"
+          ></span>
+        </button>
+      }
+    </div>
+  }
   <div
     class="calendar-content"
     cdkScrollable
@@ -76,6 +102,7 @@
             [class.today]="cell.day.dayDate === today()"
             [attr.aria-pressed]="cell.day.dayDate === anchor()"
             [attr.aria-label]="cell.label"
+            [attr.aria-current]="cell.day.dayDate === today() ? 'date' : null"
             (click)="selectDay(cell.day.dayDate)"
           >
             <span>{{ cell.number }}</span>
@@ -92,7 +119,8 @@
     >
       @for (day of visibleDays(); track day.dayDate) {
         <planner-day
-          class="tasksmart-card"
+          class="tasksmart-card calendar-day"
+          [class.selected-day]="day.dayDate === anchor()"
           [day]="day"
         />
       }

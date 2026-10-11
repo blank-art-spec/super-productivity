@@ -32,6 +32,7 @@ import { T } from '../../t.const';
 import { WorkContextService } from '../../features/work-context/work-context.service';
 import { IS_ANDROID_NATIVE } from '../../util/is-native-platform';
 import { GlobalConfigService } from '../../features/config/global-config.service';
+import { FocusModeService } from '../../features/focus-mode/focus-mode.service';
 
 // Latches true after the first cold-start entrance fires in this JS session,
 // so resume/back/remount paths never re-hide the FAB.
@@ -59,6 +60,7 @@ export class MobileBottomNavComponent {
   private readonly _store = inject(Store);
   private readonly _workContextService = inject(WorkContextService);
   private readonly _globalConfigService = inject(GlobalConfigService);
+  readonly focusModeService = inject(FocusModeService);
 
   isEntrance = input(false);
   readonly isAndroid = IS_ANDROID_NATIVE;
@@ -122,6 +124,15 @@ export class MobileBottomNavComponent {
   );
   readonly isPlannerEnabled = computed(
     () => this._globalConfigService.appFeatures().isPlannerEnabled,
+  );
+  readonly isFocusModeEnabled = computed(
+    () => this._globalConfigService.appFeatures().isFocusModeEnabled,
+  );
+  readonly isFocusActive = computed(
+    () =>
+      this.focusModeService.isSessionRunning() ||
+      this.focusModeService.isSessionPaused() ||
+      this.focusModeService.isBreakActive(),
   );
   readonly isProjectNotesEnabled = computed(
     () => this._globalConfigService.appFeatures().isProjectNotesEnabled,

@@ -14,6 +14,7 @@ import { WorkContextService } from '../../features/work-context/work-context.ser
 import { GlobalConfigService } from '../../features/config/global-config.service';
 import { DEFAULT_GLOBAL_CONFIG } from '../../features/config/default-global-config.const';
 import { AppFeaturesConfig } from '../../features/config/global-config.model';
+import { FocusModeService } from '../../features/focus-mode/focus-mode.service';
 
 /**
  * Below 600px this nav's panels menu is the ONLY route to every right-panel
@@ -89,6 +90,15 @@ describe('MobileBottomNavComponent', () => {
           useValue: { activeWorkContext$: of({ isEnableBacklog: false }) },
         },
         { provide: GlobalConfigService, useValue: { appFeatures } },
+        {
+          provide: FocusModeService,
+          useValue: {
+            isSessionRunning: signal(false),
+            isSessionPaused: signal(false),
+            isBreakActive: signal(false),
+            openOverlay: jasmine.createSpy('openOverlay'),
+          },
+        },
       ],
       schemas: [NO_ERRORS_SCHEMA],
     })
@@ -110,12 +120,17 @@ describe('MobileBottomNavComponent', () => {
   /** Opens the panels menu and returns the item selectors it rendered. */
   const openPanelsMenu = (): string[] => {
     const trigger = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(
-      'button[aria-haspopup="menu"]',
+      '.mobile-more-trigger',
     );
     if (!trigger) {
       return [];
     }
     trigger.click();
+    fixture.detectChanges();
+
+    const panelsTrigger = document.querySelector<HTMLElement>('.mobile-panels-trigger');
+    if (!panelsTrigger) return [];
+    panelsTrigger.click();
     fixture.detectChanges();
 
     const panel = document.querySelector('.mobile-bottom-nav-panels-menu');
@@ -155,15 +170,15 @@ describe('MobileBottomNavComponent', () => {
     });
   });
 
-  it('hides the panels button only when nothing at all is enabled', async () => {
+  it('keeps More available without presenting a disabled panels submenu', async () => {
     const cmp = await render(ALL_OFF);
 
     expect(cmp.hasSidePanelMenuItems()).toBe(false);
     expect(
-      (fixture.nativeElement as HTMLElement).querySelector(
-        'button[aria-haspopup="menu"]',
-      ),
-    ).toBeFalsy();
+      (fixture.nativeElement as HTMLElement).querySelector('.mobile-more-trigger'),
+    ).toBeTruthy();
+    expect(openPanelsMenu()).toEqual([]);
+    expect(document.querySelector('.mobile-panels-trigger')).toBeNull();
   });
 
   it('shows the panels button for a plugin side panel with every built-in off', async () => {
@@ -176,5 +191,27 @@ describe('MobileBottomNavComponent', () => {
 
     expect(cmp.hasSidePanelMenuItems()).toBe(true);
     expect(openPanelsMenu()).toEqual(['plugin-icon']);
+  });
+
+  it('opens Focus through the existing service and reflects paused sessions', async () => {
+    const component = await render({ isFocusModeEnabled: true });
+    const focus = TestBed.inject(FocusModeService);
+    const button = (
+      fixture.nativeElement as HTMLElement
+    ).querySelector<HTMLButtonElement>('button[aria-label="F.MATRIX.FOCUS"]')!;
+    button.click();
+    expect(focus.openOverlay).toHaveBeenCalled();
+    (focus.isSessionPaused as ReturnType<typeof signal<boolean>>).set(true);
+    fixture.detectChanges();
+    expect(component.isFocusActive()).toBe(true);
+    expect(button.classList.contains('active')).toBe(true);
+  });
+
+  it('removes only the Focus entry when the feature is disabled', async () => {
+    await render({ isFocusModeEnabled: false, isPlannerEnabled: false });
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('button[aria-label="F.MATRIX.FOCUS"]')).toBeNull();
+    expect(element.querySelector('[aria-label="G.TODAY_TAG_TITLE"]')).toBeTruthy();
+    expect(element.querySelector('.mobile-more-trigger')).toBeTruthy();
   });
 });

@@ -2,39 +2,42 @@
   class="mobile-bottom-nav tasksmart-navigation"
   [class.entrance]="isEntrance()"
   (animationend)="onEntranceAnimationEnd($event)"
+  [attr.aria-label]="T.MH.PROJECT_MENU | translate"
 >
   <button
-    mat-button
+    type="button"
     class="nav-button"
     routerLink="/matrix"
     routerLinkActive="active"
+    ariaCurrentWhenActive="page"
     [attr.aria-label]="T.F.MATRIX.HOME | translate"
   >
     <mat-icon>home</mat-icon
     ><span class="nav-caption">{{ T.F.MATRIX.HOME | translate }}</span>
   </button>
-  <button
-    mat-button
-    class="nav-button"
-    [routerLink]="todayRoute"
-    routerLinkActive="active"
-    [routerLinkActiveOptions]="{ exact: false }"
-    [attr.aria-label]="T.G.TODAY_TAG_TITLE | translate"
-  >
-    <mat-icon>wb_sunny</mat-icon>
-    <span class="nav-caption">{{ T.G.TODAY_TAG_TITLE | translate }}</span>
-  </button>
-
   @if (isPlannerEnabled()) {
     <button
-      mat-button
+      type="button"
       class="nav-button"
       routerLink="/planner"
       routerLinkActive="active"
+      ariaCurrentWhenActive="page"
       [attr.aria-label]="T.MH.PLANNER | translate"
     >
       <mat-icon>edit_calendar</mat-icon>
       <span class="nav-caption">{{ T.MH.PLANNER | translate }}</span>
+    </button>
+  } @else {
+    <button
+      type="button"
+      class="nav-button"
+      [routerLink]="todayRoute"
+      routerLinkActive="active"
+      ariaCurrentWhenActive="page"
+      [attr.aria-label]="T.G.TODAY_TAG_TITLE | translate"
+    >
+      <mat-icon aria-hidden="true">wb_sunny</mat-icon>
+      <span class="nav-caption">{{ T.G.TODAY_TAG_TITLE | translate }}</span>
     </button>
   }
 
@@ -50,26 +53,58 @@
     <mat-icon>add</mat-icon>
   </button>
 
-  @if (hasSidePanelMenuItems()) {
+  @if (isFocusModeEnabled()) {
     <button
-      mat-button
+      type="button"
       class="nav-button"
-      [matMenuTriggerFor]="panelsMenu"
-      [attr.aria-label]="T.MH.SIDE_PANEL_MENU | translate"
+      [class.active]="isFocusActive()"
+      (click)="focusModeService.openOverlay()"
+      [attr.aria-label]="T.F.MATRIX.FOCUS | translate"
     >
-      <mat-icon>bottom_panel_open</mat-icon>
+      <mat-icon aria-hidden="true">center_focus_strong</mat-icon>
+      <span class="nav-caption">{{ T.F.MATRIX.FOCUS | translate }}</span>
     </button>
   }
 
   <button
-    mat-button
-    class="nav-button"
-    (click)="toggleMobileNav()"
-    [attr.aria-label]="T.MH.PROJECT_MENU | translate"
+    type="button"
+    class="nav-button mobile-more-trigger"
+    [matMenuTriggerFor]="moreMenu"
+    [attr.aria-label]="T.G.MORE_ACTIONS | translate"
   >
-    <mat-icon>menu</mat-icon>
+    <mat-icon aria-hidden="true">more_horiz</mat-icon>
+    <span class="nav-caption">{{ T.G.MORE_ACTIONS | translate }}</span>
   </button>
 </nav>
+
+<mat-menu #moreMenu="matMenu">
+  @if (isPlannerEnabled()) {
+    <button
+      mat-menu-item
+      [routerLink]="todayRoute"
+    >
+      <mat-icon>wb_sunny</mat-icon>
+      <span>{{ T.G.TODAY_TAG_TITLE | translate }}</span>
+    </button>
+  }
+  @if (hasSidePanelMenuItems()) {
+    <button
+      mat-menu-item
+      class="mobile-panels-trigger"
+      [matMenuTriggerFor]="panelsMenu"
+    >
+      <mat-icon>bottom_panel_open</mat-icon>
+      <span>{{ T.MH.SIDE_PANEL_MENU | translate }}</span>
+    </button>
+  }
+  <button
+    mat-menu-item
+    (click)="toggleMobileNav()"
+  >
+    <mat-icon>menu</mat-icon>
+    <span>{{ T.MH.PROJECT_MENU | translate }}</span>
+  </button>
+</mat-menu>
 
 <mat-menu
   #panelsMenu="matMenu"

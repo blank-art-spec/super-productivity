@@ -1,4 +1,49 @@
 @use '@angular/material' as mat;
+@use '../mixins/media-queries' as *;
+
+.tasksmart-page-toolbar {
+  box-sizing: border-box;
+  font-family: var(--tasksmart-font-stack);
+  border-bottom: 1px solid var(--tasksmart-border);
+  background: var(--tasksmart-surface);
+  flex-shrink: 0;
+}
+
+.tasksmart-disclosure {
+  border-top: 1px solid var(--tasksmart-border);
+  summary {
+    min-height: var(--tasksmart-control-height);
+    align-content: center;
+    cursor: pointer;
+    color: var(--text-color-muted);
+    font-size: var(--font-size-sm);
+  }
+}
+
+// Reusable affirmative action; destructive and dismissing buttons retain their roles.
+.tasksmart-primary-action.mat-mdc-unelevated-button {
+  @include mat.button-overrides(
+    (
+      filled-container-color: var(--tasksmart-accent),
+      filled-label-text-color: var(--tasksmart-on-accent),
+    )
+  );
+}
+
+// Editor dialogs use a bottom form on phones and the original centered dialog on desktop.
+@include mq(xs, max) {
+  .cdk-overlay-pane.tasksmart-editor-dialog {
+    align-self: flex-end;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: calc(100dvh - var(--safe-area-top) - var(--safe-area-bottom) - var(--s2));
+    margin-bottom: var(--safe-area-bottom);
+    .mat-mdc-dialog-surface {
+      border-end-start-radius: 0;
+      border-end-end-radius: 0;
+    }
+  }
+}
 
 // Card/Button/Input primitives, also available inside Material dialogs.
 .tasksmart-card {

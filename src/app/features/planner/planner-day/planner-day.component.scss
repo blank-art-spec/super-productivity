@@ -174,16 +174,22 @@
 
   &.Task .time {
     cursor: pointer;
-    border-radius: 50%;
-    background: var(--task-c-bg);
+    border-radius: var(--tasksmart-control-radius);
+    background: var(--tasksmart-hover);
   }
 
   .time {
+    box-sizing: border-box;
+    padding: 0;
+    border: 0;
+    color: var(--text-color-muted);
+    background: transparent;
+    font: inherit;
     text-align: center;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
+    width: var(--tasksmart-control-height);
+    height: var(--tasksmart-control-height);
+    min-width: var(--tasksmart-control-height);
     margin-right: var(--s-half);
     flex-grow: 0;
     display: flex;
@@ -200,7 +206,7 @@
       display: none;
     }
 
-    &:hover {
+    &:is(:hover, :focus-visible) {
       mat-icon {
         display: block;
       }
@@ -228,6 +234,19 @@
     flex-grow: 1;
     min-width: 0;
   }
+}
+
+// The timeline is presentation only; existing day drop targets own scheduling.
+:host(.calendar-day) .scheduled-items {
+  border-inline-start: 1px solid var(--tasksmart-border);
+  padding-inline-start: var(--s);
+}
+:host(.calendar-day) .scheduled-item {
+  gap: var(--s);
+  padding-block: var(--s-half);
+}
+:host(.calendar-day) .section-title {
+  gap: var(--s);
 }
 
 .empty {

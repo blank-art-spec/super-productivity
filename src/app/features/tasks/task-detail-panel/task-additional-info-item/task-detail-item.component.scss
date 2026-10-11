@@ -48,14 +48,14 @@
 
 .input-item,
 .mat-expansion-panel {
-  border: 1px solid var(--divider-color);
+  border: 1px solid var(--tasksmart-border);
   // Tighter vertical rhythm to match the main task list (#9266), but the
   // horizontal inset stays at --s: the panel header keeps it, so halving all
   // four sides would leave these rows overhanging it by 4px per side.
   margin: var(--s-half) var(--s);
-  border-radius: var(--card-border-radius);
+  border-radius: var(--tasksmart-control-radius);
   background: var(--task-detail-bg);
-  font-size: 14px;
+  font-size: var(--font-size-md);
 
   // Marks the row the user is on for the panel's arrow-key navigation.
   // Mouse intent, not `.isNoTouchOnly`: that class only excludes pure touch
@@ -176,13 +176,14 @@
   position: relative;
   display: flex;
   align-items: center;
-  height: 48px;
+  min-height: var(--tasksmart-control-height);
+  height: auto;
   cursor: pointer;
   color: var(--text-color);
 
   &.full-size {
     height: auto;
-    min-height: 48px;
+    min-height: var(--tasksmart-control-height);
     align-items: flex-start;
     cursor: default;
   }
@@ -201,16 +202,17 @@
 .input-item__title {
   display: flex;
   align-items: center;
-  margin: 0 var(--s3);
+  margin: 0 var(--s2);
   @include truncateText();
-  min-width: 90px;
-  flex: 1;
+  min-width: 0;
+  flex: 1 1 40%;
 
   ::ng-deep mat-icon:first-of-type {
     margin-right: var(--s);
   }
 
   .full-size & {
+    flex-basis: auto;
     min-width: 40px;
     min-height: 48px;
     flex-grow: 0;
@@ -219,10 +221,12 @@
 }
 
 .input-item__value {
+  min-width: 0;
+  flex: 1 1 50%;
   text-align: right;
   display: flex;
   align-items: center;
-  margin-right: var(--s3);
+  margin-inline-end: var(--s2);
   color: var(--task-detail-value-color);
 
   &,

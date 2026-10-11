@@ -14,6 +14,8 @@
   padding: var(--s2) var(--s3);
 }
 h2 {
+  min-width: 0;
+  overflow-wrap: anywhere;
   margin: 0 auto 0 0;
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
@@ -45,6 +47,23 @@ planner-day {
   margin: 0;
   padding: var(--s2);
   min-width: 0;
+  border-inline-start: 1px solid var(--tasksmart-border);
+}
+.calendar-week-strip {
+  flex-shrink: 0;
+  margin: 0 var(--s3) var(--s);
+}
+.calendar-day-dot {
+  width: var(--s-half);
+  height: var(--s-half);
+  border-radius: 50%;
+  background: transparent;
+  &.has-items {
+    background: var(--tasksmart-accent-text);
+  }
+}
+.selected-day {
+  border-color: var(--tasksmart-accent-text);
 }
 .month-grid {
   display: grid;
@@ -63,7 +82,7 @@ planner-day {
   align-items: center;
   justify-content: space-between;
   gap: var(--s-half);
-  min-height: 64px;
+  min-height: var(--s8);
   padding: var(--s);
   background: transparent;
   color: var(--text-color);
@@ -73,14 +92,17 @@ planner-day {
   cursor: pointer;
 }
 .month-day[aria-pressed='true'] {
-  background: var(--sidenav-item-active-bg);
-  border-color: var(--brand);
+  background: var(--tasksmart-selected);
+  border-color: var(--tasksmart-accent-text);
+}
+.month-day:hover {
+  background: var(--tasksmart-hover);
 }
 .outside-month {
   color: var(--text-color-muted);
 }
 .today > span:first-child {
-  color: var(--brand);
+  color: var(--tasksmart-accent-text);
   font-weight: var(--font-weight-semibold);
 }
 .day-count {
@@ -95,13 +117,21 @@ planner-day {
   .calendar-content {
     padding: var(--s) var(--s2) var(--s2);
   }
+  .calendar-week-strip {
+    margin-inline: var(--s2);
+  }
   .tasksmart-view-switch {
     width: 100%;
     justify-content: space-between;
+    overflow-x: auto;
+    > button {
+      flex: 1 0 auto;
+      padding-inline: var(--s);
+    }
   }
   .month-day {
     flex-direction: column;
-    min-height: 56px;
+    min-height: var(--s7);
     padding: var(--s-half);
   }
   .weekday {

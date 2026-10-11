@@ -24,7 +24,7 @@
 @if (isInbox() && !currentProject()?.isArchived) {
   <inbox-capture [tasks]="inboxTasks()"></inbox-capture>
 } @else if (currentProject() && !currentProject()?.isArchived) {
-  <div class="project-view-toolbar">
+  <div class="project-view-toolbar tasksmart-page-toolbar">
     <div
       class="tasksmart-view-switch"
       role="group"
@@ -51,9 +51,11 @@
 }
 @if (isMatrixView() && !isInbox() && !currentProject()?.isArchived) {
   <div class="project-matrix">
-    <eisenhower-matrix-page
-      [scopeProjectId]="currentProject()!.id"
-    ></eisenhower-matrix-page>
+    @defer {
+      <eisenhower-matrix-page
+        [scopeProjectId]="currentProject()!.id"
+      ></eisenhower-matrix-page>
+    }
   </div>
 } @else {
   <work-view

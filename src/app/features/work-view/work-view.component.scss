@@ -14,6 +14,19 @@
   p {
     margin: 0 0 var(--s);
   }
+  h2 {
+    text-align: start;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+  }
+  > div:first-child {
+    min-width: 0;
+    flex: 1 1 200px;
+  }
+  span {
+    font-size: var(--font-size-sm);
+    color: var(--text-color-muted);
+  }
   p {
     color: var(--text-color-muted);
   }
@@ -23,7 +36,26 @@
     max-width: 100%;
     height: var(--s);
     margin-top: var(--s);
-    accent-color: var(--brand);
+    accent-color: var(--tasksmart-accent);
+    border: 0;
+    border-radius: var(--tasksmart-control-radius);
+    overflow: hidden;
+    &::-webkit-progress-bar {
+      background: var(--tasksmart-border);
+    }
+    &::-webkit-progress-value {
+      background: var(--tasksmart-accent);
+    }
+    &::-moz-progress-bar {
+      background: var(--tasksmart-accent);
+    }
+  }
+  @include mq(xs, max) {
+    padding: var(--s2);
+    .tasksmart-view-switch {
+      max-width: 100%;
+      overflow-x: auto;
+    }
   }
 }
 
@@ -34,7 +66,7 @@
     align-items: center;
     gap: var(--s);
     font-size: var(--font-size-md);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     margin: var(--s2) 0;
     span {
       color: var(--text-color-muted);

@@ -5,6 +5,7 @@
 // Every length the action row is laid out with is declared once, here, and
 // consumed by the rules below and by `page-title`, which inherits them.
 :host {
+  font-family: var(--tasksmart-font-stack);
   display: block;
   position: relative;
   user-select: none;
@@ -469,7 +470,7 @@ button {
   -webkit-app-region: no-drag;
 }
 .header-more-heading {
-  font-weight: 700;
+  font-weight: var(--font-weight-semibold);
   padding-bottom: var(--s2);
 }
 .header-more-items {

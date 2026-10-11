@@ -24,6 +24,7 @@ progress-bar {
 }
 
 .wrapper {
+  font-family: var(--tasksmart-font-stack);
   transition: var(--transition-standard);
 
   @include mq(xs, max) {
@@ -39,7 +40,8 @@ progress-bar {
   z-index: var(--z-right-panel);
   border-radius: var(--card-border-radius);
   margin: var(--s);
-  border-bottom: 2px solid var(--c-primary) !important;
+  border-bottom: 1px solid var(--tasksmart-border);
+  background: var(--tasksmart-surface);
 
   task-title {
     padding-top: var(--s-half);
@@ -55,7 +57,7 @@ progress-bar {
 }
 
 .task-title.task-title {
-  font-weight: bold;
+  font-weight: var(--font-weight-semibold);
   transform-origin: top center;
   padding: var(--s);
   margin: 0;
@@ -64,12 +66,12 @@ progress-bar {
   // unbroken title wraps/truncates instead of pushing the button off-row.
   min-width: 0;
   margin-top: var(--s-half);
-  line-height: 1.4;
+  line-height: var(--line-height-normal);
   min-height: 40px;
-  font-size: 17px;
+  font-size: var(--font-size-lg);
 
   @include mq(xs) {
-    font-size: 15px;
+    font-size: var(--font-size-lg);
   }
 
   &:focus {

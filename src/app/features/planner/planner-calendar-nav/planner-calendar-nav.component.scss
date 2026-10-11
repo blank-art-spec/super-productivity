@@ -56,13 +56,13 @@
   position: relative;
 
   &.is-today {
-    border-color: var(--c-primary);
+    border-color: var(--tasksmart-accent-text);
   }
 
   &.is-active {
-    border-color: var(--c-primary);
-    background: var(--c-primary);
-    color: var(--c-contrast);
+    border-color: var(--tasksmart-accent);
+    background: var(--tasksmart-accent);
+    color: var(--tasksmart-on-accent);
   }
 
   &.is-past {
@@ -82,7 +82,7 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: var(--c-primary);
+  background: var(--tasksmart-accent-text);
 }
 
 .handle {

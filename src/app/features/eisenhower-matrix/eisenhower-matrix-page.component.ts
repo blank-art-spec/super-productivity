@@ -117,6 +117,8 @@ export class EisenhowerMatrixPageComponent {
   readonly scopeProjectId = input<string | null>(null);
   readonly effectiveProjectId = computed(() => this.scopeProjectId() ?? this.projectId());
   readonly tagId = signal('');
+  readonly scopeTagId = input<string | null>(null);
+  readonly effectiveTagId = computed(() => this.scopeTagId() ?? this.tagId());
   readonly previewSuggestions = signal(false);
   readonly dragStartDelay = { touch: 300, mouse: 0 };
   readonly today = toSignal(this._clock.todayDateStr$, {
@@ -136,7 +138,7 @@ export class EisenhowerMatrixPageComponent {
       {
         time: 'all',
         projectId: this.effectiveProjectId(),
-        tagId: this.tagId(),
+        tagId: this.effectiveTagId(),
       },
       this.today(),
       this._dayOffset(),
@@ -199,7 +201,7 @@ export class EisenhowerMatrixPageComponent {
       {
         time: this.timeFilter(),
         projectId: this.effectiveProjectId(),
-        tagId: this.tagId(),
+        tagId: this.effectiveTagId(),
         day: this.anchor(),
       },
       this.today(),
@@ -247,6 +249,7 @@ export class EisenhowerMatrixPageComponent {
   readonly emptyMessage = computed(() =>
     !this.hasActiveFilters() &&
     !this.scopeProjectId() &&
+    !this.scopeTagId() &&
     this._tasks().length > 0 &&
     this._tasks().every((task) => task.isDone)
       ? T.F.MATRIX.EMPTY_COMPLETED
@@ -403,6 +406,7 @@ export class EisenhowerMatrixPageComponent {
           {
             width: '520px',
             maxWidth: '95vw',
+            panelClass: 'tasksmart-editor-dialog',
             restoreFocus: true,
             data: {
               task,
@@ -412,7 +416,7 @@ export class EisenhowerMatrixPageComponent {
                   : projects,
               tags: this.tags(),
               projectId,
-              tagId: this.tagId(),
+              tagId: this.effectiveTagId(),
               quadrant,
               day: this.timeFilter() === 'all' ? '' : this.anchor(),
             },

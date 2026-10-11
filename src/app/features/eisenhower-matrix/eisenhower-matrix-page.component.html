@@ -118,18 +118,20 @@
             </select>
           </label>
         }
-        <label class="tasksmart-field">
-          <span>{{ T.F.MATRIX.TAGS | translate }}</span>
-          <select
-            [ngModel]="tagId()"
-            (ngModelChange)="tagId.set($event)"
-          >
-            <option value="">{{ T.F.MATRIX.ALL_TAGS | translate }}</option>
-            @for (tag of tags(); track tag.id) {
-              <option [value]="tag.id">{{ tag.title | translate }}</option>
-            }
-          </select>
-        </label>
+        @if (!scopeTagId()) {
+          <label class="tasksmart-field">
+            <span>{{ T.F.MATRIX.TAGS | translate }}</span>
+            <select
+              [ngModel]="tagId()"
+              (ngModelChange)="tagId.set($event)"
+            >
+              <option value="">{{ T.F.MATRIX.ALL_TAGS | translate }}</option>
+              @for (tag of tags(); track tag.id) {
+                <option [value]="tag.id">{{ tag.title | translate }}</option>
+              }
+            </select>
+          </label>
+        }
         <button
           type="button"
           class="tasksmart-button tasksmart-button--quiet focus-ring"
@@ -151,7 +153,7 @@
         >
           {{ T.F.MATRIX.RESET_FILTERS | translate }}
         </button>
-        @if (!scopeProjectId()) {
+        @if (!scopeProjectId() && !scopeTagId()) {
           <button
             type="button"
             class="tasksmart-button tasksmart-button--quiet focus-ring"

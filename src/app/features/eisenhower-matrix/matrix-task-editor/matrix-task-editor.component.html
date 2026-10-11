@@ -56,30 +56,48 @@
           />
         </label>
       </div>
-      <label class="tasksmart-field">
-        <span>{{ T.F.MATRIX.ESTIMATE_MINUTES | translate }}</span>
-        <input
-          type="number"
-          name="minutes"
-          [(ngModel)]="minutes"
-          min="0"
-          step="any"
-        />
-      </label>
-      @if (data.tags.length) {
-        <label class="tasksmart-field">
-          <span>{{ T.F.MATRIX.TAGS | translate }}</span>
-          <select
-            multiple
-            name="tagIds"
-            [(ngModel)]="tagIds"
-          >
-            @for (tag of data.tags; track tag.id) {
-              <option [value]="tag.id">{{ tag.title | translate }}</option>
-            }
-          </select>
-        </label>
+      @if (time && !day) {
+        <p
+          class="editor-error"
+          role="status"
+        >
+          {{ T.F.MATRIX.TIME_REQUIRES_DATE | translate }}
+        </p>
       }
+      <details
+        class="tasksmart-disclosure"
+        [open]="!!data.task?.timeEstimate || !!data.task?.tagIds?.length"
+      >
+        <summary class="focus-ring">
+          {{ T.F.MATRIX.ADDITIONAL_FIELDS | translate }}
+        </summary>
+        <div class="editor-advanced-fields">
+          <label class="tasksmart-field">
+            <span>{{ T.F.MATRIX.ESTIMATE_MINUTES | translate }}</span>
+            <input
+              type="number"
+              name="minutes"
+              [(ngModel)]="minutes"
+              min="0"
+              step="any"
+            />
+          </label>
+          @if (data.tags.length) {
+            <label class="tasksmart-field">
+              <span>{{ T.F.MATRIX.TAGS | translate }}</span>
+              <select
+                multiple
+                name="tagIds"
+                [(ngModel)]="tagIds"
+              >
+                @for (tag of data.tags; track tag.id) {
+                  <option [value]="tag.id">{{ tag.title | translate }}</option>
+                }
+              </select>
+            </label>
+          }
+        </div>
+      </details>
     </div>
   </mat-dialog-content>
   <mat-dialog-actions align="end">
@@ -93,6 +111,7 @@
     <button
       mat-flat-button
       color="primary"
+      class="tasksmart-primary-action"
       type="submit"
       [disabled]="editorForm.invalid || !title.trim() || (!!time && !day)"
     >

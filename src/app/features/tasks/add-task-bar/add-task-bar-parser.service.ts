@@ -44,6 +44,11 @@ const isSameRepeat = (
   if (a.type !== b.type) {
     return false;
   }
+  if (
+    (a.endDate || null) !== (b.endDate || null) ||
+    !!a.isChineseWorkday !== !!b.isChineseWorkday
+  )
+    return false;
   if (a.type === 'INTERVAL' && b.type === 'INTERVAL') {
     return a.repeatCycle === b.repeatCycle && a.repeatEvery === b.repeatEvery;
   }
@@ -430,6 +435,30 @@ export class AddTaskBarParserService {
     this._stateService.updateRepeatSetting(repeat, cleanedInput);
   }
 
+  applyUserProjectPick(projectId: string): void {
+    const currentInput = this._stateService.inputTxt();
+    const cleanedInput =
+      this._removeParsedRanges(currentInput, 'project') ?? currentInput;
+    if (cleanedInput !== currentInput) this._parseRunId++;
+    this._recordUserPick({ projectId: null });
+    this._stateService.updateInputTxt(cleanedInput.trim());
+    this._stateService.updateProjectId(projectId);
+  }
+
+  applyUserContextPick(projectId: string, tagIds: string[]): void {
+    const currentInput = this._stateService.inputTxt();
+    // Strip both kinds in one pass: stripping tags first would invalidate the
+    // project ranges, leaving a stale +project token to undo the explicit pick.
+    const cleanedInput =
+      this._removeParsedRanges(currentInput, ['tag', 'project']) ??
+      this.removeShortSyntaxFromInput(currentInput, 'tags');
+    if (cleanedInput !== currentInput) this._parseRunId++;
+    this._recordUserPick({ projectId: null, tagIds: [], newTagTitles: [] });
+    this._stateService.clearTags(cleanedInput.trim());
+    this._stateService.updateTagIds(tagIds);
+    this._stateService.updateProjectId(projectId);
+  }
+
   applyUserDatePick(
     date: string,
     time: string | null,
@@ -504,11 +533,15 @@ export class AddTaskBarParserService {
    * fridays"), which is worse than not clearing at all — the leftover words
    * stay in the task title.
    */
-  private _removeParsedRanges(text: string, type: ShortSyntaxTokenType): string | null {
+  private _removeParsedRanges(
+    text: string,
+    type: ShortSyntaxTokenType | ShortSyntaxTokenType[],
+  ): string | null {
     if (!this._lastParsedRanges || this._lastParsedRanges.forText !== text) {
       return null;
     }
-    const ranges = this._lastParsedRanges.ranges.filter((r) => r.type === type);
+    const types = Array.isArray(type) ? type : [type];
+    const ranges = this._lastParsedRanges.ranges.filter((r) => types.includes(r.type));
     if (!ranges.length) {
       return text;
     }

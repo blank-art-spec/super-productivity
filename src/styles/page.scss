@@ -29,9 +29,11 @@ app-root,
 // Wrapped in :where() so the global rules specificity is (0,0,0) — any
 // component or Material typography override wins trivially.
 // Excludes Material dialog/card titles explicitly.
-:where(h1, h2, h3, h4, h5, h6):not([mat-dialog-title]):not(.mat-mdc-dialog-title):not(
-    .mat-mdc-card-title
-  ) {
+:where(
+  :is(h1, h2, h3, h4, h5, h6):not([mat-dialog-title]):not(.mat-mdc-dialog-title):not(
+      .mat-mdc-card-title
+    )
+) {
   font-family: inherit;
   font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-snug);
@@ -39,30 +41,30 @@ app-root,
   color: var(--text-color-most-intense);
 }
 
-:where(h1):not([mat-dialog-title]):not(.mat-mdc-dialog-title):not(.mat-mdc-card-title) {
+:where(h1:not([mat-dialog-title]):not(.mat-mdc-dialog-title):not(.mat-mdc-card-title)) {
   font-size: var(--font-size-3xl);
   letter-spacing: var(--letter-spacing-tighter);
   line-height: var(--line-height-tight);
 }
 
-:where(h2):not([mat-dialog-title]):not(.mat-mdc-dialog-title):not(.mat-mdc-card-title) {
+:where(h2:not([mat-dialog-title]):not(.mat-mdc-dialog-title):not(.mat-mdc-card-title)) {
   font-size: var(--font-size-2xl);
   letter-spacing: var(--letter-spacing-tighter);
 }
 
-:where(h3):not([mat-dialog-title]):not(.mat-mdc-dialog-title):not(.mat-mdc-card-title) {
+:where(h3:not([mat-dialog-title]):not(.mat-mdc-dialog-title):not(.mat-mdc-card-title)) {
   font-size: var(--font-size-xl);
 }
 
-:where(h4):not([mat-dialog-title]):not(.mat-mdc-dialog-title):not(.mat-mdc-card-title) {
+:where(h4:not([mat-dialog-title]):not(.mat-mdc-dialog-title):not(.mat-mdc-card-title)) {
   font-size: var(--font-size-lg);
 }
 
-:where(h5):not([mat-dialog-title]):not(.mat-mdc-dialog-title):not(.mat-mdc-card-title) {
+:where(h5:not([mat-dialog-title]):not(.mat-mdc-dialog-title):not(.mat-mdc-card-title)) {
   font-size: var(--font-size-md);
 }
 
-:where(h6):not([mat-dialog-title]):not(.mat-mdc-dialog-title):not(.mat-mdc-card-title) {
+:where(h6:not([mat-dialog-title]):not(.mat-mdc-dialog-title):not(.mat-mdc-card-title)) {
   font-size: var(--font-size-sm);
   text-transform: uppercase;
   letter-spacing: var(--letter-spacing-wide);

@@ -14,6 +14,8 @@ import {
 } from './animation.const';
 
 export const warpRouteAnimation = trigger('warpRoute', [
+  // The initial route appears directly; transitions between pages still animate.
+  transition('void => *, initial => *', []),
   transition('* => daily-summary', [
     /* 1 */ query(
       ':enter, :leave',

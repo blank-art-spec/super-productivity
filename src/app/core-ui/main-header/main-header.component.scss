@@ -2,6 +2,10 @@
 
 // TODO split up into more manageable bits
 
+:host([hidden]) {
+  display: none;
+}
+
 // Every length the action row is laid out with is declared once, here, and
 // consumed by the rules below and by `page-title`, which inherits them.
 :host {

@@ -36,6 +36,15 @@
       class="bottom-controls handle-drag"
       [class.isOver]="note.imgUrl"
     >
+      <button
+        type="button"
+        mat-icon-button
+        (click)="editFullscreen($event)"
+        [attr.aria-label]="T.G.EDIT | translate"
+        [matTooltip]="T.G.EDIT | translate"
+      >
+        <mat-icon>edit</mat-icon>
+      </button>
       @if (note.projectId) {
         <button
           mat-icon-button
@@ -104,7 +113,7 @@
       (click)="removeNote()"
       mat-menu-item
     >
-      <mat-icon style="color: #e15d63">delete_forever</mat-icon>
+      <mat-icon style="color: var(--color-danger)">delete_forever</mat-icon>
       {{ T.G.DELETE | translate }}
     </button>
 

@@ -159,6 +159,21 @@ describe('OnboardingHintService', () => {
   });
 
   describe('first task', () => {
+    it('keeps the mobile add button free of a hint and still observes the first task', () => {
+      const mobileNav = TestBed.inject(LayoutService)
+        .isShowMobileBottomNav as WritableSignal<boolean>;
+      mobileNav.set(true);
+      const service = createPhoneService();
+      expect(service.currentStep()).toBeNull();
+      isShowAddTaskBar.set(true);
+      expect(service.currentStep()).toBeNull();
+      isShowAddTaskBar.set(false);
+      expect(service.currentStep()).toBeNull();
+      addFirstTask();
+      expect(service.firstTaskId()).toBe('task-1');
+      expect(service.currentStep()).toBe('task-swipe-left');
+    });
+
     it('points at + for a new user and hides while the composer is open', () => {
       const service = createService();
       expect(service.currentStep()).toBe('create-task');

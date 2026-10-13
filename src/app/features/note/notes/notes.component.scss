@@ -1,6 +1,7 @@
 @use '../../../../styles/_globals.scss' as *;
 
 :host {
+  font-family: var(--tasksmart-font-stack);
   background-color: inherit;
   display: block;
   text-align: center;
@@ -10,6 +11,7 @@
 }
 
 header {
+  border-bottom: 1px solid var(--tasksmart-border);
   margin-top: var(--s);
   margin-bottom: var(--s2);
 
@@ -47,8 +49,8 @@ note {
 }
 
 .highlight-searched-item note ::ng-deep .note {
-  outline: 2px solid var(--c-accent) !important;
-  box-shadow: var(--whiteframe-shadow-6dp) !important;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color) !important;
+  box-shadow: var(--tasksmart-overlay-shadow) !important;
   transition:
     outline 0.2s ease,
     box-shadow 0.2s ease;

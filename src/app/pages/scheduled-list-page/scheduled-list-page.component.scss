@@ -1,6 +1,22 @@
 @use '../../../styles/_globals.scss' as *;
 @use '../../features/tasks/task/task.component.mixins' as *;
 
+:host {
+  font-family: var(--tasksmart-font-stack);
+}
+
+.due-date,
+.repeat-text-and-icon {
+  border: 0;
+  background: transparent;
+  color: var(--text-color);
+  font: inherit;
+  &:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+  }
+}
+
 :host ::ng-deep mat-card-content {
   padding: 0 !important;
 }
@@ -27,7 +43,7 @@
   cursor: pointer;
   padding-left: var(--s);
   padding-right: var(--s);
-  min-height: var(--mat-mini-fab-size);
+  min-height: var(--tasksmart-control-height);
   text-align: right;
   opacity: 0.9;
   overflow: hidden;
@@ -42,7 +58,7 @@
   }
 
   @include mq(xs, max) {
-    font-size: 13px;
+    font-size: var(--font-size-sm);
     margin-right: calc(-1 * var(--s));
   }
 
@@ -80,11 +96,13 @@
   box-shadow: none;
   background: var(--task-c-bg);
   border: var(--task-border, 1px solid var(--task-border-color));
+  border-bottom: var(--task-row-edge);
 }
 
 .repeat-task-cfg-content {
   .task-info {
     flex: 1;
+    min-width: 0;
     display: flex;
     //flex-direction: column;
     align-items: center;
@@ -100,6 +118,7 @@
 
   .title {
     flex: 1;
+    min-width: 0;
     padding-top: var(--s);
     //padding-bottom: var(--s);
     display: flex;
@@ -123,7 +142,7 @@
     padding-left: var(--s);
     padding-right: var(--s);
 
-    min-height: var(--mat-mini-fab-size);
+    min-height: var(--tasksmart-control-height);
     text-align: right;
     opacity: 0.9;
 
@@ -133,7 +152,7 @@
       flex-direction: row;
     }
     @include mq(xs, max) {
-      font-size: 13px;
+      font-size: var(--font-size-sm);
       margin-right: calc(-1 * var(--s));
     }
 

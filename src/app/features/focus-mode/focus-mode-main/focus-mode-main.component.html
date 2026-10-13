@@ -21,7 +21,7 @@
   @if (isShowModeSelector()) {
     <segmented-button-group
       fmTop
-      class="focus-mode-select-mode"
+      class="focus-mode-select-mode tasksmart-segments"
       [options]="modeOptions()"
       [selectedId]="mode()"
       [ariaLabel]="T.F.FOCUS_MODE.SELECT_MODE | translate"
@@ -178,8 +178,7 @@
       [class.is-launching]="isLaunching()"
     >
       <button
-        mat-fab
-        color="primary"
+        type="button"
         [matTooltip]="
           isPlayButtonDisabled()
             ? (T.F.FOCUS_MODE.SELECT_TASK_FIRST | translate)
@@ -192,9 +191,9 @@
         "
         [disabled]="isPlayButtonDisabled() || isLaunching()"
         (click)="startSession()"
-        class="play-button tasksmart-fab"
+        class="play-button tasksmart-button tasksmart-button--primary focus-ring"
       >
-        <mat-icon>play_arrow</mat-icon>
+        {{ T.F.FOCUS_MODE.START_FOCUS_SESSION | translate }}
       </button>
 
       @if (isShowPomodoroSettings()) {

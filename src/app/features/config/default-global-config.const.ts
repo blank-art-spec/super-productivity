@@ -8,6 +8,7 @@ import { TaskReminderOptionId } from '../tasks/task.model';
 import { GlobalConfigState } from './global-config.model';
 import { INBOX_PROJECT } from '../project/project.const';
 import { DefaultStartPage } from './default-start-page.const';
+import { DateTimeLocales, LanguageCode } from '../../core/locale.constants';
 import { DEFAULT_MAX_BACKUP_FILES } from '../../../../electron/shared-with-frontend/backup-file-cleanup.util';
 
 const minute = 60 * 1000;
@@ -36,8 +37,8 @@ export const DEFAULT_GLOBAL_CONFIG: GlobalConfigState = {
     isFinishDayEnabled: true,
   },
   localization: {
-    lng: undefined,
-    dateTimeLocale: undefined,
+    lng: LanguageCode.zh,
+    dateTimeLocale: DateTimeLocales.zh_cn,
     firstDayOfWeek: undefined,
   },
   tasks: {
@@ -61,6 +62,7 @@ export const DEFAULT_GLOBAL_CONFIG: GlobalConfigState = {
     startOfNextDayTime: '00:00',
     isDisableAnimations: false,
     isVerticalActionBar: false,
+    isShowMobileHeader: false,
     // Confetti is attention-grabbing, so it ships off and stays opt-in
     // (product principle: less noise, more depth). Existing installs keep
     // their persisted value.

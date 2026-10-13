@@ -4,8 +4,8 @@
   class="focus-mode-dialog"
   role="dialog"
   [attr.aria-label]="T.GCF.APP_FEATURES.FOCUS_MODE | translate"
-  cdkTrapFocus
-  [cdkTrapFocusAutoCapture]="true"
+  [cdkTrapFocus]="!hasMobileNav()"
+  [cdkTrapFocusAutoCapture]="!hasMobileNav()"
 >
   <header>
     <banner></banner>

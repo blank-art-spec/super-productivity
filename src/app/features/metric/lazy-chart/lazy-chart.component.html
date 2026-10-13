@@ -22,11 +22,11 @@
     <button
       mat-icon-button
       class="share-btn"
-      tabIndex="-1"
       type="button"
       (click)="shareChart()"
       [disabled]="!isModuleLoaded() || isSharing()"
       [matTooltip]="T.G.SHARE | translate"
+      [attr.aria-label]="T.G.SHARE | translate"
     >
       @if (isSharing()) {
         <mat-icon>hourglass_empty</mat-icon>
@@ -36,7 +36,12 @@
     </button>
   </div>
   @if (!isModuleLoaded()) {
-    <div class="chart-loading">Loading chart...</div>
+    <div
+      class="chart-loading"
+      role="status"
+    >
+      {{ T.F.METRIC.CMP.LOADING_CHART | translate }}
+    </div>
   }
   @if (isModuleLoaded()) {
     <div

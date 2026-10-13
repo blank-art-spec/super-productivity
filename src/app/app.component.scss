@@ -14,6 +14,17 @@
   min-height: -webkit-fill-available;
 }
 
+// Keep the phone navigation mounted while focus covers the page beneath it.
+.has-mobile-focus-overlay {
+  --z-mobile-bottom-nav: calc(var(--z-focus-mode-overlay) + 1);
+
+  > .main-content,
+  > magic-side-nav {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
 // Vertical action bar (opt-in via misc.isVerticalActionBar): reserve a
 // column on the right for the fixed action strip teleported by main-header
 // (desktop only). The strip is position: fixed, so this padding keeps the
@@ -102,6 +113,10 @@
 
   &.isNotScrolled {
     border-color: transparent !important;
+  }
+
+  &.has-hidden-header {
+    border-bottom: 0;
   }
 }
 
@@ -236,45 +251,5 @@ mat-sidenav {
 
   &.is-blurred {
     transform: scale(1.12);
-  }
-}
-
-// App entrance animation after onboarding preset selection
-@keyframes entrance-slide-left {
-  from {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes entrance-slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.app-entrance {
-  // Main content area fades + slides up as a whole
-  .main-content {
-    animation: entrance-slide-up 450ms ease-out 150ms backwards;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .app-entrance {
-    .main-content {
-      animation: none;
-    }
   }
 }

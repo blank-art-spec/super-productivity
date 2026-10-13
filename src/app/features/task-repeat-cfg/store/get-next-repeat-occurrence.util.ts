@@ -11,8 +11,29 @@ import {
   hasNthWeekdayAnchor,
 } from './get-nth-weekday-of-month.util';
 import { Log } from '../../../core/log';
+import { getRepeatEndDay, isAllowedRepeatDay } from './repeat-occurrence-limits.util';
+import { getDbDateStr } from '../../../util/get-db-date-str';
 
 export const getNextRepeatOccurrence = (
+  taskRepeatCfg: TaskRepeatCfg,
+  fromDate: Date = new Date(),
+  options: { inclusive?: boolean } = {},
+): Date | null => {
+  if (!taskRepeatCfg.endDate && !taskRepeatCfg.isChineseWorkday)
+    return getNextUnboundedOccurrence(taskRepeatCfg, fromDate, options);
+  let next = getNextUnboundedOccurrence(taskRepeatCfg, fromDate, options);
+  const end = getRepeatEndDay(taskRepeatCfg);
+  while (next) {
+    if (end && getDbDateStr(next) > end) return null;
+    if (isAllowedRepeatDay(taskRepeatCfg, next)) return next;
+    const cursor = new Date(next);
+    cursor.setDate(cursor.getDate() + 1);
+    next = getNextUnboundedOccurrence(taskRepeatCfg, cursor, { inclusive: true });
+  }
+  return null;
+};
+
+const getNextUnboundedOccurrence = (
   taskRepeatCfg: TaskRepeatCfg,
   fromDate: Date = new Date(),
   // When `inclusive` is true the scan starts from `fromDate` itself instead of
@@ -44,15 +65,6 @@ export const getNextRepeatOccurrence = (
   lastTaskCreation.setHours(12, 0, 0, 0);
   startDateDate.setHours(12, 0, 0, 0);
 
-  // In inclusive mode, never resolve to an occurrence before `fromDate` itself.
-  // DAILY/WEEKLY only scan forward from `fromDate`, but the day-of-month
-  // MONTHLY and YEARLY branches jump to this period's anchor day — which may
-  // already have passed today — so they need an explicit floor (applied in
-  // their loops below). The MONTHLY nth-weekday branch enforces the same floor
-  // via its own `candidate >= checkDate` predicate (checkDate === fromDate in
-  // inclusive mode), so it does not use `fromDateFloor`.
-  const fromDateFloor = inclusive ? new Date(checkDate) : null;
-
   if (inclusive) {
     // Relocating an existing instance: ignore prior-creation gating entirely so
     // the scan starts at `fromDate` and today is considered. Neutralising
@@ -67,9 +79,19 @@ export const getNextRepeatOccurrence = (
     checkDate.setDate(checkDate.getDate() + 1);
   }
 
+  // MONTHLY/YEARLY reset to the period's anchor and can move backwards.
+  // Preserve the scan floor for both modes so "next" never returns an
+  // already-passed date, even when no task was created on that anchor day.
+  const fromDateFloor = new Date(checkDate);
+
   switch (taskRepeatCfg.repeatCycle) {
     case 'DAILY': {
-      const maxDaysToCheck = 365 * 2; // reasonable limit
+      // The notebook interval editor accepts up to 1000 cycles. Cover a full
+      // supported interval without removing the cap for malformed imported data.
+      const maxDaysToCheck = Math.max(
+        365 * 2,
+        Math.min(taskRepeatCfg.repeatEvery, 1000) + 1,
+      );
 
       for (let i = 0; i < maxDaysToCheck; i++) {
         const diffInDays = getDiffInDays(startDateDate, checkDate);
@@ -82,7 +104,8 @@ export const getNextRepeatOccurrence = (
     }
 
     case 'WEEKLY': {
-      const maxDaysToCheck = 365 * 2; // reasonable limit
+      const intervalDays = Math.min(taskRepeatCfg.repeatEvery, 1000) * 7;
+      const maxDaysToCheck = Math.max(365 * 2, intervalDays + 7);
 
       for (let i = 0; i < maxDaysToCheck; i++) {
         const diffInWeeks = getDiffInWeeks(startDateDate, checkDate);
@@ -105,7 +128,10 @@ export const getNextRepeatOccurrence = (
     }
 
     case 'MONTHLY': {
-      const maxMonthsToCheck = 24; // 2 years
+      const maxMonthsToCheck = Math.max(
+        24,
+        Math.min(taskRepeatCfg.repeatEvery, 1000) + 1,
+      );
 
       if (hasNthWeekdayAnchor(taskRepeatCfg)) {
         return findMonthlyNthWeekdayOccurrence(taskRepeatCfg, checkDate, {
@@ -155,10 +181,11 @@ export const getNextRepeatOccurrence = (
         if (
           diffInMonth >= 0 &&
           diffInMonth % taskRepeatCfg.repeatEvery === 0 &&
-          (!fromDateFloor || checkDate >= fromDateFloor)
+          checkDate >= fromDateFloor
         ) {
           return checkDate;
         }
+        checkDate.setDate(1);
         checkDate.setMonth(checkDate.getMonth() + 1);
         setDateSafely(checkDate, dayOfMonthRepeat);
       }
@@ -166,7 +193,7 @@ export const getNextRepeatOccurrence = (
     }
 
     case 'YEARLY': {
-      const maxYearsToCheck = 10;
+      const maxYearsToCheck = Math.max(10, Math.min(taskRepeatCfg.repeatEvery, 1000) + 1);
       const dayOfMonthRepeat = startDateDate.getDate();
       const monthOfMonthRepeat = startDateDate.getMonth();
 
@@ -203,7 +230,7 @@ export const getNextRepeatOccurrence = (
         if (
           diffInYears >= 0 &&
           diffInYears % taskRepeatCfg.repeatEvery === 0 &&
-          (!fromDateFloor || checkDate >= fromDateFloor)
+          checkDate >= fromDateFloor
         ) {
           return checkDate;
         }

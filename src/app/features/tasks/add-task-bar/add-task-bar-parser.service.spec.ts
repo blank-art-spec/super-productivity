@@ -32,6 +32,7 @@ describe('AddTaskBarParserService', () => {
       'isAutoDetected',
       'state',
       'inputTxt',
+      'updateInputTxt',
     ]);
 
     mockStateServiceSpy.isAutoDetected.and.returnValue(false);
@@ -64,6 +65,22 @@ describe('AddTaskBarParserService', () => {
     mockStateService = TestBed.inject(
       AddTaskBarStateService,
     ) as jasmine.SpyObj<AddTaskBarStateService>;
+  });
+
+  it('removes parsed project syntax when manually choosing a different goal', async () => {
+    const project = { id: 'old', title: 'Old Goal' } as Project;
+    const text = 'Review +Old Goal';
+    mockStateService.inputTxt.and.returnValue(text);
+    await service.parseAndUpdateText(
+      text,
+      { isEnableProject: true } as ShortSyntaxConfig,
+      [project],
+      [],
+      project,
+    );
+    service.applyUserProjectPick('new');
+    expect(mockStateService.updateInputTxt).toHaveBeenCalledWith('Review');
+    expect(mockStateService.updateProjectId).toHaveBeenCalledWith('new');
   });
 
   describe('parseAndUpdateText', () => {
@@ -1674,6 +1691,27 @@ describe('AddTaskBarParserService', () => {
       deadlineTime: null,
       deadlineRemindOption: null,
     };
+
+    it('retains a picked end date and statutory workdays after subsequent title edits', async () => {
+      mockStateService.state.and.returnValue(baseState as any);
+      mockStateService.inputTxt.and.returnValue('Work @daily');
+      await service.parseAndUpdateText('Work @daily', cfg, [], [], defaultProject);
+      const picked = {
+        type: 'INTERVAL' as const,
+        repeatCycle: 'DAILY' as const,
+        repeatEvery: 1,
+        endDate: '2026-12-31',
+        isChineseWorkday: true,
+      };
+      service.applyUserRepeatPick(picked);
+      expect(mockStateService.updateRepeatSetting).toHaveBeenCalledWith(picked, 'Work');
+      mockStateService.state.and.returnValue({ ...baseState, repeat: picked } as any);
+      mockStateService.updateRepeatSetting.calls.reset();
+      mockStateService.clearRepeatSetting.calls.reset();
+      await service.parseAndUpdateText('Work updated', cfg, [], [], defaultProject);
+      expect(mockStateService.updateRepeatSetting).not.toHaveBeenCalled();
+      expect(mockStateService.clearRepeatSetting).not.toHaveBeenCalled();
+    });
 
     it('should publish the typed time when the anchor day springs forward', async () => {
       // Guards the dueTimeStr passthrough: on a DST spring-forward day the

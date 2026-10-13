@@ -2,21 +2,39 @@
   class="matrix-task"
   [class.is-current]="isCurrent()"
   [class.is-compact]="compact()"
+  [class.is-notebook]="notebook()"
   [class.is-overdue]="isOverdue()"
+  [class.is-done]="task().isDone"
+  cdkOverlayOrigin
+  #taskOrigin="cdkOverlayOrigin"
 >
   <div class="task-heading">
     <button
       type="button"
       class="tasksmart-icon-button focus-ring"
-      [attr.aria-label]="(T.F.MATRIX.COMPLETE | translate) + ': ' + task().title"
-      (click)="complete.emit(task())"
+      [class.notebook-task-check]="notebook()"
+      [class.tasksmart-icon-button--compact]="compact()"
+      [attr.aria-label]="
+        ((hasChildren() ? T.F.MATRIX.SUBTASK : T.F.MATRIX.COMPLETE) | translate) +
+        ': ' +
+        task().title
+      "
+      [attr.aria-expanded]="hasChildren() ? showChildren() : null"
+      (click)="onIcon()"
+      [disabled]="archived() && !hasChildren()"
     >
-      <mat-icon aria-hidden="true">radio_button_unchecked</mat-icon>
+      @if (notebook()) {
+        <svg aria-hidden="true">
+          <use [attr.href]="'assets/home-journal/journal-icons.svg#' + icon()" />
+        </svg>
+      } @else {
+        <mat-icon aria-hidden="true">radio_button_unchecked</mat-icon>
+      }
     </button>
     <button
       type="button"
       class="task-title focus-ring"
-      (click)="edit.emit(task())"
+      (click)="onTitle()"
     >
       <span>{{ task().title }}</span>
     </button>
@@ -31,7 +49,7 @@
       </button>
     }
   </div>
-  @if (!compact()) {
+  @if (!compact() && !notebook()) {
     <div class="task-meta">
       <span class="project-name">{{ projectTitle() | translate }}</span>
       @if (task().parentId) {
@@ -59,21 +77,16 @@
       }
     </div>
   }
-  @if (compact() && planned(); as plannedDate) {
-    <span class="task-status">{{
-      plannedDate | localeDate: 'MMM d' : undefined : dateLocale()
-    }}</span>
-  }
-  @if (isOverdue()) {
+  @if (isOverdue() && !notebook()) {
     <span class="task-status overdue-label">{{ T.F.MATRIX.OVERDUE | translate }}</span>
   }
-  @if (task().parentId && compact()) {
+  @if (task().parentId && compact() && !notebook()) {
     <span class="task-status">{{ T.F.MATRIX.SUBTASK | translate }}</span>
   }
-  @if (task().repeatCfgId) {
+  @if (task().repeatCfgId && !notebook()) {
     <span class="task-status">{{ T.F.MATRIX.REPEATING | translate }}</span>
   }
-  @if (isCurrent()) {
+  @if (isCurrent() && !notebook()) {
     <span class="task-status">{{ T.F.MATRIX.CURRENT_TASK | translate }}</span>
   }
   @if (isSuggested() && !compact()) {
@@ -86,7 +99,7 @@
       {{ T.F.MATRIX.USE_SUGGESTION | translate }}
     </button>
   }
-  @if (isSuggested() && compact()) {
+  @if (isSuggested() && compact() && !notebook()) {
     <span class="task-status">{{ T.F.MATRIX.SUGGESTED | translate }}</span>
   }
   @if (isFocusEnabled() && !compact()) {
@@ -107,6 +120,69 @@
     </button>
   }
 </article>
+
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="taskOrigin"
+  [cdkConnectedOverlayOpen]="showChildren()"
+  [cdkConnectedOverlayPositions]="popupPositions"
+  [cdkConnectedOverlayHasBackdrop]="true"
+  cdkConnectedOverlayBackdropClass="notebook-overlay-backdrop"
+  [cdkConnectedOverlayPush]="true"
+  [cdkConnectedOverlayViewportMargin]="12"
+  (backdropClick)="showChildren.set(false)"
+  (overlayKeydown)="$event.key === 'Escape' && showChildren.set(false)"
+>
+  <section
+    class="subtask-popup"
+    role="dialog"
+    [attr.aria-label]="task().title"
+    [style.--tasksmart-quadrant-color]="popupColor()"
+  >
+    <div class="popup-parent">
+      <button
+        type="button"
+        [disabled]="archived()"
+        (click)="complete.emit(task())"
+      >
+        <svg aria-hidden="true">
+          <use
+            [attr.href]="
+              'assets/home-journal/journal-icons.svg#' +
+              (task().isDone ? 'done' : 'repeat')
+            "
+          />
+        </svg></button
+      ><button
+        type="button"
+        class="popup-parent-title"
+        [disabled]="archived()"
+        (click)="showChildren.set(false); edit.emit(task())"
+      >
+        {{ task().title }}
+      </button>
+    </div>
+    <div class="popup-children">
+      @for (child of children(); track child.id) {
+        <button
+          type="button"
+          [disabled]="archived()"
+          [class.is-done]="child.isDone"
+          (click)="complete.emit(child)"
+        >
+          <svg aria-hidden="true">
+            <use
+              [attr.href]="
+                'assets/home-journal/journal-icons.svg#' +
+                (child.isDone ? 'done' : 'circle')
+              "
+            /></svg
+          ><span>{{ child.title }}</span>
+        </button>
+      }
+    </div>
+  </section>
+</ng-template>
 
 <mat-menu #taskMenu="matMenu">
   <button

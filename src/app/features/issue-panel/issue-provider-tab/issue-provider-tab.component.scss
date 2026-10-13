@@ -1,6 +1,6 @@
 @use '../../../../styles/_globals.scss' as *;
 
-$pad: 12px;
+$pad: var(--s2);
 
 :host {
   margin-top: 0;
@@ -10,7 +10,8 @@ $pad: 12px;
   flex-direction: column;
   flex-grow: 1;
   max-width: 100%;
-  min-width: 260px;
+  min-width: 0;
+  font-family: var(--tasksmart-font-stack);
   overflow: hidden;
 }
 

@@ -10,7 +10,7 @@
       [attr.aria-label]="T.F.WORKLOG.CMP.EXPORT_DATA | translate"
       [disabled]="!wData.totalTimeSpent"
       [matTooltip]="T.F.WORKLOG.CMP.EXPORT_DATA | translate"
-      class="mat-elevation-z1 export-all"
+      class="tasksmart-fab export-all"
       color="primary"
       mat-mini-fab
     >
@@ -55,7 +55,7 @@
                   <button
                     (click)="exportData(year.key, month.key)"
                     [attr.aria-label]="T.F.WORKLOG.CMP.EXPORT_DATA | translate"
-                    class="mat-elevation-z1"
+                    class="tasksmart-fab"
                     color="primary"
                     mat-mini-fab
                   >
@@ -76,7 +76,7 @@
                     class="weeks"
                   >
                     @for (week of month.value.weeks; track week.weekNr) {
-                      <div class="week">
+                      <div class="week tasksmart-card">
                         <div class="week-header">
                           <div class="wrap">
                             <h3 class="week-title mat-h4">
@@ -99,7 +99,7 @@
                                     }
                             "
                             [attr.aria-label]="T.F.WORKLOG.CMP.EXPORT_DATA | translate"
-                            class="mat-elevation-z1"
+                            class="tasksmart-fab"
                             color=""
                             mat-mini-fab
                           >

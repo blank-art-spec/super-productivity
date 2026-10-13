@@ -4,7 +4,7 @@
   <div>
     <div class="days">
       @for (day of currentWeek!.ent | keyvalue: sortDays; track day.key; let i = $index) {
-        <div class="day">
+        <div class="day tasksmart-card">
           <div class="material-table">
             <div
               (click)="visibility[i] = !visibility[i]"
@@ -122,7 +122,7 @@
         </div>
       }
     </div>
-    <div style="text-align: center; margin-top: 12px">
+    <div class="export-actions">
       <button
         (click)="exportData()"
         color=""

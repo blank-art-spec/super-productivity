@@ -9,6 +9,26 @@
   flex-shrink: 0;
 }
 
+.tasksmart-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2);
+  padding: var(--s4) var(--s2);
+  color: var(--text-color-muted);
+  text-align: center;
+  overflow-wrap: anywhere;
+  p {
+    margin: 0;
+  }
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+  }
+}
+
 .tasksmart-disclosure {
   border-top: 1px solid var(--tasksmart-border);
   summary {
@@ -97,7 +117,86 @@
   --sidenav-active-text: var(--text-color);
 }
 
+// Reusable ink variant for notebook navigation; colors stay theme-aware.
+.tasksmart-fab--notebook.mat-mdc-fab,
+.tasksmart-fab--notebook.mat-mdc-fab.mat-primary {
+  @include mat.fab-overrides(
+    (
+      container-color: var(--notebook-ink),
+      foreground-color: var(--notebook-on-ink),
+      container-elevation-shadow: none,
+    )
+  );
+}
+
 body {
+  @include mat.dialog-overrides(
+    (
+      container-shape: var(--tasksmart-radius),
+      container-color: var(--tasksmart-surface),
+      subhead-font: var(--tasksmart-font-stack),
+      subhead-size: var(--font-size-2xl),
+      subhead-weight: var(--font-weight-semibold),
+      supporting-text-font: var(--tasksmart-font-stack),
+      supporting-text-size: var(--font-size-md),
+      supporting-text-color: var(--text-color),
+    )
+  );
+  @include mat.menu-overrides(
+    (
+      container-color: var(--tasksmart-surface),
+      container-shape: var(--tasksmart-radius),
+      item-label-text-font: var(--tasksmart-font-stack),
+      item-label-text-size: var(--font-size-md),
+      item-label-text-color: var(--text-color),
+      item-icon-color: var(--text-color-muted),
+      item-hover-state-layer-color: var(--tasksmart-hover),
+      item-focus-state-layer-color: var(--tasksmart-selected),
+    )
+  );
+  @include mat.snack-bar-overrides(
+    (
+      container-shape: var(--tasksmart-control-radius),
+      supporting-text-font: var(--tasksmart-font-stack),
+      supporting-text-size: var(--font-size-md),
+    )
+  );
+  .mat-mdc-tab-group {
+    @include mat.tabs-overrides(
+      (
+        active-indicator-color: var(--tasksmart-accent-text),
+        active-focus-indicator-color: var(--tasksmart-accent-text),
+        active-hover-indicator-color: var(--tasksmart-accent-text),
+        active-label-text-color: var(--text-color),
+        inactive-label-text-color: var(--text-color-muted),
+        divider-color: var(--tasksmart-border),
+        label-text-font: var(--tasksmart-font-stack),
+        label-text-size: var(--font-size-md),
+        label-text-weight: var(--font-weight-medium),
+        container-height: var(--tasksmart-control-height),
+      )
+    );
+  }
+  .mat-mdc-card {
+    @include mat.card-overrides(
+      (
+        elevated-container-color: var(--tasksmart-surface),
+        elevated-container-shape: var(--tasksmart-radius),
+        elevated-container-elevation: var(--tasksmart-shadow),
+        outlined-container-color: var(--tasksmart-surface),
+        outlined-container-shape: var(--tasksmart-radius),
+        outlined-outline-color: var(--tasksmart-border),
+        title-text-font: var(--tasksmart-font-stack),
+        title-text-size: var(--font-size-xl),
+        title-text-weight: var(--font-weight-semibold),
+        subtitle-text-color: var(--text-color-muted),
+      )
+    );
+  }
+  .mat-mdc-card-header-text {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
   .mat-mdc-dialog-surface,
   .mat-mdc-menu-panel {
     border: 1px solid var(--tasksmart-border);
@@ -138,6 +237,64 @@ body {
   }
   .action-nav-right--teleported .header-action-label {
     display: none;
+  }
+}
+
+// Shared settings variant: tab content must not become a nested scroll boundary.
+.tasksmart-settings-tabs {
+  .mat-mdc-tab-body-wrapper,
+  .mat-mdc-tab-body-active,
+  .mat-mdc-tab-body-content {
+    overflow: visible !important;
+  }
+  .mat-mdc-tab-header {
+    margin-bottom: var(--s2);
+  }
+}
+
+// Search suggestions are overlays, so their layout belongs in the shared layer.
+.settings-search-panel {
+  .mat-mdc-option .mdc-list-item__primary-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-quarter);
+  }
+  .search-result__path {
+    color: var(--text-color-muted);
+    font-size: var(--font-size-sm);
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
+// Native controls get the same keyboard cue as the shared Material controls.
+:where(
+  .tasksmart-day-button,
+  .search-result-content,
+  .habit-title,
+  .day-cell,
+  .disabled-section-header,
+  .repeat-value,
+  .caption
+):focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tasksmart-button,
+  .tasksmart-icon-button,
+  .tasksmart-day-button,
+  .matrix-drag-preview {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .tasksmart-view-switch [aria-pressed='true'],
+  .tasksmart-day-button[aria-pressed='true'],
+  .check-circle.is-done {
+    outline: var(--focus-ring-width) solid Highlight;
   }
 }
 
@@ -186,6 +343,83 @@ body {
   flex-shrink: 0;
   width: var(--tasksmart-control-height);
   padding: var(--s);
+}
+
+// Dense rows use a smaller layout box; the transparent hit area stays 44px
+// square. Consumers leave at least --s between this button and the next control.
+.tasksmart-icon-button--compact {
+  position: relative;
+  box-sizing: border-box;
+  width: var(--s4);
+  min-height: var(--s5);
+  padding: var(--s-half);
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: calc(var(--s5) + var(--s-half));
+    height: calc(var(--s5) + var(--s-half));
+    transform: translate(-50%, -50%);
+  }
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+// Opt-in variants for compact page toolbars and focus preparation controls.
+.tasksmart-view-switch.tasksmart-view-switch--compact {
+  gap: var(--s-half);
+  border: 0;
+  padding: 0;
+  background: transparent;
+
+  > .tasksmart-button {
+    border-radius: var(--tasksmart-radius);
+    font-size: var(--font-size-sm);
+
+    &[aria-pressed='true'] {
+      background: var(--ink);
+      color: var(--tasksmart-surface);
+      border-color: var(--ink);
+    }
+  }
+}
+
+.tasksmart-segments .segmented-button-group {
+  gap: var(--s-half);
+
+  .segment {
+    min-height: var(--tasksmart-control-height);
+    border: 1px solid var(--tasksmart-border);
+    border-radius: var(--tasksmart-control-radius);
+    padding: var(--s-half) var(--s);
+    flex-direction: row;
+    gap: var(--s-half);
+    background: var(--tasksmart-surface);
+
+    &.is-active,
+    &:not(.is-active):hover {
+      transform: none;
+      box-shadow: none;
+      border-width: 1px;
+      border-color: var(--tasksmart-accent-text);
+      background: var(--tasksmart-selected);
+    }
+  }
+  .segment-label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+  }
+  .segment-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
 }
 
 .tasksmart-field {
@@ -287,4 +521,7 @@ body {
 .matrix-drag-preview {
   box-shadow: var(--whiteframe-shadow-8dp);
   border-radius: var(--tasksmart-radius);
+}
+.notebook-overlay-backdrop {
+  background: var(--overlay-bg);
 }

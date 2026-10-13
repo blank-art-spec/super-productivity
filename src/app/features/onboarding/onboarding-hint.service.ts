@@ -45,8 +45,8 @@ const RETURNING_USER_MIN_PROJECTS = 3;
  * start with a calm feature set (see NEW_INSTALL_APP_FEATURES), so guidance
  * only teaches the basics and never changes settings.
  *
- * 1. Point at "+" until the user creates their first real task (any local
- *    creation path; example tasks and repeat instances do not count).
+ * 1. Wait for the first real task (any local creation path; example tasks and
+ *    repeat instances do not count). Only desktop shows a hint pointing at "+".
  * 2. Phones only: on the task row, "swipe left for more actions" (advances once
  *    the task menu was opened and closed), then "swipe right to mark it as done"
  *    (ends once a task is marked done).
@@ -95,7 +95,7 @@ export class OnboardingHintService {
       return null;
     }
     if (phase === 'await-first-task') {
-      return 'create-task';
+      return this._layoutService.isShowMobileBottomNav() ? null : 'create-task';
     }
     if (phase === 'task-swipe-left' || phase === 'task-swipe-right') {
       const isTaskUiOpen =

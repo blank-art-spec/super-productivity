@@ -26,6 +26,7 @@ import {
 import { map } from 'rxjs/operators';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { TaskCopy } from '../../features/tasks/task.model';
 
 const XS_BREAKPOINT = 600;
 const XXXS_BREAKPOINT = 398;
@@ -129,7 +130,10 @@ export class LayoutService {
   // Signal to track if any panel is currently being resized
   readonly isPanelResizing = signal(false);
 
-  showAddTaskBar(): void {
+  readonly addTaskFields = signal<Partial<TaskCopy> | undefined>(undefined);
+
+  showAddTaskBar(fields?: Partial<TaskCopy>): void {
+    this.addTaskFields.set(fields);
     // Store currently focused element if it's a task
     const activeElement = document.activeElement as HTMLElement;
     if (activeElement && activeElement.id && activeElement.id.startsWith('t-')) {
@@ -144,6 +148,7 @@ export class LayoutService {
   }
 
   hideAddTaskBar(newTaskId?: string): void {
+    this.addTaskFields.set(undefined);
     this._store$.dispatch(hideAddTaskBar());
     const focusTaskId = newTaskId ?? this._pendingFocusTaskId ?? undefined;
     this._pendingFocusTaskId = null;

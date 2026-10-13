@@ -8,9 +8,9 @@
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  border-bottom: 2px solid;
-
-  border-color: var(--extra-border-color);
+  border-bottom: 1px solid var(--tasksmart-border);
+  padding-block: var(--s);
+  gap: var(--s);
 
   mat-icon {
     margin: 0 var(--s-half);
@@ -18,6 +18,8 @@
 
   h2,
   h3 {
+    font-size: var(--font-size-lg);
+    overflow-wrap: anywhere;
     margin: 0;
     padding: 0;
   }

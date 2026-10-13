@@ -704,9 +704,8 @@ describe('getNewestPossibleDueDate()', () => {
         });
         const today = dateStrToUtcDate('2021-03-01');
         const startDate = dateStrToUtcDate('2020-02-29');
-        // The function doesn't handle leap year edge case for Feb 29 -> Feb 28 conversion
-        // It will return March 1st instead since it sets the date directly
-        const expected = dateStrToUtcDate('2021-03-01');
+        // Backward generation must agree with the forward scheduler's clamp.
+        const expected = dateStrToUtcDate('2021-02-28');
         expected.setHours(12, 0, 0, 0);
 
         const result = getNewestPossibleDueDate(

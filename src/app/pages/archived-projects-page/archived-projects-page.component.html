@@ -1,12 +1,14 @@
 <div class="page-wrapper">
-  <div class="search-header">
+  <div class="search-header tasksmart-page-toolbar">
     <mat-form-field
       appearance="outline"
       class="search-field"
+      subscriptSizing="dynamic"
     >
       <mat-label>{{ T.F.PROJECT.ARCHIVED_PROJECTS.SEARCH | translate }}</mat-label>
       <input
         matInput
+        type="search"
         [(ngModel)]="searchTerm"
         [placeholder]="T.F.PROJECT.ARCHIVED_PROJECTS.SEARCH | translate"
       />
@@ -23,9 +25,14 @@
     </mat-form-field>
   </div>
 
-  <section class="component-wrapper">
+  <section class="component-wrapper tasksmart-card">
     @if (filteredProjects().length === 0) {
-      <p class="empty-state">{{ T.F.PROJECT.ARCHIVED_PROJECTS.EMPTY | translate }}</p>
+      <p
+        class="tasksmart-empty-state"
+        role="status"
+      >
+        {{ T.F.PROJECT.ARCHIVED_PROJECTS.EMPTY | translate }}
+      </p>
     } @else {
       <ul
         class="project-list"

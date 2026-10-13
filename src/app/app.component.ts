@@ -91,8 +91,6 @@ import { OnboardingHintService } from './features/onboarding/onboarding-hint.ser
 import { MaterialIconsLoaderService } from './ui/material-icons-loader.service';
 import { BrowserTitleService } from './core/browser-title/browser-title.service';
 
-const ENTRANCE_ANIMATION_DURATION = 1500;
-
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
@@ -182,6 +180,11 @@ export class AppComponent implements OnDestroy, AfterViewInit {
   readonly T = T;
   readonly TODAY_TAG_ID = TODAY_TAG.id;
   readonly isShowMobileButtonNav = this.layoutService.isShowMobileBottomNav;
+  readonly isShowMainHeader = computed(
+    () =>
+      !this.layoutService.isXs() ||
+      (this._globalConfigService.misc()?.isShowMobileHeader ?? false),
+  );
   private readonly _taskMultiSelectService = inject(TaskMultiSelectService);
   readonly isMultiSelecting = this._taskMultiSelectService.isSelecting;
 
@@ -233,13 +236,6 @@ export class AppComponent implements OnDestroy, AfterViewInit {
     this._startupService.init();
     this._iosShareService.start();
     void this._materialIconsLoaderService.ensureFontReady();
-
-    // Clear app entrance animation after it completes
-    if (this.isAppEntrance()) {
-      setTimeout(() => {
-        this.isAppEntrance.set(false);
-      }, ENTRANCE_ANIMATION_DURATION);
-    }
 
     // Use effect to react to language RTL changes
     effect(() => {
@@ -400,6 +396,7 @@ export class AppComponent implements OnDestroy, AfterViewInit {
   }
 
   getPage(outlet: RouterOutlet): string {
+    if (!outlet.isActivated) return 'initial';
     return outlet.activatedRouteData.page || 'one';
   }
 
@@ -474,8 +471,6 @@ export class AppComponent implements OnDestroy, AfterViewInit {
       this._sectionService.addSection(title, ctxId, ctxType);
     }
   }
-
-  isAppEntrance = signal(true);
 
   ngAfterViewInit(): void {
     this._ngZone.runOutsideAngular(() => {

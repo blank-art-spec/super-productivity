@@ -1118,6 +1118,70 @@ describe('GlobalConfigReducer', () => {
   });
 
   describe('default misc config (#7891)', () => {
+    it('keeps legacy Matrix ordering unset until the first manual move', () => {
+      const result = globalConfigReducer(
+        initialGlobalConfigState,
+        loadAllData({
+          appDataComplete: {
+            globalConfig: {
+              ...initialGlobalConfigState,
+              misc: DEFAULT_GLOBAL_CONFIG.misc,
+            },
+          } as AppDataComplete,
+        }),
+      );
+      expect(result.misc.matrixTaskOrder).toBeUndefined();
+    });
+
+    it('replays and hydrates a Matrix ordering patch without replacing other settings', () => {
+      const action = updateGlobalConfigSection({
+        sectionKey: 'misc',
+        sectionCfg: { matrixTaskOrder: ['repeat:series', 'task:b', 'task:a'] },
+        isSkipSnack: true,
+      });
+      const updated = globalConfigReducer(
+        initialGlobalConfigState,
+        JSON.parse(JSON.stringify(action)),
+      );
+      const reloaded = globalConfigReducer(
+        initialGlobalConfigState,
+        loadAllData({
+          appDataComplete: {
+            globalConfig: JSON.parse(JSON.stringify(updated)),
+          } as AppDataComplete,
+        }),
+      );
+      expect(reloaded.misc.matrixTaskOrder).toEqual([
+        'repeat:series',
+        'task:b',
+        'task:a',
+      ]);
+      expect(reloaded.misc.isShowMobileHeader).toBe(
+        initialGlobalConfigState.misc.isShowMobileHeader,
+      );
+      expect(updated.misc).toEqual({
+        ...initialGlobalConfigState.misc,
+        matrixTaskOrder: ['repeat:series', 'task:b', 'task:a'],
+      });
+    });
+
+    for (const savedPreference of [undefined, false, true]) {
+      it(`preserves the mobile header choice ${savedPreference} on hydration`, () => {
+        const misc = { ...DEFAULT_GLOBAL_CONFIG.misc };
+        delete misc.isShowMobileHeader;
+        if (savedPreference !== undefined) misc.isShowMobileHeader = savedPreference;
+        const result = globalConfigReducer(
+          initialGlobalConfigState,
+          loadAllData({
+            appDataComplete: {
+              globalConfig: { ...initialGlobalConfigState, misc },
+            } as AppDataComplete,
+          }),
+        );
+        expect(result.misc.isShowMobileHeader).toBe(savedPreference ?? false);
+      });
+    }
+
     it('should NOT persist a default isUseCustomWindowTitleBar', () => {
       // Guard: a concrete default here would be pushed to Electron on every launch
       // and override a legacy `isUseObsidianStyleHeader` choice. The checkbox

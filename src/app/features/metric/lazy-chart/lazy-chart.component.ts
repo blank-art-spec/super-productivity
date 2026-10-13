@@ -10,6 +10,7 @@ import {
   input,
   signal,
   viewChild,
+  afterRenderEffect,
 } from '@angular/core';
 import type {
   ActiveElement,
@@ -32,6 +33,9 @@ import { ShareService } from '../../../core/share/share.service';
 import { SnackService } from '../../../core/snack/snack.service';
 import { T } from '../../../t.const';
 import { Log } from '../../../core/log';
+import { GlobalThemeService } from '../../../core/theme/global-theme.service';
+import { CustomThemeService } from '../../../core/theme/custom-theme.service';
+import { ChartThemeColors, withChartTheme } from './with-chart-theme.util';
 
 interface ChartClickEvent {
   active: ActiveElement[];
@@ -82,6 +86,8 @@ export class LazyChartComponent implements OnDestroy {
   private readonly chartLoaderService = inject(ChartLazyLoaderService);
   private readonly shareService = inject(ShareService);
   private readonly snackService = inject(SnackService);
+  private readonly globalTheme = inject(GlobalThemeService);
+  private readonly customTheme = inject(CustomThemeService);
 
   readonly type = input.required<ChartType>();
   readonly datasets = input<ChartData['datasets']>([]);
@@ -95,6 +101,21 @@ export class LazyChartComponent implements OnDestroy {
   readonly chartClick = new EventEmitter<ChartClickEvent>();
 
   private readonly canvasRef = viewChild<ElementRef<HTMLCanvasElement>>('canvas');
+  private readonly themeColors = signal<ChartThemeColors | null>(null);
+
+  // Read resolved CSS after rendering so body/custom-theme changes have reached the canvas.
+  private readonly chartThemeEffect = afterRenderEffect(() => {
+    this.globalTheme.isDarkTheme();
+    this.customTheme.appliedThemeVersion();
+    const canvas = this.canvasRef();
+    if (!canvas) return;
+    const style = getComputedStyle(canvas.nativeElement);
+    this.themeColors.set({
+      text: style.color,
+      grid: style.borderColor,
+      font: style.fontFamily,
+    });
+  });
 
   readonly isModuleLoaded = signal(false);
   readonly isSharing = signal(false);
@@ -113,7 +134,7 @@ export class LazyChartComponent implements OnDestroy {
   private readonly resolvedChartOptions = computed<ChartOptions>(() => {
     const baseOptions = this.options();
     const legendDisplay = this.legend();
-    return {
+    const options: ChartOptions = {
       responsive: true,
       maintainAspectRatio: false,
       ...(baseOptions ?? {}),
@@ -125,6 +146,14 @@ export class LazyChartComponent implements OnDestroy {
         },
       },
     };
+    const colors = this.themeColors();
+    return colors
+      ? withChartTheme(
+          options,
+          colors,
+          ['line', 'bar', 'scatter', 'bubble'].includes(this.type()),
+        )
+      : options;
   });
 
   private readonly chartOptionsWithHandlers = computed<ChartOptions>(() =>
@@ -239,6 +268,7 @@ export class LazyChartComponent implements OnDestroy {
   ngOnDestroy(): void {
     this.chartUpdateEffect.destroy();
     this.timeframeEffect.destroy();
+    this.chartThemeEffect.destroy();
     this.chartInstance?.destroy();
     this.chartInstance = null;
   }

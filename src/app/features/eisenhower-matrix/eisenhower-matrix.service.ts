@@ -5,11 +5,33 @@ import { Task } from '../tasks/task.model';
 import { TaskSharedActions } from '../../root-store/meta/task-shared.actions';
 import { WorkContextType } from '../work-context/work-context.model';
 import { MatrixGroupId } from './eisenhower-matrix.model';
+import { GlobalConfigService } from '../config/global-config.service';
+import { reorderMatrixTasks } from './matrix-task-order.util';
 
 @Injectable()
 export class EisenhowerMatrixService {
   private readonly _store = inject(Store);
   private readonly _taskService = inject(TaskService);
+  private readonly _config = inject(GlobalConfigService);
+
+  reorder(
+    tasks: readonly Task[],
+    movedTaskId: string,
+    targetIndex: number,
+    allTasks: readonly Task[] = tasks,
+  ): void {
+    const order = reorderMatrixTasks(
+      this._config.misc()?.matrixTaskOrder ?? [],
+      tasks,
+      movedTaskId,
+      targetIndex,
+      allTasks,
+    );
+    if (order) {
+      // One existing config field patch persists the entire move as a single op.
+      this._config.updateSection('misc', { matrixTaskOrder: order }, true);
+    }
+  }
 
   add(title: string, fields: Partial<Task> & { projectId: string }): string {
     // The matrix is global: never inherit Today, project or tags from the last route.

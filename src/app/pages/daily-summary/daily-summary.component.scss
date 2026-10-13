@@ -1,8 +1,7 @@
 @use '../../../styles/_globals.scss' as *;
 
-$summary-point-inner-margin: var(--s);
-
 :host {
+  font-family: var(--tasksmart-font-stack);
   evaluation-sheet {
     display: block;
   }
@@ -65,39 +64,53 @@ $summary-point-inner-margin: var(--s);
 }
 
 .done-headline {
-  margin-top: var(--s4);
-  margin-bottom: calc(var(--s3) - var(--s));
+  margin: var(--s3) 0;
+  font-size: var(--font-size-2xl);
+  overflow-wrap: anywhere;
 }
 
 .daily-summary-summary {
-  margin-bottom: var(--s5);
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  transition: opacity 0.2s ease;
+  margin: 0 auto var(--s3);
+  max-width: var(--component-max-width);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: var(--s2);
+  transition: opacity var(--transition-fast);
 
   &.is-loading-archive {
-    opacity: 0.6;
+    opacity: var(--muted-alpha);
   }
 
   p {
-    margin: 5px;
+    margin: var(--s-half);
   }
 }
 
 .summary-point {
-  vertical-align: center;
-  display: inline-block;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   text-align: center;
-  margin: $summary-point-inner-margin;
-  //flex-grow: 1;
-  flex-basis: 160px;
+  min-width: 0;
+  padding: var(--s2);
+  gap: var(--s);
+  background: var(--tasksmart-surface);
+  border: 1px solid var(--tasksmart-border);
+  border-radius: var(--tasksmart-radius);
   position: relative;
+
+  > mat-icon {
+    color: var(--tasksmart-accent-text);
+  }
+  .summary-text {
+    color: var(--text-color-muted);
+    font-size: var(--font-size-sm);
+  }
 
   .summary-val {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
 
     :first-child {
       justify-content: right;
@@ -126,7 +139,10 @@ $summary-point-inner-margin: var(--s);
 }
 
 .summary-val {
-  font-weight: bold;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-lg);
+  color: var(--text-color);
+  font-variant-numeric: tabular-nums;
 }
 
 .tabs {
@@ -148,10 +164,18 @@ $summary-point-inner-margin: var(--s);
 }
 
 .daily-summary-actions {
-  margin-top: 30px;
+  margin-top: var(--s4);
 
   button {
     margin: 0 var(--s-half);
+  }
+}
+
+.week-summary {
+  margin-top: var(--s6);
+  h3 {
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--s-half);
   }
 }
 

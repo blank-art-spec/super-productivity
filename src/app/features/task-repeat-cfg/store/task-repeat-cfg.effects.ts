@@ -71,6 +71,8 @@ const SCHEDULE_AFFECTING_BY_FIELD: Record<keyof TaskRepeatCfgCopy, boolean> = {
   quickSetting: false,
   repeatCycle: true,
   startDate: true,
+  endDate: true,
+  isChineseWorkday: true,
   repeatEvery: true,
   monday: true,
   tuesday: true,
@@ -124,6 +126,11 @@ export class TaskRepeatCfgEffects {
               getFirstRepeatOccurrence(taskRepeatCfg),
               taskRepeatCfg,
             );
+            if (
+              !calculatedTargetDate &&
+              (taskRepeatCfg.endDate || taskRepeatCfg.isChineseWorkday)
+            )
+              return null;
 
             // Use calculated date if available, otherwise fall back to existing logic
             const targetDayTimestamp = calculatedTargetDate
@@ -207,6 +214,22 @@ export class TaskRepeatCfgEffects {
           getFirstRepeatOccurrence(taskRepeatCfg),
           taskRepeatCfg,
         );
+        if (
+          !firstOccurrence &&
+          (taskRepeatCfg.endDate || taskRepeatCfg.isChineseWorkday)
+        ) {
+          // Keep the explicitly created task and its children; an exhausted
+          // schedule must not be silently replaced with a new occurrence today.
+          this._taskRepeatCfgService.updateTaskRepeatCfg(taskRepeatCfg.id, {
+            subTaskTemplates,
+          });
+          return {
+            task,
+            isFirstOccurrenceToday_: true,
+            firstOccurrenceStr: task.dueDay || this._dateService.todayStr(),
+            isTimedTask,
+          };
+        }
         const firstOccurrenceStr = firstOccurrence
           ? this._dateService.todayStr(firstOccurrence)
           : this._dateService.todayStr();
@@ -398,10 +421,14 @@ export class TaskRepeatCfgEffects {
                     const nextOccurrence = getNextRepeatOccurrence(fullCfg, new Date());
                     if (nextOccurrence) {
                       targetOccurrence = nextOccurrence;
+                    } else if (fullCfg.endDate || fullCfg.isChineseWorkday) {
+                      return EMPTY;
                     }
                   }
                 }
 
+                if (!targetOccurrence && (fullCfg.endDate || fullCfg.isChineseWorkday))
+                  return EMPTY;
                 const firstOccurrenceStr = targetOccurrence
                   ? this._dateService.todayStr(targetOccurrence)
                   : this._dateService.todayStr();

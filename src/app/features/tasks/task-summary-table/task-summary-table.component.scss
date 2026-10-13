@@ -1,5 +1,9 @@
 :host {
   display: block;
+  min-width: 0;
+  max-width: 100%;
+  // Keep the editable time columns reachable without widening the summary page.
+  overflow-x: auto;
 }
 
 .summary-table {
@@ -131,7 +135,8 @@
       opacity: 0;
     }
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
       opacity: 1;
     }
   }

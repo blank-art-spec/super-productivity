@@ -55,6 +55,13 @@
   --tasksmart-green-base: #45c9a5;
   --tasksmart-blue-base: #559ae9;
   --tasksmart-gray-base: #a6a9b3;
+  // Notebook home reference. The canvas continues to use the TaskSmart palette.
+  --notebook-font-stack: 'Noto Serif SC', 'Songti SC', SimSun, Georgia, serif;
+  --notebook-yellow: #efcf78;
+  --notebook-red: #e88998;
+  --notebook-green: #a3c9b6;
+  --notebook-purple: #adaee0;
+  --notebook-border-width: 2px;
   // -----------------------------
   // Safe Areas (iOS notch, home indicator)
   // Uses env() for native iOS safe areas
@@ -482,6 +489,8 @@ body.isDarkTheme {
 // inherited and cannot replace a value declared directly on the body.
 :where(body, body.isDarkTheme) {
   // These aliases must resolve on body, where the theme primitives are declared.
+  --notebook-ink: var(--ink);
+  --notebook-on-ink: var(--card-bg);
   --tasksmart-surface: var(--card-bg);
   --tasksmart-accent: var(--tasksmart-accent-base);
   --tasksmart-on-accent: var(--tasksmart-accent-ink-base);
@@ -536,7 +545,7 @@ body.isDarkTheme {
   --button-warn-label: color-mix(in srgb, var(--palette-warn-500) 18%, var(--ink-strong));
 
   --right-panel-bg: transparent;
-  --bottom-nav-height: 44px;
+  --bottom-nav-height: var(--tasksmart-control-height);
   --bottom-nav-extra-offset: 0px;
   --bottom-nav-bg: var(--sidenav-bg-mobile);
   --bottom-nav-shadow: var(--whiteframe-shadow-2dp);

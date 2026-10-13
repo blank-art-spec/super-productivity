@@ -1,0 +1,602 @@
+<section
+  class="composer"
+  [attr.aria-label]="N.TITLE | translate"
+>
+  <fieldset [disabled]="busy() || !!pendingTaskId()">
+    <div
+      class="date-tabs"
+      role="tablist"
+      [attr.aria-label]="N.DATE | translate"
+    >
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="selectedDay() === today()"
+        (click)="selectDay(today())"
+      >
+        {{ N.TODAY | translate }}
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="selectedDay() === tomorrow()"
+        (click)="selectDay(tomorrow())"
+      >
+        {{ N.TOMORROW | translate }}
+      </button>
+      <button
+        type="button"
+        (click)="openCalendar('day')"
+        class="other-date"
+        [class.selected]="isOtherDay()"
+      >
+        <span>{{ N.OTHER_DATE | translate }}</span>
+      </button>
+    </div>
+    <div class="title-row">
+      <button
+        class="category-trigger"
+        type="button"
+        [attr.aria-label]="N.CATEGORY | translate"
+        [attr.aria-expanded]="panel() === 'category'"
+        (click)="togglePanel('category')"
+      >
+        @if (categoryLabel(); as label) {
+          <span class="category-initial">{{ label.slice(0, 1) }}</span>
+        } @else {
+          <span class="category-initial">{{ N.NONE | translate }}</span>
+        }
+      </button>
+      <div class="title-input"><ng-content></ng-content></div>
+    </div>
+    @if (categoryLabel(); as label) {
+      <div class="selection-summary">{{ label }}</div>
+    }
+    @if (isOtherDay()) {
+      <div class="selection-summary">{{ selectedDay() }}</div>
+    }
+    @if (panel() === 'children' || draft.children().length) {
+      <div class="child-drafts">
+        @if (panel() === 'children') {
+          <div class="child-row">
+            <svg aria-hidden="true">
+              <use href="assets/home-journal/journal-icons.svg#checklist" />
+            </svg>
+            <input
+              type="text"
+              [ngModel]="childText()"
+              (ngModelChange)="childText.set($event)"
+              [placeholder]="N.ADD_CHILD | translate"
+              [attr.aria-label]="N.ADD_CHILD | translate"
+              (keydown.enter)="$event.preventDefault(); addChild()"
+            />
+            <button
+              class="child-plus"
+              type="button"
+              (click)="addChild()"
+              [disabled]="!childText().trim()"
+              [attr.aria-label]="N.ADD_CHILD | translate"
+            >
+              +
+            </button>
+          </div>
+        }
+        @if (draft.children().length) {
+          <div class="child-branch">
+            @for (title of draft.children(); track $index) {
+              <div class="child-row child-item">
+                <span
+                  class="child-bullet"
+                  aria-hidden="true"
+                  >·</span
+                ><span>{{ title }}</span
+                ><button
+                  type="button"
+                  class="child-minus"
+                  (click)="draft.removeChild($index)"
+                  [attr.aria-label]="N.REMOVE_CHILD | translate"
+                >
+                  −
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+    <div class="toolbar">
+      <button
+        type="button"
+        class="quadrant-tool"
+        (pointerdown)="$event.preventDefault()"
+        [class.active]="draft.quadrant() !== null"
+        [attr.data-quadrant]="selectedQuadrantIndex()"
+        [attr.aria-expanded]="panel() === 'quadrant'"
+        (click)="togglePanel('quadrant')"
+      >
+        <span class="quadrant-icon">{{
+          selectedQuadrantIndex() === 1
+            ? '!!!'
+            : selectedQuadrantIndex() === 3
+              ? '!!'
+              : '!'
+        }}</span>
+        <span>{{ N.QUADRANT | translate }}</span>
+      </button>
+      <button
+        type="button"
+        [class.active]="draft.children().length > 0"
+        [attr.aria-expanded]="panel() === 'children'"
+        (click)="togglePanel('children')"
+      >
+        <svg aria-hidden="true">
+          <use href="assets/home-journal/journal-icons.svg#checklist" /></svg
+        ><span>{{ N.CHILDREN | translate }}</span>
+        @if (draft.children().length) {
+          <sup class="child-count">{{ draft.children().length }}</sup>
+        }
+      </button>
+      <button
+        type="button"
+        [class.active]="!!state.state().time || !!state.state().deadlineDate"
+        [attr.aria-expanded]="panel() === 'range'"
+        (click)="togglePanel('range')"
+      >
+        <svg
+          viewBox="0 0 32 32"
+          aria-hidden="true"
+        >
+          <circle
+            cx="16"
+            cy="16"
+            r="12"
+          />
+          <path d="M16 4v12l9 7M16 9l8-3M16 13l11-4" /></svg
+        ><span>{{ N.RANGE | translate }}</span>
+      </button>
+      <button
+        type="button"
+        [class.active]="!!state.state().repeat"
+        [attr.aria-expanded]="panel() === 'repeat'"
+        (click)="togglePanel('repeat')"
+      >
+        <svg aria-hidden="true">
+          <use href="assets/home-journal/journal-icons.svg#repeat" /></svg
+        ><span>{{ N.REPEAT | translate }}</span>
+      </button>
+      <button
+        type="button"
+        [class.active]="
+          !!state.state().remindOption &&
+          state.state().remindOption !== reminderIds.DoNotRemind
+        "
+        [attr.aria-expanded]="panel() === 'reminder'"
+        (click)="togglePanel('reminder')"
+      >
+        <svg
+          viewBox="0 0 32 32"
+          aria-hidden="true"
+        >
+          <circle
+            cx="16"
+            cy="18"
+            r="11"
+          />
+          <path d="M16 18l4-6M13 3h6M16 3v4M25 7l2-2" /></svg
+        ><span>{{ N.REMINDER | translate }}</span>
+      </button>
+      <button
+        type="button"
+        class="send"
+        [disabled]="!state.inputTxt().trim() || !isConfirmedRepeatValid()"
+        (click)="submitted.emit()"
+        [attr.aria-label]="T.F.TASK.ADD_TASK_BAR.TOOLTIP_ADD_TASK | translate"
+      >
+        <svg
+          viewBox="0 0 32 32"
+          aria-hidden="true"
+        >
+          <path d="m3 13 26-9-7 25-7-8-6 5 1-10Zm7 3L29 4 15 21" />
+        </svg>
+      </button>
+    </div>
+    @if (!isConfirmedRepeatValid() && panel() !== 'repeat') {
+      <p
+        class="repeat-validation"
+        role="alert"
+      >
+        {{ N.INVALID_REPEAT | translate }}
+      </p>
+    }
+    @if (panel() === 'quadrant') {
+      <div
+        class="quadrant-popover"
+        role="group"
+        [attr.aria-label]="N.QUADRANT | translate"
+      >
+        <svg
+          class="axes"
+          viewBox="0 0 300 160"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path d="M12 82H288m-5-4 5 4-5 4M150 148V12m-4 5 4-5 4 5" />
+          <circle
+            cx="143"
+            cy="74"
+            r="3"
+            class="dot-yellow"
+          />
+          <circle
+            cx="157"
+            cy="74"
+            r="3"
+            class="dot-red"
+          />
+          <circle
+            cx="143"
+            cy="90"
+            r="3"
+            class="dot-green"
+          />
+          <circle
+            cx="157"
+            cy="90"
+            r="3"
+            class="dot-purple"
+          />
+        </svg>
+        @for (quadrant of quadrants; track quadrant.id) {
+          <button
+            type="button"
+            [class.selected]="draft.quadrant() === quadrant.id"
+            [attr.aria-pressed]="draft.quadrant() === quadrant.id"
+            (pointerdown)="$event.preventDefault()"
+            (click)="selectQuadrant(quadrant.id!)"
+          >
+            {{ quadrant.description | translate }}
+            @if (draft.quadrant() === quadrant.id) {
+              <svg
+                class="selection-circle"
+                [class.erasing]="clearingQuadrant()"
+                viewBox="0 0 140 48"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+                (animationend)="finishQuadrantAnimation()"
+              >
+                <ellipse
+                  cx="70"
+                  cy="24"
+                  rx="67"
+                  ry="20"
+                  pathLength="1"
+                />
+              </svg>
+            }
+          </button>
+        }
+        <button
+          type="button"
+          class="clear-quadrant"
+          (pointerdown)="$event.preventDefault()"
+          (click)="clearQuadrant()"
+        >
+          {{ N.CLEAR | translate }}
+        </button>
+      </div>
+    }
+    @if (panel() === 'range') {
+      <div class="expanded-panel">
+        <div class="range-cards">
+          <label class="range-card">
+            <span>{{ N.START | translate }}</span>
+            <strong>{{ rangeStartLabel() }}</strong>
+            <button
+              type="button"
+              class="card-picker"
+              (click)="openCalendar('start')"
+              [attr.aria-label]="N.START | translate"
+            ></button>
+            <small>{{
+              (range().startDay === today() ? N.TODAY : N.START_DATE) | translate
+            }}</small>
+          </label>
+          <label class="range-card">
+            <span>{{ N.END | translate }}</span>
+            <strong>{{
+              hasRangeEnd() || range().withTime
+                ? rangeEndLabel()
+                : (N.CHOOSE_DAYS | translate)
+            }}</strong>
+            <button
+              type="button"
+              class="card-picker"
+              (click)="openCalendar('end')"
+              [attr.aria-label]="N.END | translate"
+            ></button>
+            <small>{{ N.DURATION | translate }}</small>
+          </label>
+        </div>
+        <label class="time-switch"
+          ><span>{{ N.SET_TIME | translate }}</span
+          ><input
+            type="checkbox"
+            role="switch"
+            [ngModel]="range().withTime"
+            (ngModelChange)="patchRange({ withTime: $event })" /><span
+            class="switch-track"
+            aria-hidden="true"
+          ></span
+        ></label>
+        @if (range().withTime) {
+          <div class="time-inputs">
+            <label
+              >{{ N.START | translate
+              }}<input
+                type="time"
+                [ngModel]="range().startTime"
+                (ngModelChange)="patchRange({ startTime: $event })"
+            /></label>
+            <label
+              >{{ N.END | translate
+              }}<input
+                type="time"
+                [ngModel]="range().endTime"
+                (ngModelChange)="patchRange({ endTime: $event })"
+            /></label>
+          </div>
+        }
+        <p>{{ N.TIMELINE_HELP | translate }}</p>
+        @if (rangeDuration() === null) {
+          <p
+            class="validation"
+            role="alert"
+          >
+            {{ N.INVALID_RANGE | translate }}
+          </p>
+        }
+        <div class="panel-actions">
+          <button
+            type="button"
+            (click)="panel.set(null)"
+          >
+            {{ T.G.CANCEL | translate }}</button
+          ><button
+            type="button"
+            (click)="confirmRange()"
+            [disabled]="rangeDuration() === null"
+          >
+            {{ N.CONFIRM | translate }}
+          </button>
+        </div>
+      </div>
+    }
+    @if (panel() === 'repeat') {
+      <div class="expanded-panel">
+        <div
+          class="repeat-pills"
+          role="group"
+          [attr.aria-label]="N.REPEAT | translate"
+        >
+          @for (option of repeatOptions; track option.value) {
+            <button
+              type="button"
+              [attr.aria-pressed]="repeatChoice() === option.value"
+              (click)="repeatChoice.set(option.value)"
+            >
+              {{ option.label | translate }}
+            </button>
+          }
+        </div>
+        @if (repeatChoice()) {
+          <div
+            class="repeat-settings"
+            animate.enter="composer-options-enter"
+          >
+            <div class="repeat-setting-row">
+              <svg aria-hidden="true">
+                <use href="assets/home-journal/journal-icons.svg#repeat" />
+              </svg>
+              <strong>{{ N.REPEAT_DATE | translate }}</strong>
+              @if (repeatChoice() === 'MONDAY_TO_FRIDAY') {
+                <span class="repeat-value">{{ N.CHINESE_WORKDAYS | translate }}</span>
+              } @else {
+                <label class="repeat-interval">
+                  {{ N.REPEAT_EVERY | translate }}
+                  <input
+                    type="number"
+                    min="1"
+                    max="1000"
+                    step="1"
+                    inputmode="numeric"
+                    [ngModel]="repeatEvery()"
+                    (ngModelChange)="repeatEvery.set($event)"
+                    [attr.aria-label]="T.F.TASK_REPEAT.F.REPEAT_EVERY | translate"
+                    [attr.aria-invalid]="!isRepeatValid()"
+                  />
+                  @for (unit of [repeatUnit()]; track unit) {
+                    <span animate.enter="composer-options-enter">{{
+                      unit | translate
+                    }}</span>
+                  }
+                </label>
+              }
+            </div>
+            <div class="repeat-setting-row">
+              <svg aria-hidden="true">
+                <use href="assets/home-journal/journal-icons.svg#power" />
+              </svg>
+              <strong>{{ N.END_REPEAT | translate }}</strong>
+              <button
+                type="button"
+                class="repeat-end"
+                (click)="openCalendar('repeatEnd')"
+              >
+                <span>{{ repeatEndLabel() || (N.NO_REPEAT_END | translate) }}</span>
+                <mat-icon aria-hidden="true">chevron_right</mat-icon>
+              </button>
+              @if (repeatEndDay()) {
+                <button
+                  type="button"
+                  class="repeat-end-clear"
+                  (click)="repeatEndDay.set(null)"
+                  [attr.aria-label]="N.CLEAR | translate"
+                >
+                  <mat-icon aria-hidden="true">close</mat-icon>
+                </button>
+              }
+            </div>
+            @if (repeatChoice() === 'MONDAY_TO_FRIDAY') {
+              <p class="repeat-help">{{ N.CHINESE_WORKDAY_HELP | translate }}</p>
+            }
+            @if (!isRepeatValid()) {
+              <p
+                class="validation"
+                role="alert"
+              >
+                {{ N.INVALID_REPEAT | translate }}
+              </p>
+            }
+          </div>
+        }
+        <div class="panel-actions">
+          <button
+            type="button"
+            (click)="panel.set(null)"
+          >
+            {{ T.G.CANCEL | translate }}</button
+          ><button
+            type="button"
+            (click)="confirmRepeat()"
+            [disabled]="!!repeatChoice() && !isRepeatValid()"
+          >
+            {{ N.CONFIRM | translate }}
+          </button>
+        </div>
+      </div>
+    }
+    @if (panel() === 'category') {
+      <div class="expanded-panel categories">
+        <div class="create-links">
+          <button
+            type="button"
+            (click)="createCategory()"
+          >
+            +{{ N.NEW_CATEGORY | translate }}</button
+          ><button
+            type="button"
+            (click)="createGoal()"
+          >
+            +{{ N.NEW_GOAL | translate }}
+          </button>
+        </div>
+        <button
+          type="button"
+          class="category-row"
+          (click)="selectCategory(null)"
+        >
+          <span class="category-initial">{{ N.NONE | translate }}</span
+          ><span>{{ N.NO_CATEGORY | translate }}</span>
+          @if (!categoryLabel()) {
+            <mat-icon>check</mat-icon>
+          }
+        </button>
+        @for (category of categories(); track category.id) {
+          <button
+            type="button"
+            class="category-row"
+            [class.selected]="
+              state.state().tagIds.includes(category.id) ||
+              state.state().tagIdsFromTxt.includes(category.id)
+            "
+            (click)="selectCategory(category.id)"
+          >
+            <mat-icon [style.color]="category.color">{{
+              category.icon || 'label_outline'
+            }}</mat-icon
+            ><span>{{ category.title }}</span>
+            @if (
+              state.state().tagIds.includes(category.id) ||
+              state.state().tagIdsFromTxt.includes(category.id)
+            ) {
+              <mat-icon>check</mat-icon>
+            }
+          </button>
+        }
+        @for (goal of goals(); track goal.id) {
+          <button
+            type="button"
+            class="category-row"
+            [class.selected]="state.state().projectId === goal.id"
+            (click)="selectGoal(goal.id)"
+          >
+            <mat-icon>{{ goal.icon || 'flag' }}</mat-icon
+            ><span>{{ goal.title }}</span>
+            @if (state.state().projectId === goal.id) {
+              <mat-icon>check</mat-icon>
+            }
+          </button>
+        }
+      </div>
+    }
+    @if (panel() === 'reminder') {
+      <div class="expanded-panel reminders">
+        <div
+          class="repeat-pills"
+          role="group"
+          [attr.aria-label]="N.REMINDER | translate"
+        >
+          @for (option of reminderOptions; track option.value) {
+            <button
+              type="button"
+              [attr.aria-pressed]="reminderChoice() === option.value"
+              (click)="reminderChoice.set(option.value)"
+            >
+              {{ option.label | translate }}
+            </button>
+          }
+        </div>
+        @if (reminderChoice() !== reminderIds.DoNotRemind) {
+          <label class="reminder-time"
+            >{{ N.START_TIME | translate
+            }}<input
+              type="time"
+              [ngModel]="reminderTime()"
+              (ngModelChange)="reminderTime.set($event)"
+              required
+          /></label>
+        }
+        <div class="panel-actions">
+          <button
+            type="button"
+            (click)="panel.set(null)"
+          >
+            {{ T.G.CANCEL | translate }}</button
+          ><button
+            type="button"
+            (click)="confirmReminder()"
+            [disabled]="reminderChoice() !== reminderIds.DoNotRemind && !reminderTime()"
+          >
+            {{ N.CONFIRM | translate }}
+          </button>
+        </div>
+      </div>
+    }
+  </fieldset>
+  @if (busy() || pendingTaskId()) {
+    <div
+      class="save-status"
+      role="status"
+    >
+      {{ (busy() ? N.SAVING : N.SAVE_INCOMPLETE) | translate }}
+      @if (!busy() && pendingTaskId()) {
+        <button
+          type="button"
+          (click)="submitted.emit()"
+        >
+          {{ N.RETRY | translate }}
+        </button>
+      }
+    </div>
+  }
+</section>

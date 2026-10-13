@@ -102,4 +102,8 @@
 // reads as one beat: "select task" -> "start session".
 .select-task-cta {
   margin: var(--s);
+  border-color: var(--tasksmart-border);
+  border-radius: var(--tasksmart-radius);
+  background: var(--tasksmart-surface);
+  font-size: var(--font-size-sm);
 }

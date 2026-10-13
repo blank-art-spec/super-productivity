@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
-import { MatIconButton, MatFabButton } from '@angular/material/button';
+import { MatIconButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
 import { TranslatePipe } from '@ngx-translate/core';
 import { TaskTitleComponent } from '../../../ui/task-title/task-title.component';
@@ -30,7 +30,6 @@ import { T } from '../../../t.const';
     FocusModeTaskTrackingComponent,
     MatIcon,
     MatIconButton,
-    MatFabButton,
     MatTooltip,
     TranslatePipe,
   ],
@@ -79,13 +78,10 @@ import { T } from '../../../t.const';
       </p>
     } @else {
       <button
-        mat-fab
-        extended
-        color="primary"
-        class="select-task-cta task-title-placeholder tasksmart-fab"
+        type="button"
+        class="select-task-cta task-title-placeholder tasksmart-button tasksmart-button--quiet focus-ring"
         (click)="$event.stopPropagation(); selectTask.emit()"
       >
-        <mat-icon>add_task</mat-icon>
         {{ T.F.FOCUS_MODE.SELECT_TASK_TO_FOCUS | translate }}
       </button>
     }

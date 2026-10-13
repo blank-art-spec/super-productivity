@@ -89,3 +89,36 @@
     display: none;
   }
 }
+
+// Phones use natural rows so the selector, task and timer never overlap.
+// Short displays can scroll instead of squeezing controls into the clock.
+@include mq(xs, max) {
+  :host,
+  :host.has-mode-selector {
+    box-sizing: border-box;
+    padding: var(--s8) var(--s) var(--s2);
+    justify-content: flex-start;
+    overflow-y: auto;
+  }
+
+  .top {
+    position: static;
+    width: 100%;
+    flex-shrink: 0;
+  }
+
+  .task {
+    height: auto;
+    padding-block: var(--s2);
+    flex-shrink: 0;
+  }
+
+  .clock {
+    flex-shrink: 0;
+  }
+
+  .bottom {
+    height: auto;
+    flex-shrink: 0;
+  }
+}

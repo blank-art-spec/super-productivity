@@ -263,12 +263,12 @@ label {
     height: 0;
 
     &::after {
-      width: 30px;
-      height: 30px;
-      margin-left: -15px;
-      top: -15px;
-      background: var(--c-accent);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      width: var(--s2);
+      height: var(--s2);
+      margin-left: calc(var(--s) * -1);
+      top: calc(var(--s) * -1);
+      background: var(--tasksmart-accent);
+      box-shadow: var(--tasksmart-shadow);
     }
   }
 
@@ -277,12 +277,33 @@ label {
     width: 100%;
   }
 
+  // Keep the clock notation while idle; editing still uses the established
+  // duration input/parser (e.g. "25m") with its original validation.
+  .clock-value-preview {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-family: var(--tasksmart-font-stack);
+    font-size: var(--input-duration-slider-value-size, 16px);
+    font-weight: var(--font-weight-medium);
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
+  }
+
+  .value-wrapper:focus-within .clock-value-preview {
+    visibility: hidden;
+  }
+
   .value {
-    font-family: inherit;
-    font-weight: bold;
+    font-family: var(--tasksmart-font-stack);
+    font-weight: var(--font-weight-medium);
     line-height: 1;
     font-variant-numeric: tabular-nums;
     color: inherit;
+    &:not(:focus) {
+      color: transparent;
+    }
     // Base cursor is already `text`; make the click-to-edit affordance explicit
     // on hover with a subtle accent underline so the digits read as editable.
     text-decoration: underline transparent;
@@ -292,7 +313,7 @@ label {
       var(--ani-standard-timing);
 
     &:hover {
-      text-decoration-color: var(--c-accent);
+      text-decoration-color: var(--tasksmart-accent-text);
     }
 
     // Suppress the focus scale-up — at clock-time sizes it would push digits

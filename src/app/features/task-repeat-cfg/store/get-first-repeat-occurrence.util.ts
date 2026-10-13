@@ -1,5 +1,7 @@
 import { TASK_REPEAT_WEEKDAY_MAP, TaskRepeatCfg } from '../task-repeat-cfg.model';
 import { dateStrToUtcDate } from '../../../util/date-str-to-utc-date';
+import { isAllowedRepeatDay } from './repeat-occurrence-limits.util';
+import { getNextRepeatOccurrence } from './get-next-repeat-occurrence.util';
 import {
   findMonthlyNthWeekdayOccurrence,
   hasNthWeekdayAnchor,
@@ -21,6 +23,13 @@ import {
  * @returns The first valid occurrence date at noon, or null if none found
  */
 export const getFirstRepeatOccurrence = (taskRepeatCfg: TaskRepeatCfg): Date | null => {
+  const first = getFirstUnboundedOccurrence(taskRepeatCfg);
+  if (!taskRepeatCfg.endDate && !taskRepeatCfg.isChineseWorkday) return first;
+  if (!first || isAllowedRepeatDay(taskRepeatCfg, first)) return first;
+  return getNextRepeatOccurrence(taskRepeatCfg, first, { inclusive: true });
+};
+
+const getFirstUnboundedOccurrence = (taskRepeatCfg: TaskRepeatCfg): Date | null => {
   if (!Number.isInteger(taskRepeatCfg.repeatEvery) || taskRepeatCfg.repeatEvery < 1) {
     return null;
   }

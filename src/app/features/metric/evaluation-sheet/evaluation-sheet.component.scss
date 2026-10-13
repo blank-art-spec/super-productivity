@@ -1,13 +1,13 @@
 @use '../../../../styles/_globals.scss' as *;
 
 :host {
-  --eval-card-gap: 12px;
-  --eval-border-radius: var(--card-border-radius);
+  --eval-card-gap: var(--s2);
+  --eval-border-radius: var(--tasksmart-radius);
   box-shadow: none;
   gap: var(--eval-card-gap);
   display: flex !important;
   flex-direction: column;
-  text-align: left;
+  text-align: start;
 }
 
 .radio-group,
@@ -15,11 +15,11 @@
 .score-card,
 .daily-state-card,
 reflection-note {
-  padding: 12px;
+  padding: var(--s2);
   border-radius: var(--eval-border-radius);
   // Flat cards: hairline border instead of a resting shadow (matches daily-summary).
-  border: 1px solid var(--extra-border-color);
-  background-color: var(--card-bg);
+  border: 1px solid var(--tasksmart-border);
+  background-color: var(--tasksmart-surface);
 }
 
 reflection-note {
@@ -41,7 +41,7 @@ reflection-note {
     display: flex;
     flex-direction: column;
     gap: var(--s-half);
-    font-size: 12px;
+    font-size: var(--font-size-sm);
 
     .time-label {
       letter-spacing: 0.08em;
@@ -49,20 +49,20 @@ reflection-note {
     }
 
     .time-value {
-      font-weight: 600;
-      font-size: 14px;
+      font-weight: var(--font-weight-semibold);
+      font-size: var(--font-size-md);
     }
   }
 }
 
 .radio-group {
-  padding: 12px;
+  padding: var(--s2);
 
   > label {
     display: block;
     margin-bottom: var(--s);
-    text-align: left;
-    font-weight: 500;
+    text-align: start;
+    font-weight: var(--font-weight-medium);
   }
 
   mat-radio-group {
@@ -71,7 +71,7 @@ reflection-note {
   }
 
   .hint {
-    text-align: left;
+    text-align: start;
     margin-top: var(--s);
     font-size: 0.75em;
     opacity: 0.6;
@@ -81,22 +81,22 @@ reflection-note {
 .scores-container {
   display: grid;
   //grid-template-columns: 3fr 2fr;
-  grid-template-columns: 2fr 2fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--eval-card-gap);
 }
 
 .score-card {
-  padding: 12px;
-  text-align: left;
+  padding: var(--s2);
+  text-align: start;
   display: flex;
   flex-direction: column;
   gap: var(--s);
   transition: var(--transition-standard);
-  border: 2px solid var(--card-bg);
+  border: 2px solid var(--tasksmart-surface);
 
   .label {
     font-size: 0.75em;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     opacity: 0.85;
@@ -116,8 +116,8 @@ reflection-note {
     gap: var(--s2);
 
     .score {
-      font-size: 36px;
-      font-weight: 700;
+      font-size: var(--font-size-3xl);
+      font-weight: var(--font-weight-bold);
       line-height: 1;
     }
   }
@@ -132,7 +132,7 @@ reflection-note {
 .daily-state-card {
   padding: var(--s2);
   background: var(--bg-lightest);
-  border-left: 4px solid var(--c-accent);
+  border-inline-start: var(--s-half) solid var(--tasksmart-accent-text);
   display: flex;
   flex-direction: column;
   gap: var(--s);
@@ -156,7 +156,7 @@ reflection-note {
   .daily-state-title {
     display: flex;
     gap: var(--s);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     color: var(--text-color);
     transition: transform 0.2s ease;
   }
@@ -177,22 +177,22 @@ reflection-note {
 .trend-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: var(--s-half) 10px;
+  gap: var(--s);
+  padding: var(--s-half) var(--s2);
   border-radius: 999px;
   border: none;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--tasksmart-selected);
   color: inherit;
   cursor: pointer;
   font-size: 0.85em;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   transition: background-color 0.2s ease;
 
   &:focus-visible {
-    outline: 2px solid var(--c-light-60);
-    outline-offset: 2px;
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
   }
 
   .pill-title {
@@ -200,22 +200,32 @@ reflection-note {
   }
 
   .pill-value {
-    font-weight: 700;
+    font-weight: var(--font-weight-bold);
   }
 
   .pill-delta {
-    font-weight: 700;
+    font-weight: var(--font-weight-bold);
   }
 
   &.trend-up {
-    background: rgba(76, 175, 80, 0.35);
+    background: color-mix(in srgb, var(--color-success) 20%, var(--tasksmart-surface));
   }
 
   &.trend-down {
-    background: rgba(244, 67, 54, 0.35);
+    background: color-mix(in srgb, var(--color-danger) 20%, var(--tasksmart-surface));
   }
 
   &.trend-stable {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--tasksmart-selected);
+  }
+}
+
+@include mq(xs, max) {
+  .scores-container {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .time-summary,
+  .radio-group mat-radio-group {
+    flex-wrap: wrap;
   }
 }

@@ -1,7 +1,7 @@
 <div class="wrapper">
   @if (simpleMetrics(); as sm) {
     <section
-      class="basic-stats"
+      class="basic-stats tasksmart-card"
       [@fade]
     >
       <div class="metrics-header">
@@ -21,7 +21,7 @@
         >
       </p>
       <div class="material-table">
-        <table>
+        <table [attr.aria-label]="metricsTitle() | translate">
           <tr>
             <th>{{ T.F.METRIC.CMP.TIME_SPENT | translate }}</th>
             <td>{{ sm.timeSpent | msToString }}</td>
@@ -70,7 +70,7 @@
     </section>
   }
 
-  <section class="heatmap-section">
+  <section class="heatmap-section tasksmart-card">
     <activity-heatmap></activity-heatmap>
   </section>
 
@@ -81,7 +81,7 @@
         <section class="line-charts">
           @if (productivityBreakdownChartData(); as breakdownChart) {
             @if (breakdownChart) {
-              <section>
+              <section class="chart-card tasksmart-card">
                 <h3>{{ T.F.METRIC.CMP.PRODUCTIVITY_BREAKDOWN_OVER_TIME | translate }}</h3>
                 <lazy-chart
                   [type]="lineChartType"
@@ -99,7 +99,7 @@
           }
           @if (focusSessionData(); as focusSessions) {
             @if (focusSessions.labels?.length) {
-              <section>
+              <section class="chart-card tasksmart-card">
                 <h3>{{ T.F.METRIC.CMP.FOCUS_SESSION_TRENDS | translate }}</h3>
                 <lazy-chart
                   [type]="lineChartType"
@@ -120,7 +120,7 @@
         <h2>{{ T.F.METRIC.CMP.SIMPLE_COUNTERS | translate }}</h2>
         <section class="line-charts">
           @if (simpleClickCounterData(); as simpleCounterClickData) {
-            <section>
+            <section class="chart-card tasksmart-card">
               <h3>{{ T.F.METRIC.CMP.SIMPLE_CLICK_COUNTERS_OVER_TIME | translate }}</h3>
               <lazy-chart
                 [type]="lineChartType"
@@ -136,7 +136,7 @@
             </section>
           }
           @if (simpleCounterStopWatchData(); as simpleCounterStopWatchData) {
-            <section>
+            <section class="chart-card tasksmart-card">
               <h3>
                 {{ T.F.METRIC.CMP.SIMPLE_STOPWATCH_COUNTERS_OVER_TIME | translate }}
               </h3>

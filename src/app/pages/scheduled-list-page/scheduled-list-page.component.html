@@ -38,15 +38,21 @@
                     ></tag-list>
                   </div>
 
-                  <div
+                  <button
+                    type="button"
+                    [attr.aria-label]="
+                      (T.G.EDIT | translate) + ': ' + taskRepeatCfg.title
+                    "
                     (click)="editTaskRepeatCfg(taskRepeatCfg)"
                     class="repeat-text-and-icon"
                     [matTooltip]="getTooltipText(taskRepeatCfg)"
                     mat-ripple
                   >
-                    <div class="repeat-text">{{ getRepeatInfoText(taskRepeatCfg) }}</div>
+                    <span class="repeat-text">{{
+                      getRepeatInfoText(taskRepeatCfg)
+                    }}</span>
                     <mat-icon>repeat</mat-icon>
-                  </div>
+                  </button>
                 </div>
               </div>
             </mat-card-content>
@@ -74,7 +80,9 @@
       >
         @for (task of allScheduledTasks; track task.id) {
           <planner-task [task]="task">
-            <div
+            <button
+              type="button"
+              [attr.aria-label]="(T.G.EDIT | translate) + ': ' + task.title"
               (click)="editReminder(task, $event)"
               class="due-date"
               mat-ripple
@@ -97,7 +105,7 @@
               } @else {
                 <mat-icon>schedule</mat-icon>
               }
-            </div>
+            </button>
           </planner-task>
         }
       </div>

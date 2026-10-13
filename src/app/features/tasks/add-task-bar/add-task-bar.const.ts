@@ -8,7 +8,10 @@ import { ShortSyntaxRepeat } from '../short-syntax';
 // which defers everything to the repeat dialog and therefore carries no config
 // of its own. Keeping it a separate variant is what lets a syntax-parsed
 // interval be a CUSTOM config without also opening that dialog.
-export type AddTaskBarRepeat = ShortSyntaxRepeat | { type: 'DIALOG' };
+export type AddTaskBarRepeat = (ShortSyntaxRepeat | { type: 'DIALOG' }) & {
+  endDate?: string | null;
+  isChineseWorkday?: boolean;
+};
 
 export interface AddTaskBarState {
   projectId: string;

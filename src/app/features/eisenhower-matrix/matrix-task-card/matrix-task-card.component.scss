@@ -72,7 +72,13 @@
 .is-compact {
   padding-block: 0;
 
+  .task-heading {
+    gap: var(--s);
+    align-items: center;
+  }
+
   .task-title {
+    min-height: var(--s5);
     padding-block: var(--s-half);
     align-content: center;
 
@@ -87,4 +93,111 @@
   .task-status {
     margin-inline-start: 0;
   }
+}
+
+.is-notebook {
+  padding-block: var(--s-half);
+  border-bottom: 1px dashed var(--tasksmart-border);
+  font-family: var(--notebook-font-stack);
+
+  .task-heading {
+    gap: var(--s-half);
+  }
+
+  .task-title {
+    color: var(--notebook-ink);
+    font-family: var(--tasksmart-font-stack);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  &.is-current {
+    background: color-mix(
+      in srgb,
+      var(--tasksmart-quadrant-color) 15%,
+      var(--tasksmart-surface)
+    );
+    border-radius: var(--s-half);
+  }
+}
+
+.notebook-task-check {
+  color: var(--tasksmart-quadrant-color);
+
+  svg {
+    display: block;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.is-notebook.is-done .task-title {
+  color: var(--text-color-muted);
+  text-decoration: line-through;
+}
+.subtask-popup {
+  width: min(42vw, 260px);
+  min-width: 155px;
+  max-height: 65dvh;
+  overflow: auto;
+  padding: var(--s-half) var(--s);
+  background: var(--card-bg);
+  color: var(--notebook-ink);
+  border-radius: var(--s);
+  font-family: var(--font-primary-stack);
+  box-shadow: var(--whiteframe-shadow-6dp);
+}
+.subtask-popup button {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  padding: 0;
+  cursor: pointer;
+}
+.subtask-popup svg {
+  width: 22px;
+  height: 22px;
+  color: var(--tasksmart-quadrant-color);
+  flex-shrink: 0;
+}
+.popup-parent {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  min-height: 36px;
+  font-size: var(--font-size-sm);
+}
+.popup-parent button {
+  display: grid;
+  place-items: center;
+  min-height: 36px;
+}
+.popup-parent strong {
+  overflow-wrap: anywhere;
+}
+.popup-parent .popup-parent-title {
+  overflow-wrap: anywhere;
+  text-align: start;
+  font: inherit;
+  font-weight: var(--font-weight-semibold);
+}
+.popup-children {
+  border-left: 1px solid var(--tasksmart-quadrant-color);
+  margin-left: var(--s);
+  padding-left: var(--s2);
+}
+.popup-children button {
+  display: flex;
+  align-items: center;
+  gap: var(--s);
+  text-align: start;
+  font: var(--font-size-sm) var(--font-primary-stack);
+  width: 100%;
+  min-height: 36px;
+}
+.popup-children span {
+  overflow-wrap: anywhere;
+}
+.popup-children .is-done span {
+  text-decoration: line-through;
+  color: var(--text-color-muted);
 }

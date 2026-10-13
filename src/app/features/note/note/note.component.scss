@@ -1,9 +1,10 @@
 @use '../../../../styles/_globals.scss' as *;
 
 :host {
-  --note-font-size: 14px;
+  --note-font-size: var(--font-size-md);
 
   display: block;
+  font-family: var(--tasksmart-font-stack);
 
   :host-context([dir='rtl']) {
     margin-right: unset;
@@ -12,6 +13,8 @@
 
 .note {
   @include noteStyle;
+  border: 1px solid var(--tasksmart-border);
+  box-shadow: var(--tasksmart-shadow);
 
   overflow: hidden;
 
@@ -20,7 +23,7 @@
     transform-origin: center center;
     position: relative;
     z-index: 4;
-    box-shadow: var(--whiteframe-shadow-3dp);
+    box-shadow: var(--tasksmart-overlay-shadow);
     //outline: 2px dashed var(--c-accent);
   }
 
@@ -114,7 +117,8 @@
   }
 }
 
-:host:hover .bottom-controls {
+:host:hover .bottom-controls,
+:host:focus-within .bottom-controls {
   opacity: 1;
 
   &.isOver {
@@ -127,8 +131,8 @@
   align-items: center;
   transition: var(--transition-standard);
   cursor: move;
-  border-top: 1px dashed var(--extra-border-color);
-  opacity: 0;
+  border-top: 1px solid var(--tasksmart-border);
+  opacity: 1;
   position: relative;
 
   @include touchOnlyDevice() {
@@ -165,11 +169,5 @@
   button:last-of-type {
     margin-left: auto;
     margin-right: 0;
-  }
-
-  .mat-mdc-icon-button {
-    height: 36px;
-    width: 36px;
-    line-height: 36px;
   }
 }

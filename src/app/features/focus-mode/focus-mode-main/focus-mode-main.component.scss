@@ -132,7 +132,7 @@
   // elements (the duration-slider overlay) can read them. Both pull the
   // diameter from the shared --clock-face-size-default token.
   --clock-face-size: var(--clock-face-size-default);
-  --clock-time-size: calc(var(--clock-face-size) * 0.22);
+  --clock-time-size: calc(var(--clock-face-size) * 0.18);
 
   &__content {
     position: relative;
@@ -240,8 +240,8 @@
 }
 
 .play-button {
-  width: var(--s7);
-  height: var(--s7);
+  min-width: calc(var(--s7) * 2);
+  border-radius: var(--tasksmart-radius);
   // Smoothly cross-fade out when the launch starts (see .is-launching below).
   transition:
     opacity var(--transition-duration-m) var(--ani-standard-timing),
@@ -251,6 +251,18 @@
     font-size: 24px;
     width: 24px;
     height: 24px;
+  }
+}
+
+@include mq(xs, max) {
+  .task-section .focus-heading {
+    position: absolute;
+    top: var(--s3);
+    inset-inline: var(--s8);
+    margin: 0;
+    text-align: center;
+    font-size: var(--font-size-lg);
+    color: var(--text-color);
   }
 }
 

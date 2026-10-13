@@ -3,6 +3,14 @@
   min-width: 0;
 }
 
+.notebook-empty-add {
+  background: transparent;
+  border: 0;
+  font: inherit;
+  width: 100%;
+  cursor: pointer;
+}
+
 .quadrant {
   box-sizing: border-box;
   height: 100%;
@@ -90,4 +98,94 @@ p {
 :host(.cdk-drop-list-dragging) .quadrant-tasks {
   outline: var(--focus-ring-width) dashed var(--tasksmart-quadrant-color);
   outline-offset: var(--focus-ring-offset);
+}
+
+.is-notebook {
+  --tasksmart-quadrant-color: var(--notebook-yellow);
+  position: relative;
+  padding: var(--s) var(--s);
+  border: var(--notebook-border-width) solid var(--notebook-ink);
+  border-radius: var(--s);
+  font-family: var(--notebook-font-stack);
+
+  &[data-tone='schedule'] {
+    --tasksmart-quadrant-color: var(--notebook-red);
+  }
+  &[data-tone='delegate'] {
+    --tasksmart-quadrant-color: var(--notebook-green);
+  }
+  &[data-tone='eliminate'] {
+    --tasksmart-quadrant-color: var(--notebook-purple);
+  }
+
+  header {
+    position: relative;
+    min-height: var(--s4);
+    margin-bottom: var(--s-half);
+    border-bottom-width: var(--notebook-border-width);
+  }
+
+  .quadrant-tasks {
+    min-height: var(--s6);
+  }
+
+  h2 {
+    color: var(--notebook-ink);
+    font-size: var(--font-size-sm);
+    font-family: var(--notebook-font-stack);
+    line-height: var(--line-height-snug);
+    white-space: nowrap;
+  }
+
+  .empty {
+    padding: var(--s-half);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+  }
+}
+
+.notebook-rings {
+  position: absolute;
+  top: calc(var(--s2) * -1);
+  inset-inline-start: calc(var(--s-half) * -1);
+  width: var(--s5);
+  height: var(--s2);
+  color: var(--notebook-ink);
+  pointer-events: none;
+}
+
+.notebook-quadrant-heading {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s-quarter);
+  width: 100%;
+  min-height: var(--s4);
+  padding: 0;
+  border: 0;
+  color: var(--notebook-ink);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+
+  mat-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+  }
+}
+
+.notebook-flower {
+  flex-shrink: 0;
+  width: var(--s2);
+  height: var(--s2);
+  color: var(--tasksmart-quadrant-color);
+}
+
+.notebook-count {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
 }

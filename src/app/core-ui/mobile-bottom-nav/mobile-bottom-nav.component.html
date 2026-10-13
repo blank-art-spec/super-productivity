@@ -1,38 +1,62 @@
 <nav
   class="mobile-bottom-nav tasksmart-navigation"
-  [class.entrance]="isEntrance()"
-  (animationend)="onEntranceAnimationEnd($event)"
+  [class.notebook-navigation]="notebook()"
   [attr.aria-label]="T.MH.PROJECT_MENU | translate"
 >
   <button
     type="button"
     class="nav-button"
     routerLink="/matrix"
-    routerLinkActive="active"
+    [routerLinkActive]="focusModeService.isOverlayShown() ? '' : 'active'"
+    (click)="leaveFocusOverlay()"
     ariaCurrentWhenActive="page"
     [attr.aria-label]="T.F.MATRIX.HOME | translate"
   >
-    <mat-icon>home</mat-icon
-    ><span class="nav-caption">{{ T.F.MATRIX.HOME | translate }}</span>
+    @if (notebook()) {
+      <svg
+        class="notebook-nav-icon"
+        aria-hidden="true"
+      >
+        <use href="assets/home-journal/journal-icons.svg#calendar" />
+      </svg>
+    } @else {
+      <mat-icon>home</mat-icon>
+    }
+    <span class="nav-caption">{{
+      (notebook() ? T.F.MATRIX.MAKE_PLAN : T.F.MATRIX.HOME) | translate
+    }}</span>
   </button>
   @if (isPlannerEnabled()) {
     <button
       type="button"
       class="nav-button"
       routerLink="/planner"
-      routerLinkActive="active"
+      [routerLinkActive]="focusModeService.isOverlayShown() ? '' : 'active'"
+      (click)="leaveFocusOverlay()"
       ariaCurrentWhenActive="page"
       [attr.aria-label]="T.MH.PLANNER | translate"
     >
-      <mat-icon>edit_calendar</mat-icon>
-      <span class="nav-caption">{{ T.MH.PLANNER | translate }}</span>
+      @if (notebook()) {
+        <svg
+          class="notebook-nav-icon"
+          aria-hidden="true"
+        >
+          <use href="assets/home-journal/journal-icons.svg#views" />
+        </svg>
+      } @else {
+        <mat-icon>calendar_month</mat-icon>
+      }
+      <span class="nav-caption">{{
+        (notebook() ? T.F.MATRIX.HOME_VIEW : T.MH.PLANNER) | translate
+      }}</span>
     </button>
   } @else {
     <button
       type="button"
       class="nav-button"
       [routerLink]="todayRoute"
-      routerLinkActive="active"
+      [routerLinkActive]="focusModeService.isOverlayShown() ? '' : 'active'"
+      (click)="leaveFocusOverlay()"
       ariaCurrentWhenActive="page"
       [attr.aria-label]="T.G.TODAY_TAG_TITLE | translate"
     >
@@ -41,27 +65,42 @@
     </button>
   }
 
-  <button
-    mat-fab
-    class="add-task-button tasksmart-fab"
-    [class.smaller]="hasProjectBacklog()"
-    [class.hide-for-native]="isEntranceAnimating()"
-    color="primary"
-    (click)="showAddTaskBar()"
-    [attr.aria-label]="T.GCF.KEYBOARD.GLOBAL_ADD_TASK | translate"
+  <div
+    class="add-task-control"
+    [class.notebook-add-control]="notebook()"
   >
-    <mat-icon>add</mat-icon>
-  </button>
+    <button
+      mat-fab
+      class="add-task-button tasksmart-fab"
+      [class.tasksmart-fab--notebook]="notebook()"
+      type="button"
+      [class.smaller]="hasProjectBacklog()"
+      [color]="notebook() ? undefined : 'primary'"
+      (click)="showAddTaskBar()"
+      [attr.aria-label]="T.GCF.KEYBOARD.GLOBAL_ADD_TASK | translate"
+    >
+      <mat-icon>add</mat-icon>
+    </button>
+  </div>
 
   @if (isFocusModeEnabled()) {
     <button
       type="button"
       class="nav-button"
-      [class.active]="isFocusActive()"
+      [class.active]="focusModeService.isOverlayShown() || isFocusActive()"
       (click)="focusModeService.openOverlay()"
       [attr.aria-label]="T.F.MATRIX.FOCUS | translate"
     >
-      <mat-icon aria-hidden="true">center_focus_strong</mat-icon>
+      @if (notebook()) {
+        <svg
+          class="notebook-nav-icon"
+          aria-hidden="true"
+        >
+          <use href="assets/home-journal/journal-icons.svg#hourglass" />
+        </svg>
+      } @else {
+        <mat-icon aria-hidden="true">hourglass_empty</mat-icon>
+      }
       <span class="nav-caption">{{ T.F.MATRIX.FOCUS | translate }}</span>
     </button>
   }
@@ -72,16 +111,49 @@
     [matMenuTriggerFor]="moreMenu"
     [attr.aria-label]="T.G.MORE_ACTIONS | translate"
   >
-    <mat-icon aria-hidden="true">more_horiz</mat-icon>
-    <span class="nav-caption">{{ T.G.MORE_ACTIONS | translate }}</span>
+    @if (notebook()) {
+      <svg
+        class="notebook-nav-icon"
+        aria-hidden="true"
+      >
+        <use href="assets/home-journal/journal-icons.svg#profile" />
+      </svg>
+    } @else {
+      <mat-icon aria-hidden="true">more_horiz</mat-icon>
+    }
+    <span class="nav-caption">{{
+      (notebook() ? T.F.MATRIX.MY_MENU : T.G.MORE_ACTIONS) | translate
+    }}</span>
   </button>
 </nav>
 
 <mat-menu #moreMenu="matMenu">
+  <button
+    mat-menu-item
+    class="mobile-header-toggle"
+    (click)="toggleMobileHeader()"
+  >
+    <mat-icon>{{ isShowMobileHeader() ? 'visibility_off' : 'visibility' }}</mat-icon>
+    <span>{{
+      (isShowMobileHeader()
+        ? T.GCF.MISC.HIDE_MOBILE_HEADER
+        : T.GCF.MISC.IS_SHOW_MOBILE_HEADER
+      ) | translate
+    }}</span>
+  </button>
+  <button
+    mat-menu-item
+    routerLink="/config"
+    (click)="leaveFocusOverlay()"
+  >
+    <mat-icon>settings</mat-icon>
+    <span>{{ T.MH.SETTINGS | translate }}</span>
+  </button>
   @if (isPlannerEnabled()) {
     <button
       mat-menu-item
       [routerLink]="todayRoute"
+      (click)="leaveFocusOverlay()"
     >
       <mat-icon>wb_sunny</mat-icon>
       <span>{{ T.G.TODAY_TAG_TITLE | translate }}</span>

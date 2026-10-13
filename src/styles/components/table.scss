@@ -30,7 +30,7 @@ table {
 }
 
 $this-table-min-height: var(--s2);
-$this-table-shadow: var(--whiteframe-shadow-1dp);
+$this-table-shadow: var(--tasksmart-shadow);
 
 div.material-table {
   box-shadow: $this-table-shadow;
@@ -45,7 +45,7 @@ div.material-table {
 table.material-table,
 div.material-table {
   box-shadow: $this-table-shadow;
-  font-size: 13px;
+  font-size: var(--font-size-md);
   white-space: nowrap;
   background-color: var(--card-bg);
 

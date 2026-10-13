@@ -2142,6 +2142,73 @@ describe('TaskRepeatCfgEffects - Repeatable Subtasks', () => {
   });
 
   describe('rescheduleTaskOnRepeatCfgUpdate$', () => {
+    it('does not reschedule an existing task or advance creation history beyond the end date', (done) => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const endDate = getDbDateStr(yesterday);
+      const updatedCfg = {
+        ...mockRepeatCfg,
+        startDate: endDate,
+        endDate,
+        repeatCycle: 'DAILY' as const,
+        repeatEvery: 1,
+      };
+      actions$ = of(
+        updateTaskRepeatCfg({
+          taskRepeatCfg: {
+            id: 'repeat-cfg-id',
+            changes: { endDate },
+          },
+        }),
+      );
+      taskRepeatCfgService.getTaskRepeatCfgById$.and.returnValue(of(updatedCfg));
+      taskService.getTasksByRepeatCfgId$.and.returnValue(
+        of([{ ...mockTask, isDone: false }]),
+      );
+      effects.rescheduleTaskOnRepeatCfgUpdate$.subscribe({
+        next: () => fail('Expired rules must not fall back to today'),
+        complete: () => {
+          expect(taskRepeatCfgService.updateTaskRepeatCfg).not.toHaveBeenCalled();
+          expect(taskService.update).not.toHaveBeenCalled();
+          done();
+        },
+      });
+    });
+
+    it('reacts to a statutory workday change and schedules after the holiday', () => {
+      jasmine.clock().install();
+      try {
+        jasmine.clock().mockDate(new Date('2026-10-02T09:00:00'));
+        const updatedCfg = {
+          ...mockRepeatCfg,
+          startDate: '2026-10-01',
+          lastTaskCreationDay: '2026-09-30',
+          repeatCycle: 'DAILY' as const,
+          repeatEvery: 1,
+          isChineseWorkday: true,
+        };
+        const task = { ...mockTask, isDone: false, dueDay: '2026-10-01' };
+        actions$ = of(
+          updateTaskRepeatCfg({
+            taskRepeatCfg: {
+              id: 'repeat-cfg-id',
+              changes: { isChineseWorkday: true },
+            },
+          }),
+        );
+        taskRepeatCfgService.getTaskRepeatCfgById$.and.returnValue(of(updatedCfg));
+        taskService.getTasksByRepeatCfgId$.and.returnValue(of([task]));
+        const results: Action[] = [];
+        effects.rescheduleTaskOnRepeatCfgUpdate$.subscribe((result) =>
+          results.push(result),
+        );
+        expect(results).toEqual([
+          PlannerActions.planTaskForDay({ task, day: '2026-10-08' }),
+        ]);
+      } finally {
+        jasmine.clock().uninstall();
+      }
+    });
     it('should dispatch planTaskForDay when schedule-affecting field changes and first occurrence is future', (done) => {
       const today = new Date();
       const todayStr = getDbDateStr(today);

@@ -179,8 +179,8 @@
               [isShowYesterday]="isForToday && isIncludeYesterday"
             ></tasks-by-tag>
           }
-          <section style="margin-top: 48px">
-            <h3 style="font-weight: bold; margin-bottom: 4px">
+          <section class="week-summary">
+            <h3>
               {{ T.PDS.WEEK | translate }}
             </h3>
             @if (isForToday) {
@@ -228,6 +228,7 @@
           [matTooltip]="T.PDS.SAVE_AND_GO_HOME_TOOLTIP | translate"
           color="primary"
           mat-flat-button
+          class="tasksmart-primary-action"
         >
           <mat-icon>wb_sunny</mat-icon>
           {{ T.PDS.SAVE_AND_GO_HOME | translate }}
@@ -238,6 +239,7 @@
           (click)="finishDay()"
           color="primary"
           mat-flat-button
+          class="tasksmart-primary-action"
         >
           <mat-icon>wb_sunny</mat-icon>
           {{ T.PDS.CLEAR_ALL_CONTINUE | translate }}

@@ -7,7 +7,9 @@ import {
   effect,
   ElementRef,
   inject,
+  input,
   Injector,
+  HostBinding,
   HostListener,
   OnDestroy,
   signal,
@@ -93,6 +95,11 @@ const ACTION_ROW_REVEAL_PIN_MS = 400;
   ],
 })
 export class MainHeaderComponent implements OnDestroy {
+  readonly isHidden = input(false);
+
+  @HostBinding('hidden') get isHiddenHost(): boolean {
+    return this.isHidden();
+  }
   private readonly _document = inject(DOCUMENT);
   private readonly _injector = inject(Injector);
   readonly supportsPopover =
@@ -490,6 +497,13 @@ export class MainHeaderComponent implements OnDestroy {
   }
 
   constructor() {
+    // Keep counters mounted, but close panels that escape the hidden host
+    // through the native top layer or the older-WebView fallback portal.
+    effect(() => {
+      const isHidden = this.isHidden();
+      this._morePanel();
+      if (isHidden) untracked(() => this.closeMore());
+    });
     // Older embedded WebViews have no Popover API. Hoist the persistent panel
     // to the body so it escapes the header's scrolling/containment there too.
     effect(() => {

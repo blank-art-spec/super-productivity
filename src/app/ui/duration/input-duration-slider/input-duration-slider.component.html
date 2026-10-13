@@ -21,6 +21,13 @@
         [innerHtml]="label()"
       ></label>
     }
+    @if (bareRing()) {
+      <span
+        class="clock-value-preview"
+        aria-hidden="true"
+        >{{ _model() | msToMinuteClockString }}</span
+      >
+    }
     <input
       #durationInput
       (ngModelChange)="onInputChange($event)"

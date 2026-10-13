@@ -26,12 +26,23 @@ export class MatrixQuadrantComponent {
   readonly tone = input.required<string>();
   readonly count = input(0);
   readonly compact = input(false);
+  readonly notebook = input(false);
   readonly add = output<MatrixGroupId>();
   readonly viewAll = output<MatrixGroupId>();
   private readonly _viewAllButton =
     viewChild<ElementRef<HTMLButtonElement>>('viewAllButton');
   private readonly _addButton = viewChild<ElementRef<HTMLButtonElement>>('addButton');
   readonly T = T;
+
+  onBlankClick(event: Event): void {
+    const target = event.target as HTMLElement;
+    if (
+      this.notebook() &&
+      !target.closest('matrix-task-card, button, a, input, .notebook-habit')
+    ) {
+      this.add.emit(this.groupId());
+    }
+  }
 
   focusViewAll(): void {
     (this._viewAllButton() ?? this._addButton())?.nativeElement.focus();

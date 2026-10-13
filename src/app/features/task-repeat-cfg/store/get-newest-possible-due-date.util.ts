@@ -11,8 +11,28 @@ import {
   hasNthWeekdayAnchor,
 } from './get-nth-weekday-of-month.util';
 import { Log } from '../../../core/log';
+import { getRepeatEndDay, isAllowedRepeatDay } from './repeat-occurrence-limits.util';
+import { getDbDateStr } from '../../../util/get-db-date-str';
 
 export const getNewestPossibleDueDate = (
+  taskRepeatCfg: TaskRepeatCfg,
+  today: Date,
+): Date | null => {
+  if (!taskRepeatCfg.endDate && !taskRepeatCfg.isChineseWorkday)
+    return getNewestUnboundedDueDate(taskRepeatCfg, today);
+  const end = getRepeatEndDay(taskRepeatCfg);
+  if (end && getDbDateStr(today) > end) return null;
+  let cursor = today;
+  let newest = getNewestUnboundedDueDate(taskRepeatCfg, cursor);
+  while (newest && !isAllowedRepeatDay(taskRepeatCfg, newest)) {
+    cursor = new Date(newest);
+    cursor.setDate(cursor.getDate() - 1);
+    newest = getNewestUnboundedDueDate(taskRepeatCfg, cursor);
+  }
+  return newest;
+};
+
+const getNewestUnboundedDueDate = (
   taskRepeatCfg: TaskRepeatCfg,
   today: Date,
 ): Date | null => {
@@ -137,6 +157,7 @@ export const getNewestPossibleDueDate = (
 
       if (today.getDate() < adjustedDayForCurrentMonth) {
         // The repeat day hasn't occurred yet this month, so check previous month
+        checkDate.setDate(1);
         checkDate.setMonth(checkDate.getMonth() - 1);
       }
       setDateSafely(checkDate, dayOfMonthRepeat);
@@ -150,6 +171,7 @@ export const getNewestPossibleDueDate = (
         if (diffInMonth % taskRepeatCfg.repeatEvery === 0) {
           return checkDate;
         }
+        checkDate.setDate(1);
         checkDate.setMonth(checkDate.getMonth() - 1);
         setDateSafely(checkDate, dayOfMonthRepeat);
       }
@@ -160,15 +182,21 @@ export const getNewestPossibleDueDate = (
       const nrOfYearsToCheck = taskRepeatCfg.repeatEvery;
       const dayOfMonthRepeat = startDateDate.getDate();
       const monthOfMonthRepeat = startDateDate.getMonth();
-      checkDate.setDate(1);
-      checkDate.setMonth(monthOfMonthRepeat);
-      checkDate.setDate(dayOfMonthRepeat);
-
-      if (today.getMonth() < monthOfMonthRepeat) {
+      const setYearlyDate = (): void => {
+        checkDate.setDate(1);
+        checkDate.setMonth(monthOfMonthRepeat);
+        const lastDay = new Date(
+          checkDate.getFullYear(),
+          monthOfMonthRepeat + 1,
+          0,
+        ).getDate();
+        checkDate.setDate(Math.min(dayOfMonthRepeat, lastDay));
+      };
+      setYearlyDate();
+      // Use the same month-end clamp as forward scheduling, including Feb 29.
+      if (getDbDateStr(checkDate) > getDbDateStr(today)) {
         checkDate.setFullYear(checkDate.getFullYear() - 1);
-      }
-      if (today.getMonth() === monthOfMonthRepeat && today.getDate() < dayOfMonthRepeat) {
-        checkDate.setFullYear(checkDate.getFullYear() - 1);
+        setYearlyDate();
       }
 
       for (let i = 0; i < nrOfYearsToCheck; i++) {
@@ -180,7 +208,10 @@ export const getNewestPossibleDueDate = (
         if (diffInYears % taskRepeatCfg.repeatEvery === 0) {
           return checkDate;
         }
+        // Move through January first so leap-day overflow cannot change the month.
+        checkDate.setMonth(0, 1);
         checkDate.setFullYear(checkDate.getFullYear() - 1);
+        setYearlyDate();
       }
       return null;
     }

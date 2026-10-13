@@ -1,52 +1,67 @@
-@use '../../../styles/_globals.scss' as *;
+@use '../../../styles/mixins/media-queries' as *;
 
 :host {
-  text-align: center;
+  display: block;
+  min-width: 0;
+  font-family: var(--tasksmart-font-stack);
 }
 
-h3 {
-  margin-top: var(--s4);
-  margin-bottom: var(--s);
+.wrapper {
+  max-width: var(--tasksmart-page-max-width);
+  margin-inline: auto;
+}
+
+.basic-stats,
+.heatmap-section,
+.chart-card {
+  padding: var(--s2);
+  min-width: 0;
 }
 
 .basic-stats {
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
-  text-align: center;
+  max-width: var(--component-max-width);
+  margin-inline: auto;
+  > p {
+    color: var(--text-color-muted);
+    font-size: var(--font-size-sm);
+  }
 }
 
 .metrics-header {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: var(--s);
-  position: relative;
-
   h1 {
     margin: 0;
+    font-size: var(--font-size-2xl);
+    overflow-wrap: anywhere;
+  }
+  share-button {
+    flex-shrink: 0;
   }
 }
 
 table {
-  tr {
-    th {
-      text-align: start;
-    }
-
-    td {
-      text-align: start;
-    }
+  width: 100%;
+  border-collapse: collapse;
+  th,
+  td {
+    text-align: start;
+    padding: var(--s2) var(--s);
+    border-bottom: 1px solid var(--tasksmart-border);
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
-}
-
-.pie-charts {
-  @include mq(sm) {
-    display: flex;
-
-    > section {
-      width: 50%;
-    }
+  th {
+    font-weight: var(--font-weight-medium);
+    color: var(--text-color-muted);
+  }
+  td {
+    font-variant-numeric: tabular-nums;
+  }
+  tr:last-child > * {
+    border-bottom: 0;
   }
 }
 
@@ -55,14 +70,30 @@ section {
 }
 
 .metric-metrics {
-  margin-top: var(--s6);
+  margin-top: var(--s4);
+}
+
+.line-charts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s2);
+  @include mq(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  h3 {
+    font-size: var(--font-size-lg);
+    margin: 0 0 var(--s2);
+    overflow-wrap: anywhere;
+  }
 }
 
 .heatmap-section {
   max-width: 880px;
-  margin: var(--s4) auto 0;
+  margin: var(--s3) auto;
 }
 
 .no-data-msg {
   margin-top: var(--s4);
+  color: var(--text-color-muted);
+  text-align: center;
 }

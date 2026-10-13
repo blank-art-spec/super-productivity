@@ -2,6 +2,7 @@
 
 :host {
   text-align: center;
+  font-family: var(--tasksmart-font-stack);
 }
 
 .total-time {
@@ -21,8 +22,8 @@
   }
 
   &-time-spent {
-    font-size: 20px;
-    line-height: 26px;
+    font-size: var(--font-size-lg);
+    line-height: var(--line-height-normal);
     margin-bottom: var(--s4);
   }
 }
@@ -54,6 +55,7 @@
     color: inherit;
     cursor: pointer;
     font: inherit;
+    min-height: var(--tasksmart-control-height);
   }
 
   .month-toggle:focus-visible {
@@ -62,8 +64,8 @@
   }
 
   &-time-spent {
-    font-size: 18px;
-    line-height: 22px;
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-normal);
     margin-bottom: var(--s3);
   }
 }
@@ -79,8 +81,12 @@
 }
 
 .week {
-  --table-outer-padding-left-right: var(--s6);
-  margin: var(--s4) 0;
+  --table-outer-padding-left-right: var(--s2);
+  margin: var(--s2) var(--s-half);
+  padding: var(--s2) var(--s-half);
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
   display: flex;
   align-items: center;
   flex-direction: column;
@@ -89,6 +95,7 @@
     display: flex;
     margin-bottom: var(--s2);
     align-self: center;
+    flex-wrap: wrap;
 
     button {
       margin-left: var(--s);
@@ -111,6 +118,7 @@
     cursor: pointer;
     font: inherit;
     white-space: nowrap;
+    min-height: var(--tasksmart-control-height);
   }
 
   .day-toggle:focus-visible {
@@ -167,11 +175,7 @@
 
           > td {
             // bold without respacing
-            text-shadow: 0.01px 0 0.01px;
-            background: var(--card-bg);
-            box-shadow: var(--whiteframe-shadow-2dp);
-
-            background-color: var(--bg-lighter);
+            background: var(--tasksmart-selected);
           }
         }
       }

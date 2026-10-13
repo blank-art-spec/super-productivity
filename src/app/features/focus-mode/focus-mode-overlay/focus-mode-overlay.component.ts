@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, OnDestroy } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  OnDestroy,
+} from '@angular/core';
 import { TaskService } from '../../tasks/task.service';
 import { Subject } from 'rxjs';
 import { GlobalConfigService } from '../../config/global-config.service';
@@ -41,6 +47,7 @@ import { CdkTrapFocus } from '@angular/cdk/a11y';
 export class FocusModeOverlayComponent implements OnDestroy {
   readonly taskService = inject(TaskService);
   readonly focusModeService = inject(FocusModeService);
+  readonly hasMobileNav = input(false);
 
   private readonly _globalConfigService = inject(GlobalConfigService);
   private readonly _store = inject(Store);

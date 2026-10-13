@@ -2,35 +2,84 @@
   class="tasksmart-card quadrant"
   [attr.data-tone]="tone()"
   [class.is-compact]="compact()"
+  [class.is-notebook]="notebook()"
   [attr.aria-label]="description() | translate"
 >
   <header>
-    <div>
-      <h2>
-        {{ title() | translate }}
-      </h2>
-      <p>{{ description() | translate }}</p>
-    </div>
-    <span class="count">{{ count() }}</span>
-    <button
-      #addButton
-      type="button"
-      class="tasksmart-icon-button focus-ring"
-      [attr.aria-label]="(T.F.MATRIX.ADD_TASK | translate) + ': ' + (title() | translate)"
-      (click)="add.emit(groupId())"
-    >
-      <mat-icon aria-hidden="true">add</mat-icon>
-    </button>
+    @if (notebook()) {
+      <svg
+        class="notebook-rings"
+        aria-hidden="true"
+      >
+        <use href="assets/home-journal/journal-icons.svg#rings" />
+      </svg>
+      <button
+        #viewAllButton
+        type="button"
+        class="notebook-quadrant-heading focus-ring"
+        [attr.aria-label]="
+          (T.F.MATRIX.VIEW_ALL | translate) + ': ' + (title() | translate)
+        "
+        (click)="viewAll.emit(groupId())"
+      >
+        <svg
+          class="notebook-flower"
+          aria-hidden="true"
+        >
+          <use href="assets/home-journal/journal-icons.svg#flower" />
+        </svg>
+        <h2>{{ title() | translate }}</h2>
+        <mat-icon aria-hidden="true">chevron_right</mat-icon>
+      </button>
+      <span class="count notebook-count">{{ count() }}</span>
+    } @else {
+      <div>
+        <h2>
+          {{ title() | translate }}
+        </h2>
+        <p>{{ description() | translate }}</p>
+      </div>
+      <span class="count">{{ count() }}</span>
+      <button
+        #addButton
+        type="button"
+        class="tasksmart-icon-button focus-ring"
+        [attr.aria-label]="
+          (T.F.MATRIX.ADD_TASK | translate) + ': ' + (title() | translate)
+        "
+        (click)="add.emit(groupId())"
+      >
+        <mat-icon aria-hidden="true">add</mat-icon>
+      </button>
+    }
   </header>
-  <div class="quadrant-tasks">
+  <div
+    class="quadrant-tasks"
+    (click)="onBlankClick($event)"
+  >
     <ng-content></ng-content>
     @if (count() === 0) {
-      <p class="empty">
-        {{ (compact() ? T.F.MATRIX.EMPTY_SHORT : T.F.MATRIX.EMPTY_QUADRANT) | translate }}
-      </p>
+      @if (notebook()) {
+        <button
+          type="button"
+          class="empty notebook-empty-add"
+          (click)="add.emit(groupId())"
+          [attr.aria-label]="
+            (T.F.MATRIX.ADD_TASK | translate) + ': ' + (title() | translate)
+          "
+        >
+          {{ T.F.MATRIX.EMPTY_SHORT | translate }}
+        </button>
+      } @else {
+        <p class="empty">
+          {{
+            (compact() ? T.F.MATRIX.EMPTY_SHORT : T.F.MATRIX.EMPTY_QUADRANT) | translate
+          }}
+        </p>
+      }
     }
   </div>
-  @if (compact()) {
+  @if (compact() && !notebook()) {
     <button
       #viewAllButton
       type="button"

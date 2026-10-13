@@ -1,5 +1,7 @@
-import { TaskRepeatCfg } from '../task-repeat-cfg.model';
+import { DEFAULT_TASK_REPEAT_CFG, TaskRepeatCfg } from '../task-repeat-cfg.model';
 import { getDbDateStr } from '../../../util/get-db-date-str';
+import { getRepeatEndDay, isAllowedRepeatDay } from './repeat-occurrence-limits.util';
+import { getNextRepeatOccurrence } from './get-next-repeat-occurrence.util';
 
 /**
  * When a repeat cfg has `startTime`, a first occurrence in the past would
@@ -10,7 +12,7 @@ import { getDbDateStr } from '../../../util/get-db-date-str';
  */
 export const clampPastTimedOccurrence = (
   occurrence: Date | null,
-  cfg: Pick<TaskRepeatCfg, 'startTime'>,
+  cfg: Pick<TaskRepeatCfg, 'startTime'> & Partial<TaskRepeatCfg>,
 ): Date | null => {
   if (!occurrence || !cfg.startTime) {
     return occurrence;
@@ -19,6 +21,15 @@ export const clampPastTimedOccurrence = (
   if (getDbDateStr(occurrence) < getDbDateStr()) {
     const today = new Date();
     today.setHours(12, 0, 0, 0);
+    const end = getRepeatEndDay(cfg);
+    if (end && getDbDateStr(today) > end) return null;
+    if (!isAllowedRepeatDay(cfg, today)) {
+      return getNextRepeatOccurrence(
+        { ...DEFAULT_TASK_REPEAT_CFG, ...cfg, id: cfg.id || '' },
+        today,
+        { inclusive: true },
+      );
+    }
     return today;
   }
   return occurrence;

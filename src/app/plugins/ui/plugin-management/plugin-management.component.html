@@ -1,4 +1,7 @@
-<mat-card class="info-card">
+<mat-card
+  appearance="outlined"
+  class="info-card"
+>
   <mat-card-content>
     <div class="warning-content">
       <p>⚠ {{ T.PLUGINS.SECURITY_WARNING | translate }}</p>
@@ -17,7 +20,7 @@
 </mat-card>
 
 @if (allPlugins().length === 0) {
-  <mat-card>
+  <mat-card appearance="outlined">
     <mat-card-content class="empty-state">
       <mat-icon>extension_off</mat-icon>
       <p>{{ T.PS.NO_PLUGINS_INSTALLED | translate }}</p>
@@ -25,7 +28,7 @@
   </mat-card>
 }
 
-<mat-card>
+<mat-card appearance="outlined">
   <mat-card-header>
     <mat-card-title>{{ T.PLUGINS.INSTALL_PLUGIN | translate }}</mat-card-title>
   </mat-card-header>
@@ -76,7 +79,7 @@
 </mat-card>
 
 @for (plugin of allPlugins(); track plugin.manifest.id) {
-  <mat-card>
+  <mat-card appearance="outlined">
     <mat-card-header>
       <div mat-card-avatar>
         <plugin-icon
@@ -237,7 +240,10 @@
   </mat-card>
 }
 
-<mat-card class="community-plugins-card">
+<mat-card
+  appearance="outlined"
+  class="community-plugins-card"
+>
   <mat-card-header>
     <mat-card-title>Community Plugins</mat-card-title>
   </mat-card-header>

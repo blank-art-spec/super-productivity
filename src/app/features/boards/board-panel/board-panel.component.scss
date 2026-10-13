@@ -2,10 +2,11 @@
 
 :host {
   //border: 1px solid var(--c-light-20);
-  @include extraBorder();
-  border-radius: 8px;
+  border: 1px solid var(--tasksmart-border);
+  background: var(--tasksmart-surface);
+  border-radius: var(--tasksmart-radius);
   min-height: 200px;
-  min-width: 280px;
+  min-width: min(100%, 280px);
   flex-grow: 1;
   display: flex;
   flex-direction: column;
@@ -53,7 +54,7 @@ header {
 
   button {
     //margin-left: auto;
-    margin-left: 10px;
+    margin-inline-start: var(--s);
     opacity: 0.7;
 
     &:hover {
@@ -64,6 +65,8 @@ header {
   // Same label treatment as the task-list section headings (collapsible
   // .task-section): a column header must not read like the cards below it.
   .title {
+    min-width: 0;
+    overflow-wrap: anywhere;
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-semibold);
     letter-spacing: var(--letter-spacing-wide);
@@ -95,7 +98,7 @@ header {
 .task-items {
   overflow: auto;
   padding: 0 var(--s);
-  border-radius: 8px;
+  border-radius: var(--tasksmart-control-radius);
   min-height: 100px;
   flex-grow: 1;
   //border-color: var(--extra-border-color);

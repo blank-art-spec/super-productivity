@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { TranslateModule } from '@ngx-translate/core';
 import { InputDurationSliderComponent } from './input-duration-slider.component';
@@ -32,6 +32,30 @@ describe('InputDurationSliderComponent', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
+
+  it('should show a clock preview while preserving duration-input editing in bare-ring mode', fakeAsync(() => {
+    fixture.componentRef.setInput('bareRing', true);
+    fixture.componentRef.setInput('model', 25 * MINUTE);
+    fixture.detectChanges();
+    tick();
+    const preview = fixture.nativeElement.querySelector('.clock-value-preview');
+    const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+    expect(preview.textContent.trim()).toBe('25:00');
+    expect(input.value).toBe('25m');
+    const values: number[] = [];
+    const subscription = component.modelChange.subscribe((value) => {
+      values.push(value);
+      fixture.componentRef.setInput('model', value);
+    });
+    input.value = '45m';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    tick();
+    fixture.detectChanges();
+    expect(values).toEqual([45 * MINUTE]);
+    expect(preview.textContent.trim()).toBe('45:00');
+    subscription.unsubscribe();
+  }));
 
   it('should update handle rotation, minutes, and hour dots from a millisecond value', () => {
     component.setRotationFromValue(ONE_HOUR_AND_THIRTY_MINUTES);

@@ -1,8 +1,9 @@
 @use '../../../../styles/_globals.scss' as *;
 
 :host {
+  font-family: var(--tasksmart-font-stack);
   display: grid;
-  grid-template-columns: repeat(var(--cols), 1fr);
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
   grid-auto-rows: 1fr;
   gap: var(--s2);
   padding: var(--s2);

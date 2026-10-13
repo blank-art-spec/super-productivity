@@ -32,7 +32,6 @@ import { MatInput } from '@angular/material/input';
 import { IssueIconPipe } from '../../features/issue/issue-icon/issue-icon.pipe';
 import { TranslatePipe } from '@ngx-translate/core';
 import { TagComponent } from '../../features/tag/tag/tag.component';
-import { MatList, MatListItem } from '@angular/material/list';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogViewArchivedTaskComponent } from '../../features/tasks/dialog-view-archived-task/dialog-view-archived-task.component';
@@ -56,8 +55,6 @@ const MAX_RESULTS = 50;
     IssueIconPipe,
     TranslatePipe,
     TagComponent,
-    MatList,
-    MatListItem,
     MatFormField,
     MatLabel,
     MatCheckbox,
@@ -352,9 +349,5 @@ export class SearchPageComponent implements OnInit {
       restoreFocus: true,
       data: { task },
     });
-  }
-
-  trackByFn(i: number, item: SearchItem): string {
-    return item.id;
   }
 }

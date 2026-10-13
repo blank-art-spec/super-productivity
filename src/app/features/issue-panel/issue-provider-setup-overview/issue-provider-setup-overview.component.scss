@@ -1,6 +1,7 @@
 @use '../../../../styles/_globals.scss' as *;
 
 :host {
+  font-family: var(--tasksmart-font-stack);
   display: block;
   padding: 0 var(--s2) var(--s2);
   flex: 1;
@@ -21,9 +22,9 @@
   appearance: none;
   min-height: var(--s8);
   padding: var(--s) var(--s);
-  border: 1px solid var(--separator-color);
-  border-radius: var(--card-border-radius);
-  background: var(--card-bg);
+  border: 1px solid var(--tasksmart-border);
+  border-radius: var(--tasksmart-radius);
+  background: var(--tasksmart-surface);
   color: var(--text-color);
   cursor: pointer;
   display: flex;
@@ -50,7 +51,7 @@
   }
 
   &:hover::before {
-    background: var(--state-hover);
+    background: var(--tasksmart-hover);
   }
 
   &:active::before {
@@ -118,7 +119,7 @@ h4 {
   justify-content: space-around;
   align-items: center;
   overflow: auto;
-  gap: 12px;
+  gap: var(--s2);
   margin: var(--s-half);
   margin-bottom: var(--s2);
 }

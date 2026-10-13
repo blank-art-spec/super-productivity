@@ -30,6 +30,8 @@ import { SS } from '../../../core/persistence/storage-keys.const';
 import { BodyClass } from '../../../app.constants';
 import { IosKeyboardService } from '../../../core/theme/ios-keyboard.service';
 import { IS_ANDROID_WEB_VIEW_TOKEN } from '../../../util/is-android-web-view';
+import { OperationWriteFlushService } from '../../../op-log/sync/operation-write-flush.service';
+import { EisenhowerQuadrant } from '../../eisenhower-matrix/eisenhower-matrix.model';
 
 type ProjectServiceSignals = {
   list$: Observable<Project[]>;
@@ -184,10 +186,12 @@ describe('AddTaskBarComponent', () => {
     // note left behind by another test can't make the note panel start expanded.
     sessionStorage.removeItem(SS.ADD_TASK_BAR_TXT);
     sessionStorage.removeItem(SS.ADD_TASK_BAR_NOTE);
+    sessionStorage.removeItem(SS.NOTEBOOK_TASK_DRAFT);
 
     // Create spies
     mockTaskService = jasmine.createSpyObj('TaskService', [
       'add',
+      'addSubTaskTo',
       'getByIdOnce$',
       'scheduleTask',
       'moveToCurrentWorkContext',
@@ -254,6 +258,10 @@ describe('AddTaskBarComponent', () => {
         { provide: GlobalConfigService, useValue: mockGlobalConfigService },
         { provide: Store, useValue: mockStore },
         { provide: MatDialog, useValue: mockMatDialog },
+        {
+          provide: OperationWriteFlushService,
+          useValue: { flushPendingWrites: () => Promise.resolve() },
+        },
         { provide: SnackService, useValue: mockSnackService },
         {
           provide: AddTaskBarIssueSearchService,
@@ -281,6 +289,127 @@ describe('AddTaskBarComponent', () => {
 
     fixture = TestBed.createComponent(AddTaskBarComponent);
     component = fixture.componentInstance;
+  });
+
+  describe('notebook submission', () => {
+    beforeEach(() => {
+      fixture.componentRef.setInput('isNotebook', true);
+      fixture.componentRef.setInput('isDisableAutoFocus', true);
+      fixture.detectChanges();
+      mockTaskService.add.and.returnValue('parent');
+    });
+
+    it('keeps an empty composer open when Enter is pressed', async () => {
+      const done = spyOn(component.done, 'emit');
+      await component.submitNotebookTask();
+      expect(mockTaskService.add).not.toHaveBeenCalled();
+      expect(done).not.toHaveBeenCalled();
+    });
+
+    it('blocks keyboard submission when a changed plan date exceeds the confirmed repeat end', async () => {
+      component.stateService.updateInputTxt('计划');
+      component.stateService.updateDate('2026-10-13');
+      component.stateService.updateRepeatSetting({
+        type: 'PRESET',
+        quickSetting: 'DAILY',
+        endDate: '2026-10-12',
+      });
+      component.notebookComposer()!.childText.set('未提交子计划');
+      const done = spyOn(component.done, 'emit');
+      await component.submitNotebookTask();
+      expect(mockTaskService.add).not.toHaveBeenCalled();
+      expect(component.notebookComposer()!.childText()).toBe('未提交子计划');
+      expect(component.isNotebookSaving()).toBeFalse();
+      expect(done).not.toHaveBeenCalled();
+    });
+
+    it('does not submit while the IME is composing', () => {
+      component.stateService.updateInputTxt('计划');
+      component.onInputKeydown(
+        new KeyboardEvent('keydown', { key: 'Enter', isComposing: true }),
+      );
+      expect(mockTaskService.add).not.toHaveBeenCalled();
+    });
+
+    it('dismisses an expanded panel before closing the composer on Escape', () => {
+      component.notebookComposer()!.togglePanel('repeat');
+      const close = spyOn(component.closed, 'emit');
+      component.onInputKeydown(new KeyboardEvent('keydown', { key: 'Escape' }));
+      expect(component.notebookComposer()!.panel()).toBeNull();
+      expect(close).not.toHaveBeenCalled();
+      component.onInputKeydown(new KeyboardEvent('keydown', { key: 'Escape' }));
+      expect(close).toHaveBeenCalledTimes(1);
+    });
+
+    it('saves quadrant, date, category and real subtasks through the existing task APIs', async () => {
+      component.stateService.updateInputTxt('Plan');
+      component.stateService.updateCleanText('Plan');
+      component.stateService.updateDate('2026-10-12', null);
+      component.stateService.updateTagIds(['tag-1']);
+      component.notebookDraft.selectQuadrant(EisenhowerQuadrant.DO_FIRST);
+      component.notebookDraft.addChild('First');
+      component.notebookComposer()!.childText.set(' Second ');
+      const added = spyOn(component.afterTaskAdd, 'emit');
+      await component.submitNotebookTask();
+      expect(mockTaskService.add).toHaveBeenCalledWith(
+        'Plan',
+        false,
+        jasmine.objectContaining({
+          dueDay: '2026-10-12',
+          tagIds: ['tag-1'],
+          eisenhowerQuadrant: EisenhowerQuadrant.DO_FIRST,
+        }),
+        jasmine.any(Boolean),
+      );
+      expect(
+        mockTaskService.addSubTaskTo.calls.allArgs().map((args) => args[1]!.title),
+      ).toEqual(['First', 'Second']);
+      expect(added).toHaveBeenCalledTimes(1);
+      expect(component.notebookDraft.children()).toEqual([]);
+    });
+
+    it('keeps child templates and quadrant for future repeats', async () => {
+      component.stateService.updateInputTxt('Repeat plan');
+      component.stateService.updateCleanText('Repeat plan');
+      component.stateService.updateRepeatSetting({
+        type: 'PRESET',
+        quickSetting: 'DAILY',
+      });
+      component.notebookDraft.selectQuadrant(EisenhowerQuadrant.SCHEDULE);
+      component.notebookDraft.addChild('Read');
+      const repeatService = TestBed.inject(TaskRepeatCfgService);
+      const repeatSpy = spyOn(repeatService, 'addTaskRepeatCfgToTask');
+      await component.submitNotebookTask();
+      expect(repeatSpy).toHaveBeenCalledWith(
+        'parent',
+        jasmine.any(String),
+        jasmine.objectContaining({
+          eisenhowerQuadrant: EisenhowerQuadrant.SCHEDULE,
+          shouldInheritSubtasks: true,
+          subTaskTemplates: [
+            { title: 'Read', eisenhowerQuadrant: EisenhowerQuadrant.SCHEDULE },
+          ],
+        }),
+      );
+    });
+
+    it('does not create a second parent when retrying a failed child flush', async () => {
+      component.stateService.updateInputTxt('Plan');
+      component.stateService.updateCleanText('Plan');
+      component.notebookDraft.addChild('Child');
+      const writeFlush = TestBed.inject(OperationWriteFlushService);
+      const flushSpy = spyOn(writeFlush, 'flushPendingWrites').and.rejectWith(
+        new Error('write failed'),
+      );
+      await component.submitNotebookTask();
+      expect(component.notebookComposer()!.pendingTaskId()).toBe('parent');
+      expect(component.stateService.inputTxt()).toBe('Plan');
+      flushSpy.and.resolveTo();
+      await component.submitNotebookTask();
+      expect(mockTaskService.add).toHaveBeenCalledTimes(1);
+      expect(mockTaskService.addSubTaskTo).toHaveBeenCalledTimes(1);
+      expect(component.stateService.inputTxt()).toBe('');
+    });
   });
 
   describe('highlightSegments', () => {
@@ -813,6 +942,30 @@ describe('AddTaskBarComponent', () => {
       expect(repeatCfg.sunday).toBe(true);
       expect(repeatCfg.monday).toBe(false);
       expect(repeatCfg.friday).toBe(false);
+    });
+
+    it('passes end dates and statutory workday rules into the persisted repeat config', async () => {
+      mockDateService.todayStr.and.returnValue('2026-10-12');
+      mockTaskService.add.and.returnValue('task-1');
+      const addRepeatCfgSpy = spyOn(
+        TestBed.inject(TaskRepeatCfgService),
+        'addTaskRepeatCfgToTask',
+      );
+      component.stateService.updateInputTxt('Business plan');
+      component.stateService.updateCleanText('Business plan');
+      component.stateService.updateRepeatSetting({
+        type: 'INTERVAL',
+        repeatCycle: 'DAILY',
+        repeatEvery: 1,
+        isChineseWorkday: true,
+        endDate: '2026-12-31',
+      });
+      await component.addTask();
+      const config = addRepeatCfgSpy.calls.mostRecent().args[2];
+      expect(config.endDate).toBe('2026-12-31');
+      expect(config.isChineseWorkday).toBeTrue();
+      expect(config.repeatCycle).toBe('DAILY');
+      expect(config.repeatEvery).toBe(1);
     });
 
     it('should seed dueDay for an interval repeat without a date, like a preset', async () => {
@@ -1374,6 +1527,7 @@ describe('AddTaskBarComponent', () => {
       const doneSpy = spyOn(component.done, 'emit');
       const event = {
         target: document.createElement('div'),
+        composedPath: () => [],
       } as unknown as MouseEvent;
 
       component.onDocumentClick(event);
@@ -1386,11 +1540,29 @@ describe('AddTaskBarComponent', () => {
       component.onScheduleDialogOpenChange(true);
       const event = {
         target: document.createElement('div'),
+        composedPath: () => [],
       } as unknown as MouseEvent;
 
       component.onDocumentClick(event);
 
       expect(doneSpy).not.toHaveBeenCalled();
+    });
+
+    it('keeps the composer open when calendar confirmation detaches the overlay', () => {
+      const doneSpy = spyOn(component.done, 'emit');
+      const overlay = document.createElement('div');
+      overlay.classList.add('cdk-overlay-container');
+      const confirm = document.createElement('button');
+      overlay.append(confirm);
+      document.body.append(overlay);
+      confirm.addEventListener('click', () => confirm.remove());
+      try {
+        confirm.click();
+        expect(confirm.closest('.cdk-overlay-container')).toBeNull();
+        expect(doneSpy).not.toHaveBeenCalled();
+      } finally {
+        overlay.remove();
+      }
     });
   });
 

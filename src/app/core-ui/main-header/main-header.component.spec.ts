@@ -852,6 +852,28 @@ describe('MainHeaderComponent action placement', () => {
     expect(host.querySelector('.header-more-trigger')).toBeTruthy();
   });
 
+  it('hides the header and closes More while keeping counters mounted', async () => {
+    enabledSimpleCounters = [counter('a')];
+    const host = await mountAtWidth(404);
+    const panel = host.querySelector<HTMLElement>('#header-more-actions')!;
+    const counterElement = panel.querySelector('simple-counter-button');
+    if (fixture!.componentInstance.supportsPopover) panel.showPopover();
+    else fixture!.componentInstance.toggleMoreFallback();
+    fixture!.componentRef.setInput('isHidden', true);
+    fixture!.detectChanges();
+    await fixture!.whenStable();
+    expect(host.hidden).toBeTrue();
+    expect(getComputedStyle(host).display).toBe('none');
+    if (fixture!.componentInstance.supportsPopover)
+      expect(panel.matches(':popover-open')).toBeFalse();
+    else expect(fixture!.componentInstance.isMoreOpen()).toBeFalse();
+    expect(panel.querySelector('simple-counter-button')).toBe(counterElement);
+    fixture!.componentRef.setInput('isHidden', false);
+    fixture!.detectChanges();
+    expect(host.hidden).toBeFalse();
+    expect(panel.querySelector('simple-counter-button')).toBe(counterElement);
+  });
+
   it('accents More when a visible counter is running', async () => {
     enabledSimpleCounters = [counter('a', { isOn: true })];
     const host = await mountAtWidth(404);

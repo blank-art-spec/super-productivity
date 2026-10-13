@@ -39,6 +39,12 @@ export type MiscConfig = Readonly<{
   // the right edge of the viewport instead of the horizontal top header.
   // Desktop only. Optional because it was added later.
   isVerticalActionBar?: boolean;
+  // Missing on older installs; mobile header stays hidden unless explicitly enabled.
+  isShowMobileHeader?: boolean;
+  /** Matrix-only order: task:<id> entries and repeat:<cfgId> anchors for future instances.
+   * Missing on older installs means the existing task order. Older clients ignore it.
+   */
+  matrixTaskOrder?: string[];
   // optional because it was added later
   isDisableCelebration?: boolean;
   isShowProductivityTipLonger?: boolean;

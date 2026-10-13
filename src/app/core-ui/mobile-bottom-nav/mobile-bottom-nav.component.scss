@@ -86,12 +86,12 @@
   }
 
   .add-task-button {
-    flex: 0 0 var(--s7);
-    width: var(--s7);
-    height: var(--s7);
+    flex: 0 0 var(--s6);
+    width: var(--s6);
+    height: var(--s6);
     margin-left: var(--s);
     margin-right: var(--s);
-    margin-bottom: var(--s3);
+    margin-bottom: var(--s2);
     box-shadow: var(--tasksmart-overlay-shadow);
     transition: var(--transition-standard);
 
@@ -118,14 +118,6 @@
       width: 28px;
       height: 28px;
     }
-
-    // On Android, hide during the slide-up entrance animation.
-    // var(--transition-standard) on .add-task-button already transitions opacity,
-    // so removing the class fades in automatically.
-    &.hide-for-native {
-      opacity: 0;
-      pointer-events: none;
-    }
   }
 }
 
@@ -137,6 +129,61 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.notebook-navigation {
+  border-top: 0;
+  font-family: var(--notebook-font-stack);
+
+  .nav-button {
+    color: var(--text-color-muted);
+    background: transparent;
+    gap: 0;
+  }
+
+  .nav-button.active {
+    color: var(--notebook-ink);
+    background: transparent;
+  }
+
+  .nav-caption {
+    font-family: var(--notebook-font-stack);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .add-task-button {
+    position: relative;
+    flex-basis: var(--s8);
+    width: var(--s8);
+    height: var(--s5);
+    border-radius: 50% 50% var(--s2) var(--s2);
+    margin-bottom: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+}
+
+.notebook-nav-icon {
+  width: var(--s4);
+  height: var(--s4);
+}
+
+.add-task-control {
+  display: contents;
+}
+
+.notebook-add-control {
+  display: block;
+  position: relative;
+  flex: 0 0 var(--s8);
+  width: var(--s8);
+  height: var(--s5);
+  margin-inline: var(--s);
+
+  .add-task-button {
+    margin-inline: 0;
+  }
 }
 
 // The multi-select bar takes the FAB's place while tasks are being selected
@@ -156,25 +203,5 @@
     outline: var(--focus-ring-width) solid var(--focus-ring-color);
     // Keep the ring visible when the bar sits flush with the viewport edge.
     outline-offset: calc(var(--focus-ring-offset) * -1);
-  }
-}
-
-@keyframes slide-up-from-bottom {
-  from {
-    transform: translateY(100%);
-  }
-
-  to {
-    transform: translateY(0);
-  }
-}
-
-.mobile-bottom-nav.entrance {
-  animation: slide-up-from-bottom 400ms ease-out 250ms backwards;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .mobile-bottom-nav.entrance {
-    animation: none;
   }
 }

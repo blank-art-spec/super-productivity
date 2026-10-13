@@ -1,0 +1,74 @@
+<section
+  class="calendar"
+  [attr.aria-label]="N.DATE | translate"
+>
+  <header>
+    <button
+      type="button"
+      [attr.aria-label]="N.PREVIOUS_MONTH | translate"
+      (click)="navigate(-1)"
+    >
+      ‹
+    </button>
+    <h2>{{ title() }}</h2>
+    <button
+      type="button"
+      [attr.aria-label]="N.NEXT_MONTH | translate"
+      (click)="navigate(1)"
+    >
+      ›
+    </button>
+    <button
+      type="button"
+      class="lunar-toggle"
+      [attr.aria-pressed]="showLunar()"
+      (click)="showLunar.set(!showLunar())"
+    >
+      {{ (showLunar() ? N.HIDE_LUNAR : N.SHOW_LUNAR) | translate }}
+    </button>
+  </header>
+  <div class="weekdays">
+    @for (day of weekdays(); track $index) {
+      <span>{{ day }}</span>
+    }
+  </div>
+  <div class="month-grid">
+    @for (day of days(); track day.day) {
+      <button
+        type="button"
+        [class.outside]="day.outside"
+        [class.selected]="day.day === selected()"
+        [class.today]="day.day === today"
+        [attr.aria-label]="day.label"
+        [attr.aria-pressed]="day.day === selected()"
+        (click)="selected.set(day.day)"
+      >
+        <span class="day-number">{{ day.number }}</span>
+        @if (showLunar()) {
+          @if (day.holiday) {
+            <sup [class.work]="day.holiday === 'work'">{{
+              (day.holiday === 'off' ? N.HOLIDAY : N.WORKDAY) | translate
+            }}</sup>
+          }
+          <small [class.festival]="day.labelKey">{{
+            day.labelKey ? (day.labelKey | translate) : day.lunar
+          }}</small>
+        }
+      </button>
+    }
+  </div>
+  <footer>
+    <button
+      type="button"
+      (click)="close(false)"
+    >
+      {{ T.G.CANCEL | translate }}</button
+    ><button
+      type="button"
+      class="confirm"
+      (click)="close(true)"
+    >
+      {{ N.CONFIRM | translate }}
+    </button>
+  </footer>
+</section>

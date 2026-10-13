@@ -26,6 +26,7 @@ import { LongPressDirective } from '../../../ui/longpress/longpress.directive';
 import { MarkdownComponent } from 'ngx-markdown';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
+import { MatTooltip } from '@angular/material/tooltip';
 import {
   MatMenu,
   MatMenuContent,
@@ -56,6 +57,7 @@ import { isPathSafeToOpen } from '../../../../../electron/shared-with-frontend/i
     MarkdownComponent,
     MatIconButton,
     MatIcon,
+    MatTooltip,
     TagComponent,
     MatMenuTrigger,
     MatMenu,

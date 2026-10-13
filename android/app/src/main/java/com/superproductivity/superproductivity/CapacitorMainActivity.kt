@@ -155,6 +155,9 @@ class CapacitorMainActivity : BridgeActivity() {
             showWebViewInitFailureOrThrow("BridgeActivity.onCreate() failed to initialize WebView", e)
             return
         }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            splashScreen.setOnExitAnimationListener { it.remove() }
+        }
         // A recovery relaunch was scheduled during super.onCreate()/load(); don't
         // fall through to the (now-doomed) bridge.webView null check and re-handle it.
         if (webViewBlocked || webViewRecoveryScheduled) {
@@ -263,12 +266,8 @@ class CapacitorMainActivity : BridgeActivity() {
         )
         isWidgetDoneDrainReceiverRegistered = true
 
-        // Show startup overlay for quick task entry while Angular loads.
-        // Only on fresh cold start — not on config-change recreation.
-        if (savedInstanceState == null) {
-            startupOverlayManager = StartupOverlayManager(this)
-            startupOverlayManager?.show()
-        }
+        // Quick-add is shown only by the ready frontend, without a temporary
+        // native FAB or a handoff between differently styled buttons.
 
         // Schedule background sync worker if credentials are configured
         if (BackgroundSyncCredentialStore.get(this) != null) {

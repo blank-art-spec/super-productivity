@@ -101,11 +101,13 @@
         <strong>{{ T.F.TASK.ADDITIONAL_INFO.REPEAT | translate }}</strong>
       </h3>
       @if (repeatCfgLabel()) {
-        <span
+        <button
+          type="button"
           (click)="openRepeatCfg()"
           class="repeat-value"
-          >{{ repeatCfgLabel() }}</span
         >
+          {{ repeatCfgLabel() }}
+        </button>
       }
     </section>
   }

@@ -6,11 +6,17 @@ import { EisenhowerMatrixService } from './eisenhower-matrix.service';
 import { EisenhowerQuadrant } from './eisenhower-matrix.model';
 import { WorkContextType } from '../work-context/work-context.model';
 import { TaskSharedActions } from '../../root-store/meta/task-shared.actions';
+import { signal } from '@angular/core';
+import { GlobalConfigService } from '../config/global-config.service';
+import { DEFAULT_GLOBAL_CONFIG } from '../config/default-global-config.const';
+import { MiscConfig } from '../config/global-config.model';
 
 describe('EisenhowerMatrixService', () => {
   let service: EisenhowerMatrixService;
   let taskService: jasmine.SpyObj<TaskService>;
   let store: jasmine.SpyObj<Store>;
+  const misc = signal<MiscConfig>(DEFAULT_GLOBAL_CONFIG.misc);
+  let config: { misc: typeof misc; updateSection: jasmine.Spy };
   const task: Task = {
     ...DEFAULT_TASK,
     id: 'task',
@@ -21,6 +27,8 @@ describe('EisenhowerMatrixService', () => {
   };
 
   beforeEach(() => {
+    misc.set(DEFAULT_GLOBAL_CONFIG.misc);
+    config = { misc, updateSection: jasmine.createSpy('updateSection') };
     taskService = jasmine.createSpyObj<TaskService>('TaskService', [
       'createNewTaskWithDefaults',
       'update',
@@ -32,9 +40,30 @@ describe('EisenhowerMatrixService', () => {
         EisenhowerMatrixService,
         { provide: TaskService, useValue: taskService },
         { provide: Store, useValue: store },
+        { provide: GlobalConfigService, useValue: config },
       ],
     });
     service = TestBed.inject(EisenhowerMatrixService);
+  });
+
+  it('saves a move as one config patch without changing any task or other settings', () => {
+    const second: Task = { ...task, id: 'second' };
+    service.reorder([task, second], 'second', 0);
+    expect(config.updateSection).toHaveBeenCalledOnceWith(
+      'misc',
+      { matrixTaskOrder: ['task:second', 'task:task'] },
+      true,
+    );
+    expect(taskService.update).not.toHaveBeenCalled();
+    expect(store.dispatch).not.toHaveBeenCalled();
+    expect(misc()).toBe(DEFAULT_GLOBAL_CONFIG.misc);
+    expect(task.dueDay).toBe('2026-10-09');
+  });
+
+  it('reads saved ordering and skips no-op moves', () => {
+    misc.set({ ...DEFAULT_GLOBAL_CONFIG.misc, matrixTaskOrder: ['task:task'] });
+    service.reorder([task], task.id, 0);
+    expect(config.updateSection).not.toHaveBeenCalled();
   });
 
   it('classifies through a single field patch without changing priority or dates', () => {

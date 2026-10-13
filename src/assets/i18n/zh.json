@@ -114,7 +114,10 @@
       "FOREGROUND_SERVICE_START_FAILED_FOCUS": "Android 阻止了专注模式的常驻通知。计时器会继续在应用内运行，但后台提醒可能不可用。请检查通知权限以及电池和后台运行限制。",
       "FOREGROUND_SERVICE_START_FAILED_TRACKING": "Android 阻止了时间追踪的常驻通知。应用仍会记录时间，但后台恢复功能可能不可用。请检查通知权限以及电池和后台运行限制。",
       "OPEN_NOTIFICATION_SETTINGS": "打开设置",
-      "WIDGET_TASKS_UPDATED": "已通过小组件更新 {{count}} 个任务"
+      "WIDGET_TASKS_UPDATED": "已通过小组件更新 {{count}} 个任务",
+      "TIME_RECOVERY_FAILED": "无法恢复计时器记录的时间。请先检查任务用时再继续。",
+      "CAPTURES_IMPORTED": "已从快速添加导入 {{count}} 个任务",
+      "CAPTURE_IMPORT_ERROR": "部分快速添加的任务暂时无法导入，已保留并将在稍后重试。"
     },
     "ATTACHMENT": {
       "LOCAL_FILE_UNAVAILABLE": "此附件仅在添加它的设备上可用。",
@@ -398,7 +401,8 @@
       "START_FOCUS_SESSION": "开始专注会话",
       "START_NEXT_FOCUS_SESSION": "开始下一个专注会话",
       "SWITCH_TASK": "切换任务",
-      "WORKED_FOR": "您工作了"
+      "WORKED_FOR": "您工作了",
+      "SESSION_PROGRESS": "本次专注进度"
     },
     "GITEA": {
       "FORM": {
@@ -747,7 +751,14 @@
         "TIME_FRAME_LABEL": "时间范围",
         "TIME_FRAME_MAX": "全部",
         "TIME_SPENT": "花费时间",
-        "YEAR": "年"
+        "YEAR": "年",
+        "HEATMAP_SHARE_FAILED": "分享热力图失败",
+        "HEATMAP_SHARE_TAGLINE": "{{title}} — 使用 Super Productivity 应用",
+        "HEATMAP_SHARED_TO_DEVICE": "热力图已保存到设备存储",
+        "HEATMAP_SHARED_TO_PATH": "热力图已保存到 {{path}}",
+        "SHARE_HEATMAP": "分享热力图",
+        "SHARE_STATS": "分享效率统计",
+        "LOADING_CHART": "正在加载图表…"
       },
       "EVAL_FORM": {
         "DAILY_STATE": "每日状态",
@@ -865,7 +876,8 @@
         },
         "VIEW_PARSED": "查看解析后的（不可编辑）Markdown",
         "VIEW_SPLIT": "在拆分视图中查看解析和未解析的 Markdown",
-        "VIEW_TEXT_ONLY": "查看未解析的文本"
+        "VIEW_TEXT_ONLY": "查看未解析的文本",
+        "CONFIRM_SAVE_BEFORE_OPENING_NEW_TASK": "打开新任务前保存当前笔记吗？"
       },
       "NOTE_CMP": {
         "DISABLE_PARSE": "禁用解析 Markdown 以进行预览",
@@ -969,6 +981,15 @@
         "REMOVED_PLAN_DATE": "删除了任务 '{{taskTitle}}' 的计划日期",
         "TASK_ALREADY_PLANNED": "任务已计划在 {{date}}",
         "TASK_PLANNED_FOR": "任务计划在 <strong>{{date}}</strong>{{extra}}"
+      },
+      "CALENDAR": {
+        "MONTH": "月",
+        "WEEK": "周",
+        "DAY": "日",
+        "AGENDA": "日程",
+        "VIEW": "日历视图",
+        "PREVIOUS": "上一时段",
+        "NEXT": "下一时段"
       }
     },
     "POMODORO": {
@@ -1055,7 +1076,8 @@
         "SHOW_IN_MENU": "在侧边栏中显示",
         "UNARCHIVED": "已取消归档项目",
         "UNARCHIVED_HIDDEN_FROM_MENU": "项目已恢复，但仍未显示在侧边栏中",
-        "UPDATED": "更新了项目设置"
+        "UPDATED": "更新了项目设置",
+        "DISCARDED": "已放弃更改"
       },
       "ARCHIVED_NOTICE": "此项目已归档。",
       "ARCHIVED_PROJECTS": {
@@ -1063,6 +1085,9 @@
         "LINK_LABEL": "已归档项目",
         "SEARCH": "搜索已归档项目",
         "UNARCHIVE": "恢复项目"
+      },
+      "D_RENAME": {
+        "PLACEHOLDER": "输入项目名称"
       }
     },
     "PROJECT_FOLDER": {
@@ -1350,7 +1375,8 @@
         "P2_FORGOT_PW": "或者您也可以更改密码，这将覆盖所有远程数据。",
         "P3_PW_CHANGED": "如果您<strong>在其他设备上修改了密码</strong>，请输入新密码并点击“覆盖云端”。这将把您的本机数据上传至服务器。",
         "PASSWORD": "密码",
-        "TITLE": "解密失败"
+        "TITLE": "解密失败",
+        "P3_START_OVER": "如果无法找回密码，请保留同步服务器上的现状，其中的数据不会丢失。若要从此设备清空服务器数据并重新开始，请关闭此窗口，在“设置 → 同步与备份 → 同步”中使用<strong>强制覆盖</strong>。"
       },
       "D_DEVICES": {
         "BTN_SIGN_OUT_OTHERS": "退出其他设备",
@@ -1727,7 +1753,9 @@
         "VECTOR_CLOCK_LIMIT_REACHED": "同步已追踪 {{originalSize}} 个设备/浏览器，超过 {{maxSize}} 的限制。非活跃设备的记录已被清除。如果您遇到问题，请考虑重置同步。",
         "VERSION_TOO_OLD": "您的应用版本对于同步数据来说太旧。请更新！",
         "VERSION_UNSUPPORTED": "无法同步：数据需要更新的应用版本。请更新。",
-        "WEB_CRYPTO_NOT_AVAILABLE": "此设备上不可用加密功能。在安卓设备上，加密功能依赖于安全的HTTPS环境，而当前环境无法提供。请在同步设置中禁用加密，或改用桌面网页浏览器进行同步。"
+        "WEB_CRYPTO_NOT_AVAILABLE": "此设备上不可用加密功能。在安卓设备上，加密功能依赖于安全的HTTPS环境，而当前环境无法提供。请在同步设置中禁用加密，或改用桌面网页浏览器进行同步。",
+        "BTN_RESOLVE_CONFLICT": "解决冲突…",
+        "DEFERRED_ACTIONS_STUCK": "同步似乎已停滞。最近的更改仍在等待处理，尚未保存。重新加载应用可恢复同步，但会丢弃这些更改。"
       },
       "SAFETY_BACKUP": {
         "BTN_CLEAR_ALL": "全部清除",
@@ -1784,6 +1812,9 @@
       },
       "TTL": {
         "ADD_NEW_TAG": "添加新标签"
+      },
+      "D_RENAME": {
+        "PLACEHOLDER": "输入标签名称"
       }
     },
     "TAG_FOLDER": {
@@ -1867,7 +1898,8 @@
         "SCHEDULE_TASK": "计划任务",
         "SUB_TASKS": "子任务（{{nr}}）",
         "TIME": "时间",
-        "TITLE_PLACEHOLDER": "输入标题"
+        "TITLE_PLACEHOLDER": "输入标题",
+        "OPEN_IN_FULLSCREEN": "全屏打开"
       },
       "B": {
         "ADD_ALL_TO_TODAY": "全部添加到今天",
@@ -1917,7 +1949,12 @@
         "TRACK_TIME": "开始计时",
         "TRACK_TIME_STOP": "暂停计时",
         "UNSCHEDULE_TASK": "取消任务时间安排",
-        "UPDATE_ISSUE_DATA": "更新任务数据"
+        "UPDATE_ISSUE_DATA": "更新任务数据",
+        "PRIORITY": "优先级",
+        "PRIORITY_HIGH": "高",
+        "PRIORITY_LOW": "低",
+        "PRIORITY_MEDIUM": "中",
+        "PRIORITY_NONE": "无"
       },
       "D_CONFIRM_DELETE": {
         "MSG": "您确定要删除任务\"{{title}}\"吗？",
@@ -2072,6 +2109,14 @@
           "UNSCHEDULED": {
             "ONE": "已取消 {{count}} 个任务的安排",
             "OTHER": "已取消 {{count}} 个任务的安排"
+          },
+          "PRIORITY_CLEARED": {
+            "ONE": "已清除 {{count}} 个任务的优先级",
+            "OTHER": "已清除 {{count}} 个任务的优先级"
+          },
+          "PRIORITY_SET": {
+            "ONE": "已将 {{count}} 个任务的优先级设为{{priority}}",
+            "OTHER": "已将 {{count}} 个任务的优先级设为{{priority}}"
           }
         },
         "SELECTED_COUNT": "已选择 {{count}} 个",
@@ -2117,6 +2162,104 @@
         "SPENT_TOTAL": "总花费",
         "TASK": "任务",
         "TOGGLE_DONE": "取消/标记为完成"
+      },
+      "NOTEBOOK_ADD": {
+        "TITLE": "添加计划",
+        "DATE": "计划日期",
+        "TODAY": "今天",
+        "TOMORROW": "明天",
+        "OTHER_DATE": "其他日期",
+        "PLACEHOLDER": "我准备做…",
+        "NONE": "无",
+        "CATEGORY": "选择分类或目标",
+        "QUADRANT": "四象限",
+        "CHILDREN": "子计划",
+        "RANGE": "时间段",
+        "REPEAT": "重复",
+        "REMINDER": "提醒",
+        "ADD_CHILD": "添加子计划",
+        "REMOVE_CHILD": "移除子计划",
+        "CLEAR": "清除",
+        "START": "开始",
+        "END": "结束",
+        "START_DATE": "开始日期",
+        "DURATION": "持续时间",
+        "SET_TIME": "设置时间段",
+        "TIMELINE_HELP": "设置后计划将显示在时间轴",
+        "INVALID_RANGE": "结束时间须晚于开始时间",
+        "CONFIRM": "确定",
+        "NO_REPEAT": "不重复",
+        "DAILY": "每日",
+        "WEEKLY": "每周",
+        "MONTHLY": "每月",
+        "YEARLY": "每年",
+        "WEEKDAYS": "工作日",
+        "CUSTOM": "自定义",
+        "CHINESE_WORKDAYS": "法定工作日",
+        "CHINESE_WORKDAY_HELP": "已内置2026年放假与调休安排，自动跳过节假日、纳入补班。其他年份待日历更新后生成。",
+        "REPEAT_DATE": "重复日期",
+        "REPEAT_EVERY": "每",
+        "REPEAT_DAYS": "天重复",
+        "REPEAT_WEEKS": "周重复",
+        "REPEAT_MONTHS": "月重复",
+        "REPEAT_YEARS": "年重复",
+        "END_REPEAT": "结束重复",
+        "NO_REPEAT_END": "未设置结束时间",
+        "INVALID_REPEAT": "间隔须为1～1000的整数，结束日期不能早于计划日期；法定工作日须在已支持年份内且日期范围至少包含一个工作日。",
+        "NEW_CATEGORY": "新建分类",
+        "NEW_GOAL": "新建目标",
+        "NO_CATEGORY": "无分类",
+        "START_TIME": "开始时间",
+        "SAVING": "正在保存…",
+        "SAVE_INCOMPLETE": "部分子计划尚未保存，点击重试继续保存，不会重复创建任务。",
+        "RETRY": "重试",
+        "CHOOSE_DAYS": "选择计划所需天数",
+        "OPEN_CALENDAR": "展开日历",
+        "HIDE_LUNAR": "隐藏农历",
+        "SHOW_LUNAR": "显示农历",
+        "HOLIDAY": "假",
+        "WORKDAY": "班",
+        "BACK_TODAY": "回到今天",
+        "DAY_PROGRESS": "完成进度",
+        "PREVIOUS_MONTH": "上个月",
+        "NEXT_MONTH": "下个月",
+        "CALENDAR": {
+          "MINOR_COLD": "小寒",
+          "MAJOR_COLD": "大寒",
+          "SPRING": "立春",
+          "RAIN": "雨水",
+          "INSECTS": "惊蛰",
+          "SPRING_EQUINOX": "春分",
+          "QINGMING": "清明",
+          "GRAIN_RAIN": "谷雨",
+          "SUMMER": "立夏",
+          "GRAIN_FULL": "小满",
+          "GRAIN_EAR": "芒种",
+          "SUMMER_SOLSTICE": "夏至",
+          "MINOR_HEAT": "小暑",
+          "MAJOR_HEAT": "大暑",
+          "AUTUMN": "立秋",
+          "END_HEAT": "处暑",
+          "DEW": "白露",
+          "AUTUMN_EQUINOX": "秋分",
+          "COLD_DEW": "寒露",
+          "FROST": "霜降",
+          "WINTER": "立冬",
+          "MINOR_SNOW": "小雪",
+          "MAJOR_SNOW": "大雪",
+          "WINTER_SOLSTICE": "冬至",
+          "SPRING_FESTIVAL": "春节",
+          "LANTERN": "元宵节",
+          "DRAGON_BOAT": "端午节",
+          "QIXI": "七夕",
+          "MID_AUTUMN": "中秋节",
+          "DOUBLE_NINTH": "重阳节",
+          "LABA": "腊八节",
+          "NEW_YEAR": "元旦",
+          "LABOUR": "劳动节",
+          "NATIONAL_DAY": "国庆节",
+          "UN_DAY": "联合国日"
+        }
       }
     },
     "TASK_REPEAT": {
@@ -2283,7 +2426,9 @@
         "TIME_2HOUR": "> 2 小时",
         "TIME_10MIN": "> 10 分钟",
         "TIME_30MIN": "> 30 分钟",
-        "TIME_SPENT": "花费时间"
+        "TIME_SPENT": "花费时间",
+        "FILTER_PRIORITY": "优先级",
+        "SORT_PRIORITY": "优先级"
       }
     },
     "TIME_TRACKING": {
@@ -2427,6 +2572,100 @@
         "NO_DATA": "本周尚无任务。",
         "TITLE": "标题"
       }
+    },
+    "IOS_SHARE": {
+      "SAVE": "保存",
+      "DESTINATION": "收件箱",
+      "NEXT_OPEN": "下次打开 Super Productivity 时添加",
+      "SAVE_ERROR": "保存失败，请重试。",
+      "IMPORT_ERROR": "无法导入分享内容。内容已保存在此设备上，请重新打开应用以重试。",
+      "INVALID": "请分享链接或文本（最多 100,000 个字符）。"
+    },
+    "TASK_PAGE": {
+      "ANYTIME": "不限时段",
+      "MORNING": "上午",
+      "AFTERNOON": "下午",
+      "EVENING": "晚上",
+      "COMPLETED": "已完成",
+      "EMPTY_PERIOD": "此时段尚未安排任务。",
+      "VIEW": "任务视图",
+      "LIST": "列表",
+      "MATRIX": "矩阵",
+      "BY_TIME": "按时段",
+      "FOCUS": "专注",
+      "INBOX_TITLE": "随手记录。",
+      "INBOX_SUBTITLE": "稍后整理。",
+      "ORGANIZE": "整理任务",
+      "SELECT_TASK": "选择任务",
+      "PROJECT_MATRIX_DATE": "项目 · 矩阵 · 日期"
+    },
+    "MATRIX": {
+      "HOME": "首页",
+      "PAGE_TITLE": "艾森豪威尔矩阵",
+      "LOADING": "正在加载任务…",
+      "VIEW_ALL": "查看全部",
+      "BACK_TO_MATRIX": "返回矩阵",
+      "FILTERS": "筛选",
+      "RESET_FILTERS": "重置筛选",
+      "PREVIOUS_WEEK": "上一周",
+      "NEXT_WEEK": "下一周",
+      "START_TRACKING": "开始计时",
+      "SUGGESTED": "建议象限",
+      "CURRENT_TASK": "正在计时",
+      "OVERDUE": "已逾期",
+      "REPEATING": "重复任务",
+      "EMPTY_COMPLETED": "所有任务已完成，为接下来的重点留出空间。",
+      "EMPTY_SHORT": "暂无任务",
+      "SUBTITLE": "为重要的事留出空间，按重要性和紧急程度整理任务。",
+      "DO_FIRST": "紧急且重要",
+      "SCHEDULE": "重要但不紧急",
+      "DELEGATE": "紧急但不重要",
+      "ELIMINATE": "不紧急且不重要",
+      "IMPORTANT_URGENT": "紧急且重要",
+      "IMPORTANT_NOT_URGENT": "重要但不紧急",
+      "NOT_IMPORTANT_URGENT": "紧急但不重要",
+      "NOT_IMPORTANT_NOT_URGENT": "不紧急且不重要",
+      "UNCLASSIFIED": "未分类",
+      "UNCLASSIFIED_DESCRIPTION": "准备好后，为任务选择一个象限。",
+      "ADD_TASK": "添加任务",
+      "TITLE": "任务标题",
+      "TITLE_PLACEHOLDER": "需要完成什么？",
+      "PROJECT": "项目",
+      "TAGS": "标签",
+      "QUADRANT": "象限",
+      "DATE": "计划日期",
+      "TIME": "时间（可选）",
+      "ESTIMATE_MINUTES": "预计用时（分钟）",
+      "ADDITIONAL_FIELDS": "预计用时与标签",
+      "TIME_REQUIRES_DATE": "添加时间前，请先选择日期。",
+      "EDIT_SCHEDULE": "编辑计划时间",
+      "COMPLETE": "完成任务",
+      "MORE": "更多任务操作",
+      "SUBTASK": "子任务",
+      "DEADLINE": "截止日期",
+      "FOCUS": "专注",
+      "PAUSE": "暂停",
+      "DETAILS": "任务详情",
+      "MOVE_TO": "移至象限",
+      "ALL": "全部任务",
+      "THIS_WEEK": "本周",
+      "PERIOD": "时段",
+      "ALL_PROJECTS": "全部项目",
+      "ALL_TAGS": "全部标签",
+      "AUTO_CLASSIFY": "自动分类",
+      "HIDE_SUGGESTIONS": "隐藏建议",
+      "USE_SUGGESTION": "采用建议",
+      "SUGGESTION_NOTICE": "这里只展示分类建议：高优先级视为重要；计划在今天或已到期的任务（含逾期任务）视为紧急。采用建议或手动移动任务后，才会保存其象限。",
+      "EMPTY_QUADRANT": "此象限暂无任务。",
+      "EMPTY_FILTER": "没有符合筛选条件的未完成任务。",
+      "SET_DEFAULT_HOME": "设为默认首页",
+      "DEFAULT_HOME": "默认首页",
+      "CONFIRM_DELETE": "删除此任务及其子任务吗？",
+      "GOALS_AND_CATEGORIES": "目标和分类",
+      "HOME_VIEW": "视图",
+      "MY_MENU": "我的",
+      "MAKE_PLAN": "做计划",
+      "DRAG_HINT": "长按试试～"
     }
   },
   "FILE_IMEX": {
@@ -2454,7 +2693,8 @@
     "S_ERR_NETWORK": "导入失败：从 URL 获取数据时网络错误",
     "S_ERR_TODOIST_IMPORT_OPEN": "无法打开 Todoist 导入工具",
     "S_IMPORT_FROM_URL_ERR_DECODE": "错误：无法解码用于导入的 URL 参数。请确保其格式正确。",
-    "URL_PLACEHOLDER": "输入要从中导入的 URL"
+    "URL_PLACEHOLDER": "输入要从中导入的 URL",
+    "S_ERR_IMPORT_UNREPAIRABLE": "导入失败：此备份包含无法修复的数据。请尝试较早的备份，并导出日志反馈此问题。"
   },
   "G": {
     "ADD": "添加",
@@ -2508,7 +2748,8 @@
     "TOMORROW": "明天",
     "UNDO": "撤销",
     "WITHOUT_PROJECT": "无项目",
-    "YESTERDAY": "昨天"
+    "YESTERDAY": "昨天",
+    "RENAME": "重命名"
   },
   "GCF": {
     "APP_FEATURES": {
@@ -2819,7 +3060,11 @@
       "WALLPAPER": "壁纸",
       "WALLPAPER_BUTTON": "设置壁纸…",
       "WALLPAPER_DIALOG_TITLE": "全局壁纸",
-      "WALLPAPER_HINT": "显示在没有自定义背景的页面上（规划器、日程、看板、设置等）。拥有自定义图片的标签和项目会覆盖此壁纸。"
+      "WALLPAPER_HINT": "显示在没有自定义背景的页面上（规划器、日程、看板、设置等）。拥有自定义图片的标签和项目会覆盖此壁纸。",
+      "APPEARANCE": "外观",
+      "IS_SHOW_MOBILE_HEADER": "显示移动端顶部栏",
+      "IS_SHOW_MOBILE_HEADER_HINT": "在小于 600 像素的屏幕上显示应用标题、日期和操作工具。默认隐藏，也可从底部“更多操作”菜单切换。",
+      "HIDE_MOBILE_HEADER": "隐藏移动端顶部栏"
     },
     "POMODORO": {
       "BREAK_DURATION": "短休息持续时间",
@@ -2851,7 +3096,9 @@
       "LUNCH_BREAK_START_END_DESCRIPTION": "如 13:00",
       "MONTH": "月",
       "TITLE": "计划",
-      "WORK_START_END_DESCRIPTION": "例如 17:00"
+      "WORK_START_END_DESCRIPTION": "例如 17:00",
+      "WORK_END_DESCRIPTION": "例如 17:00",
+      "WORK_START_DESCRIPTION": "例如 9:00"
     },
     "SHORT_SYNTAX": {
       "HELP": "<p>在这里，您可以在创建任务时控制短语法选项</p>",
@@ -2896,7 +3143,10 @@
       "IS_MARKDOWN_FORMATTING_IN_NOTES_ENABLED": "在任务笔记中启用Markdown格式",
       "IS_TRAY_SHOW_CURRENT": "在托盘/状态菜单中显示当前任务（仅限桌面Mac/Windows）",
       "NOTES_TEMPLATE": "任务描述模板",
-      "TITLE": "任务"
+      "TITLE": "任务",
+      "PRIORITY_ICON_PRESET": "优先级图标",
+      "PRIORITY_ICON_PRESET_CHEVRONS": "箭头",
+      "PRIORITY_ICON_PRESET_NUMBERS": "数字"
     },
     "TIME_TRACKING": {
       "HELP": "时间跟踪提醒是一个横幅，在您忘记开始时间跟踪时出现。",
@@ -2959,7 +3209,8 @@
     "SHARE_FAILED": "共享失败。请手动复制。",
     "SHARE_FAILED_FALLBACK": "共享失败。改为复制到剪贴板。",
     "SHARE_UNAVAILABLE_FALLBACK": "已复制到剪贴板。",
-    "UNPLANNED_TODAY_TASKS": "取消今日所有的任务"
+    "UNPLANNED_TODAY_TASKS": "取消今日所有的任务",
+    "ACTION_REJECTED": "此更改因内部错误未能应用，数据没有丢失。如果问题持续出现，请重新加载应用。"
   },
   "GPB": {
     "JIRA_LOAD_ISSUE": "Jira: 正在加载问题数据...",
@@ -3086,7 +3337,10 @@
       "TASK_SWIPE_LEFT_TOUCH": "向左滑动任务以查看更多操作",
       "TASK_SWIPE_RIGHT_TOUCH": "向右滑动任务以将其标记为完成",
       "OR_PRESS": "或按",
-      "SKIP_ARIA": "关闭提示"
+      "SKIP_ARIA": "关闭提示",
+      "DONE_TITLE": "准备就绪",
+      "EXPLORE_INBOX": "收件箱里有一些使用提示，你可以随时尝试或删除。",
+      "GOT_IT": "知道了"
     }
   },
   "PDS": {
@@ -3144,7 +3398,8 @@
       "TITLE": "连接到 Plainspace",
       "TOKEN_HELP": "在 Plainspace 上创建 API 令牌，然后粘贴到下方。",
       "TOKEN_LABEL": "API 令牌",
-      "TOKEN_PLACEHOLDER": "pat_…"
+      "TOKEN_PLACEHOLDER": "pat_…",
+      "UNREACHABLE": "无法连接 Plainspace。请检查网络连接和主机地址，然后重试。"
     },
     "FORM": {
       "HOST": "Plainspace 主机地址",
@@ -3268,7 +3523,14 @@
     "UPLOAD_PLUGIN_INSTRUCTION": "上传插件 ZIP 文件以进行安装：",
     "VALIDATION_FAILED": "验证失败：{{errors}}",
     "NODE_EXECUTION_BRIDGE_UNAVAILABLE": "无法连接到 Node.js 执行桥。请尝试先禁用再重新启用此插件。",
-    "PLUGIN_LOAD_FAILED": "插件“{{pluginName}}”加载失败：{{error}}"
+    "PLUGIN_LOAD_FAILED": "插件“{{pluginName}}”加载失败：{{error}}",
+    "TASK_CONTEXT_MENU_ACTIONS": "插件操作",
+    "TASK_CONTEXT_MENU_ENTRY_ID_INVALID": "任务右键菜单项 ID 必须符合 [a-z0-9][a-z0-9_-]{0,63}",
+    "TASK_CONTEXT_MENU_ENTRY_LABEL_INVALID": "任务右键菜单项标签长度必须为 1 至 {{maxLength}} 个字符",
+    "TASK_CONTEXT_MENU_ENTRY_ICON_INVALID": "任务右键菜单项图标必须使用 Material 图标名称",
+    "TASK_CONTEXT_MENU_ENTRY_ONCLICK_REQUIRED": "任务右键菜单项必须提供 onClick 处理函数",
+    "TASK_CONTEXT_MENU_ENTRY_TARGET_INVALID": "任务右键菜单项 showFor 必须包含 TASK 或 SUBTASK",
+    "PLUGIN_INSTALLED": "已安装插件“{{name}}”"
   },
   "PM": {
     "ALL_TASKS_TITLE": "指标 （所有任务）",
@@ -3395,5 +3657,13 @@
     "WITHOUT_BREAK": "无休息：",
     "WORKING_TODAY": "今天工作：",
     "WORKING_TODAY_ARCHIVED": "在已归档任务上今天工作的时间"
+  },
+  "HEATMAP": {
+    "DAY_TOOLTIP": {
+      "ONE": "{{date}}：{{taskCount}} 个任务，{{timeSpent}}",
+      "OTHER": "{{date}}：{{taskCount}} 个任务，{{timeSpent}}"
+    },
+    "LEGEND_LESS": "少",
+    "LEGEND_MORE": "多"
   }
 }

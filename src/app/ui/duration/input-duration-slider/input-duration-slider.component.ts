@@ -17,6 +17,7 @@ import { T } from '../../../t.const';
 import { InputDurationDirective } from '../input-duration.directive';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
+import { MsToMinuteClockStringPipe } from '../ms-to-minute-clock-string.pipe';
 
 @Component({
   selector: 'input-duration-slider',
@@ -24,7 +25,12 @@ import { TranslatePipe } from '@ngx-translate/core';
   styleUrls: ['./input-duration-slider.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [dotAnimation],
-  imports: [InputDurationDirective, FormsModule, TranslatePipe],
+  imports: [
+    InputDurationDirective,
+    FormsModule,
+    TranslatePipe,
+    MsToMinuteClockStringPipe,
+  ],
   host: {
     ['[class.bare-ring]']: 'bareRing()',
     ['[class.hide-handle]']: 'hideHandle()',

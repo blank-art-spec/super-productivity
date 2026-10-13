@@ -70,6 +70,13 @@ describe('LayoutService', () => {
     expect(breakpointObserver.observe).toHaveBeenCalledWith('(max-width: 397px)');
   });
 
+  it('hands quadrant defaults to the next composer and clears them on a generic add', () => {
+    service.showAddTaskBar({ dueDay: '2026-10-12' });
+    expect(service.addTaskFields()).toEqual({ dueDay: '2026-10-12' });
+    service.showAddTaskBar();
+    expect(service.addTaskFields()).toBeUndefined();
+  });
+
   describe('Focus restoration', () => {
     let mockTaskElement: HTMLElement;
 

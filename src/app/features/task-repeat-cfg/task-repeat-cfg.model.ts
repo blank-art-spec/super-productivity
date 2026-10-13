@@ -58,6 +58,10 @@ export interface TaskRepeatCfgCopy {
   repeatCycle: RepeatCycleOption;
   // worklog string; only in effect for monthly/yearly
   startDate?: string;
+  /** Last allowed occurrence day (inclusive); missing/null means no user limit. */
+  endDate?: string | null;
+  /** Follow the published mainland-China statutory workday calendar. */
+  isChineseWorkday?: boolean;
   repeatEvery: number;
   monday?: boolean;
   tuesday?: boolean;

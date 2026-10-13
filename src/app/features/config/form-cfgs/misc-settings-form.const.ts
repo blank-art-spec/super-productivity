@@ -123,6 +123,15 @@ export const MISC_SETTINGS_FORM_CFG: ConfigFormSection<MiscConfig> = {
       },
     },
     {
+      key: 'isShowMobileHeader',
+      type: 'checkbox',
+      defaultValue: false,
+      templateOptions: {
+        label: T.GCF.MISC.IS_SHOW_MOBILE_HEADER,
+        description: T.GCF.MISC.IS_SHOW_MOBILE_HEADER_HINT,
+      },
+    },
+    {
       key: 'isDisableCelebration',
       type: 'checkbox',
       templateOptions: {

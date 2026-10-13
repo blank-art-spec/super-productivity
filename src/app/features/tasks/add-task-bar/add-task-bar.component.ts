@@ -90,6 +90,8 @@ import { PlannerActions } from '../../planner/store/planner.actions';
 import { DateService } from '../../../core/date/date.service';
 import { MenuTreeService } from '../../menu-tree/menu-tree.service';
 import { SelectOptionRowComponent } from '../../../ui/select-option-row/select-option-row.component';
+import { NotebookTaskComposerComponent } from './notebook-task-composer.component';
+import { NotebookTaskDraftService } from './notebook-task-draft.service';
 
 export interface TaskAddEvent {
   taskId: string;
@@ -111,6 +113,7 @@ export interface TaskAddEvent {
     // for why nothing is written there). Null leaves the `:root` default.
     '[style.--keyboard-overlay-offset]':
       'isGlobalBarVariant() ? iosKeyboardService.keyboardOverlayOffset() : null',
+    '[class.notebook]': 'isNotebook()',
   },
   /* eslint-enable @typescript-eslint/naming-convention*/
   imports: [
@@ -131,8 +134,9 @@ export interface TaskAddEvent {
     AddTaskBarActionsComponent,
     TranslateModule,
     SelectOptionRowComponent,
+    NotebookTaskComposerComponent,
   ],
-  providers: [AddTaskBarStateService, AddTaskBarParserService],
+  providers: [AddTaskBarStateService, AddTaskBarParserService, NotebookTaskDraftService],
 })
 export class AddTaskBarComponent implements AfterViewInit, OnInit, OnDestroy {
   private readonly _taskService = inject(TaskService);
@@ -152,6 +156,9 @@ export class AddTaskBarComponent implements AfterViewInit, OnInit, OnDestroy {
   private readonly _dateService = inject(DateService);
   private readonly _menuTreeService = inject(MenuTreeService);
   readonly stateService = inject(AddTaskBarStateService);
+  readonly notebookDraft = inject(NotebookTaskDraftService);
+  readonly notebookComposer = viewChild(NotebookTaskComposerComponent);
+  readonly isNotebookSaving = signal(false);
   readonly iosKeyboardService = inject(IosKeyboardService);
 
   T = T;
@@ -159,6 +166,7 @@ export class AddTaskBarComponent implements AfterViewInit, OnInit, OnDestroy {
   // Inputs
   tabindex = input<number>(0);
   isGlobalBarVariant = input<boolean>(false);
+  isNotebook = input<boolean>(false);
   isDisableAutoFocus = input<boolean>(false);
   isNoDefaults = input<boolean>(false);
   additionalFields = input<Partial<TaskCopy>>();
@@ -357,6 +365,14 @@ export class AddTaskBarComponent implements AfterViewInit, OnInit, OnDestroy {
     this._setProjectInitially();
     this._setTagInitially();
     this._setupDefaultDate();
+    if (this.isNotebook()) {
+      const day = this.additionalFields()?.dueDay;
+      if (day) this.stateService.updateDate(day);
+      if (!this.stateService.state().date)
+        this.stateService.updateDate(this._dateService.todayStr());
+      const quadrant = this.additionalFields()?.eisenhowerQuadrant;
+      if (quadrant) this.notebookDraft.selectQuadrant(quadrant);
+    }
     this._setupTextParsing();
     this._setupSuggestions();
 
@@ -511,6 +527,9 @@ export class AddTaskBarComponent implements AfterViewInit, OnInit, OnDestroy {
       const additionalFields = this.additionalFields();
       const taskData: Partial<TaskCopy> = {
         ...additionalFields,
+        ...(this.isNotebook()
+          ? { eisenhowerQuadrant: this.notebookDraft.quadrant() }
+          : {}),
         projectId: state.projectId,
         tagIds: additionalFields?.tagIds
           ? unique([...finalTagIds, ...additionalFields.tagIds])
@@ -634,7 +653,8 @@ export class AddTaskBarComponent implements AfterViewInit, OnInit, OnDestroy {
       if (state.repeat) {
         const repeat = state.repeat;
         if (repeat.type === 'DIALOG') {
-          this._openRepeatDialogForTask(taskId, resolvedRemindOption);
+          if (!this.isNotebook())
+            this._openRepeatDialogForTask(taskId, resolvedRemindOption);
         } else {
           const referenceDate = dateStrToUtcDate(startDay);
           // An interval ("@every 2 days") has no preset to expand — it maps to a
@@ -654,12 +674,24 @@ export class AddTaskBarComponent implements AfterViewInit, OnInit, OnDestroy {
             ...DEFAULT_TASK_REPEAT_CFG,
             startDate: startDay,
             ...repeatUpdates,
+            endDate: repeat.endDate || null,
+            isChineseWorkday: !!repeat.isChineseWorkday,
             title,
             notes: taskData.notes,
             tagIds: taskData.tagIds ?? [],
             defaultEstimate: state.estimate || 0,
             startTime: state.time || undefined,
             remindAt: state.time ? resolvedRemindOption : undefined,
+            ...(this.isNotebook()
+              ? {
+                  eisenhowerQuadrant: this.notebookDraft.quadrant(),
+                  shouldInheritSubtasks: this.notebookDraft.children().length > 0,
+                  subTaskTemplates: this.notebookDraft.children().map((childTitle) => ({
+                    title: childTitle,
+                    eisenhowerQuadrant: this.notebookDraft.quadrant(),
+                  })),
+                }
+              : {}),
           };
           // Seed the skipOverdue default from the chosen schedule, same as the
           // repeat dialog (there is no advanced toggle in the inline add-bar).
@@ -670,6 +702,11 @@ export class AddTaskBarComponent implements AfterViewInit, OnInit, OnDestroy {
         }
       }
 
+      if (this.isNotebook()) {
+        await this.notebookComposer()?.completeSubtasks(taskId);
+        if (state.repeat?.type === 'DIALOG')
+          this._openRepeatDialogForTask(taskId, resolvedRemindOption);
+      }
       this.afterTaskAdd.emit({
         taskId,
         isAddToBottom: this.isAddToBottom(),
@@ -682,6 +719,10 @@ export class AddTaskBarComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   onSubmitBtnClick(): void {
+    if (this.isNotebook()) {
+      void this.submitNotebookTask();
+      return;
+    }
     // Clicking the + button moves focus onto the button, which then vanishes
     // once the input clears — refocus the input so the next task can be typed
     // right away. (The Enter-key submit path never loses input focus.)
@@ -694,6 +735,39 @@ export class AddTaskBarComponent implements AfterViewInit, OnInit, OnDestroy {
         this.focusInput();
       }
     });
+  }
+
+  async submitNotebookTask(): Promise<void> {
+    if (this.isNotebookSaving()) return;
+    const composer = this.notebookComposer();
+    if (!composer) return;
+    if (!composer.pendingTaskId() && !this.stateService.inputTxt().trim()) return;
+    if (!composer.pendingTaskId() && !composer.isConfirmedRepeatValid()) return;
+    // Include an unfinished inline child before taking the repeat-template snapshot.
+    composer.addChild();
+    this.isNotebookSaving.set(true);
+    try {
+      const pendingId = composer.pendingTaskId();
+      if (pendingId) {
+        await composer.completeSubtasks(pendingId);
+        this.afterTaskAdd.emit({
+          taskId: pendingId,
+          isAddToBottom: this.isAddToBottom(),
+          isNewTask: true,
+        });
+        this._resetAfterAdd();
+      } else {
+        await this.addTask();
+      }
+      if (!this.stateService.inputTxt()) this.done.emit();
+    } catch {
+      this._snackService.open({
+        type: 'ERROR',
+        msg: T.F.TASK.NOTEBOOK_ADD.SAVE_INCOMPLETE,
+      });
+    } finally {
+      this.isNotebookSaving.set(false);
+    }
   }
 
   onTaskSuggestionActivated(suggestion: AddTaskSuggestion | null): void {
@@ -825,9 +899,19 @@ export class AddTaskBarComponent implements AfterViewInit, OnInit, OnDestroy {
     const target = event.target as HTMLElement;
     const component = target.closest('add-task-bar');
     const overlayContainer = target.closest('.cdk-overlay-container');
+    // Closing a dialog detaches its button before the click reaches document.
+    // The dispatch path still records that the click originated in the overlay.
+    const clickedInsideOverlay = event
+      .composedPath()
+      .some((node) => node instanceof Element && node.matches('.cdk-overlay-container'));
 
     // If click is outside the component and not on autocomplete or menu options, close it
-    if (!component && !overlayContainer && !this.isScheduleDialogOpen()) {
+    if (
+      !component &&
+      !overlayContainer &&
+      !clickedInsideOverlay &&
+      !this.isScheduleDialogOpen()
+    ) {
       this.done.emit();
     }
   }
@@ -856,6 +940,11 @@ export class AddTaskBarComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // Handle Escape key
     if (event.key === 'Escape') {
+      if (this.isNotebook() && this.notebookComposer()?.panel()) {
+        event.preventDefault();
+        this.notebookComposer()!.panel.set(null);
+        return;
+      }
       // Progressive dismissal: if the task-suggestion panel is open, let Material
       // close it first instead of tearing down the whole bar.
       if (this.taskAutoCompleteEl()?.isOpen) {
@@ -878,7 +967,8 @@ export class AddTaskBarComponent implements AfterViewInit, OnInit, OnDestroy {
     if (event.key === 'Enter' && !event.isComposing && event.keyCode !== 229) {
       event.preventDefault();
       if (!this.isSearchMode() && !event.repeat) {
-        void this.addTask();
+        if (this.isNotebook()) void this.submitNotebookTask();
+        else void this.addTask();
       }
       return;
     }
@@ -999,6 +1089,7 @@ export class AddTaskBarComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   private _resetAfterAdd(): void {
+    if (this.isNotebook()) this.notebookDraft.reset();
     this.stateService.resetAfterAdd();
     if (this._defaultTagIds.length > 0) {
       this.stateService.updateTagIds(this._defaultTagIds);

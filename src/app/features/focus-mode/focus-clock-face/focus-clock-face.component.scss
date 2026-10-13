@@ -10,7 +10,7 @@
   // --clock-time-size: digits in the center.
   // --control-offset:  distance the in-circle controls (pause/done/+/-) sit
   //                    from the rim.
-  --clock-time-size: calc(var(--clock-face-size) * 0.22);
+  --clock-time-size: calc(var(--clock-face-size) * 0.18);
   --control-offset: calc(var(--clock-face-size) * 0.07);
 
   display: block;
@@ -67,7 +67,7 @@ breathing-dot {
 
   .clock-time {
     font-size: var(--clock-time-size, 52px);
-    font-weight: bold;
+    font-weight: var(--font-weight-medium);
     line-height: 1;
     font-variant-numeric: tabular-nums;
     position: absolute;
@@ -112,15 +112,15 @@ breathing-dot {
   height: 100%;
 
   &__bg {
-    fill: none;
-    stroke: var(--tasksmart-selected);
-    stroke-width: 1.8;
+    fill: var(--tasksmart-surface);
+    stroke: var(--tasksmart-border);
+    stroke-width: 0.3;
   }
 
   &__progress {
     fill: none;
     stroke: var(--tasksmart-accent);
-    stroke-width: 2;
+    stroke-width: 0.4;
     stroke-linecap: round;
     transition: stroke-dasharray var(--transition-duration-m) var(--ani-standard-timing);
   }
@@ -129,5 +129,9 @@ breathing-dot {
   // shape stays consistent across modes.
   &--idle {
     opacity: 0.6;
+
+    .focus-progress-circle__bg {
+      fill: none;
+    }
   }
 }

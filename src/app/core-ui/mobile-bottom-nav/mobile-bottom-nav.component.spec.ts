@@ -13,8 +13,10 @@ import { PluginIconComponent } from '../../plugins/ui/plugin-icon/plugin-icon.co
 import { WorkContextService } from '../../features/work-context/work-context.service';
 import { GlobalConfigService } from '../../features/config/global-config.service';
 import { DEFAULT_GLOBAL_CONFIG } from '../../features/config/default-global-config.const';
-import { AppFeaturesConfig } from '../../features/config/global-config.model';
+import { NEW_INSTALL_APP_FEATURES } from '../../features/config/new-install-app-features.const';
+import { AppFeaturesConfig, MiscConfig } from '../../features/config/global-config.model';
 import { FocusModeService } from '../../features/focus-mode/focus-mode.service';
+import { hideFocusOverlay } from '../../features/focus-mode/store/focus-mode.actions';
 
 /**
  * Below 600px this nav's panels menu is the ONLY route to every right-panel
@@ -53,10 +55,15 @@ describe('MobileBottomNavComponent', () => {
   const render = async (
     over: Partial<AppFeaturesConfig>,
     sidePanelButtons: SidePanelBtn[] = [],
+    miscOverrides: Partial<MiscConfig> = {},
   ): Promise<MobileBottomNavComponent> => {
     const appFeatures = signal<AppFeaturesConfig>({
       ...DEFAULT_GLOBAL_CONFIG.appFeatures,
       ...over,
+    });
+    const misc = signal<MiscConfig>({
+      ...DEFAULT_GLOBAL_CONFIG.misc,
+      ...miscOverrides,
     });
 
     TestBed.resetTestingModule();
@@ -89,10 +96,22 @@ describe('MobileBottomNavComponent', () => {
           provide: WorkContextService,
           useValue: { activeWorkContext$: of({ isEnableBacklog: false }) },
         },
-        { provide: GlobalConfigService, useValue: { appFeatures } },
+        {
+          provide: GlobalConfigService,
+          useValue: {
+            appFeatures,
+            misc,
+            updateSection: jasmine
+              .createSpy('updateSection')
+              .and.callFake((_key: string, patch: Partial<MiscConfig>) => {
+                misc.update((value) => ({ ...value, ...patch }));
+              }),
+          },
+        },
         {
           provide: FocusModeService,
           useValue: {
+            isOverlayShown: signal(false),
             isSessionRunning: signal(false),
             isSessionPaused: signal(false),
             isBreakActive: signal(false),
@@ -193,6 +212,20 @@ describe('MobileBottomNavComponent', () => {
     expect(openPanelsMenu()).toEqual(['plugin-icon']);
   });
 
+  it('shows all five notebook navigation buttons on a fresh install', async () => {
+    await render(NEW_INSTALL_APP_FEATURES);
+    fixture.componentRef.setInput('notebook', true);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelectorAll('nav button').length).toBe(5);
+    const focusButton = element.querySelector<HTMLButtonElement>(
+      'button[aria-label="F.MATRIX.FOCUS"]',
+    );
+    expect(focusButton).not.toBeNull();
+    focusButton?.click();
+    expect(TestBed.inject(FocusModeService).openOverlay).toHaveBeenCalled();
+  });
+
   it('opens Focus through the existing service and reflects paused sessions', async () => {
     const component = await render({ isFocusModeEnabled: true });
     const focus = TestBed.inject(FocusModeService);
@@ -213,5 +246,44 @@ describe('MobileBottomNavComponent', () => {
     expect(element.querySelector('button[aria-label="F.MATRIX.FOCUS"]')).toBeNull();
     expect(element.querySelector('[aria-label="G.TODAY_TAG_TITLE"]')).toBeTruthy();
     expect(element.querySelector('.mobile-more-trigger')).toBeTruthy();
+  });
+
+  it('keeps focus active and hides only the overlay when navigating away', async () => {
+    const component = await render(NEW_INSTALL_APP_FEATURES);
+    const focus = TestBed.inject(FocusModeService);
+    (focus.isOverlayShown as ReturnType<typeof signal<boolean>>).set(true);
+    (focus.isSessionRunning as ReturnType<typeof signal<boolean>>).set(true);
+    fixture.componentRef.setInput('notebook', true);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelectorAll('nav button').length).toBe(5);
+    expect(
+      element.querySelector('button[aria-label="F.MATRIX.FOCUS"]')?.classList,
+    ).toContain('active');
+    const dispatch = spyOn(TestBed.inject(Store), 'dispatch');
+    component.leaveFocusOverlay();
+    expect(dispatch).toHaveBeenCalledOnceWith(hideFocusOverlay());
+    expect(focus.isSessionRunning()).toBeTrue();
+  });
+
+  it('keeps settings and header tools reachable when all panels are disabled', async () => {
+    const component = await render(ALL_OFF, [], { isShowMobileHeader: undefined });
+    const config = TestBed.inject(GlobalConfigService);
+    expect(component.isShowMobileHeader()).toBeFalse();
+    fixture.nativeElement.querySelector('.mobile-more-trigger').click();
+    fixture.detectChanges();
+    expect(document.querySelector('button[routerlink="/config"]')).toBeTruthy();
+    document.querySelector<HTMLButtonElement>('.mobile-header-toggle')!.click();
+    fixture.detectChanges();
+    expect(config.updateSection).toHaveBeenCalledOnceWith('misc', {
+      isShowMobileHeader: true,
+    });
+    expect(component.isShowMobileHeader()).toBeTrue();
+    expect(config.misc()!.isDisableAnimations).toBe(
+      DEFAULT_GLOBAL_CONFIG.misc.isDisableAnimations,
+    );
+    component.toggleMobileHeader();
+    fixture.detectChanges();
+    expect(component.isShowMobileHeader()).toBeFalse();
   });
 });

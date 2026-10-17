@@ -5,7 +5,8 @@
     matInput
     [matDatepicker]="picker"
     [ngModel]="innerValue()"
-    (dateChange)="onValueChange($event.value)"
+    #dateInput="ngModel"
+    (dateChange)="onValueChange($event.value, dateInput.valid === true)"
     [placeholder]="dateTimeFormatService.dateFormat().humanReadable"
     [required]="required()"
     [min]="formatDate(min())"

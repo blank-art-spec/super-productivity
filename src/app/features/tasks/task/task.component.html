@@ -62,6 +62,15 @@
               [isShowProjectTagNever]="isInSubTaskList()"
             ></tag-list>
           }
+          @if (t.parentId && t.repeatEndDate) {
+            <span class="repeat-end-date">
+              {{ T.F.TASK_REPEAT.F.REPEAT_UNTIL | translate }}
+              {{
+                t.repeatEndDate
+                  | localDateStr: globalTrackingIntervalService.todayDateStr()
+              }}
+            </span>
+          }
         </div>
       </div>
 

@@ -180,6 +180,22 @@ describe('DialogEditTaskRepeatCfgComponent', () => {
     TestBed.resetTestingModule();
   });
 
+  it('validates the inclusive end date and clears it without changing existing tasks', async () => {
+    const fixture = await setupTestBed({
+      repeatCfg: { ...mockRepeatCfg, startDate: '2026-10-18' },
+    });
+    const component = fixture.componentInstance;
+    component.setEndDate(new Date(2026, 9, 17));
+    expect(component.isEndDateInvalid()).toBeTrue();
+    component.save();
+    expect(mockTaskRepeatCfgService.updateTaskRepeatCfg).not.toHaveBeenCalled();
+    component.setEndDate(new Date(2026, 9, 18));
+    expect(component.isEndDateInvalid()).toBeFalse();
+    component.setEndDate(null);
+    expect(component.repeatCfg().endDate).toBeNull();
+    expect(component.isEndDateInvalid()).toBeFalse();
+  });
+
   it('keeps Day of month selected after switching from an Nth weekday (#8886)', async () => {
     const monthlyNthWeekdayCfg: TaskRepeatCfg = {
       ...DEFAULT_TASK_REPEAT_CFG,

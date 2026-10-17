@@ -58,6 +58,8 @@ export interface TaskRepeatCfgCopy {
   repeatCycle: RepeatCycleOption;
   // worklog string; only in effect for monthly/yearly
   startDate?: string;
+  /** Last occurrence day, inclusive. Missing/null means no end date. */
+  endDate?: string | null;
   repeatEvery: number;
   monday?: boolean;
   tuesday?: boolean;
@@ -93,9 +95,14 @@ export interface TaskRepeatCfgCopy {
   // new UX: disable auto update checkbox (auto-update is default)
   disableAutoUpdateSubtasks?: boolean;
   subTaskTemplates?: {
+    /** Stable identity when a subtask has its own repeat end date. */
+    id?: string;
+    /** Binding for a pre-template child whose ID was not deterministic. */
+    sourceTaskId?: string;
     title: string;
     timeEstimate?: number;
     notes?: string;
+    repeatEndDate?: string | null;
   }[];
   // Exception list for deleted instances (ISO date strings YYYY-MM-DD)
   deletedInstanceDates?: string[];

@@ -2235,7 +2235,13 @@
         "WEDNESDAY": "星期三",
         "WEEK_OF_MONTH": "每月第几周",
         "WEEKDAY": "星期几",
-        "WEEKDAY_REQUIRED": "请至少选择一个星期几"
+        "WEEKDAY_REQUIRED": "请至少选择一个星期几",
+        "END_DATE": "结束日期（可选）",
+        "END_DATE_DESCRIPTION": "留空表示持续重复。包含结束日期当天，已生成的任务保留。",
+        "END_DATE_ERROR": "结束日期不能早于开始日期。",
+        "SUB_TASK_END_DATE": "重复截止日期",
+        "SUB_TASK_END_DATE_DESCRIPTION": "开启继承子任务后，重复生成至所选日期当天。父任务较早的结束日期也会生效，已生成的任务保留。",
+        "REPEAT_UNTIL": "重复至"
       },
       "SNACK_REPEAT_DIALOG_FAIL": "无法打开重复配置对话框。您可以从任务菜单中配置。"
     },

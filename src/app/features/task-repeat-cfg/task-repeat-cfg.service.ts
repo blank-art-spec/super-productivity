@@ -44,6 +44,10 @@ import {
   getRepeatableTaskId,
 } from './get-repeatable-task-id.util';
 import { getDeadlineAutoPlanFields } from '../tasks/util/get-deadline-auto-plan-fields';
+import {
+  getRepeatSubTaskTemplateId,
+  isWithinRepeatEndDate,
+} from './repeat-end-date.util';
 
 @Injectable({
   providedIn: 'root',
@@ -356,6 +360,7 @@ export class TaskRepeatCfgService {
       taskRepeatCfg.subTaskTemplates.length > 0
     ) {
       taskRepeatCfg.subTaskTemplates.forEach((subTask, i) => {
+        if (!isWithinRepeatEndDate(subTask.repeatEndDate, targetDateStr)) return;
         const newSubTask = this._taskService.createNewTaskWithDefaults({
           title: subTask.title,
           // Deterministic, so a second creation run for the same day is a
@@ -367,6 +372,16 @@ export class TaskRepeatCfgService {
             parentId: task.id,
             projectId: taskRepeatCfg.projectId || undefined,
             isDone: false, // Always start fresh
+            ...(subTask.id || subTask.repeatEndDate
+              ? {
+                  repeatSubTaskId: getRepeatSubTaskTemplateId(
+                    subTask,
+                    i,
+                    taskRepeatCfg.id,
+                  ),
+                  repeatEndDate: subTask.repeatEndDate ?? null,
+                }
+              : {}),
           },
         });
 

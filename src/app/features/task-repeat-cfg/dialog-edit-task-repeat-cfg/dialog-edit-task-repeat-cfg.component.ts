@@ -22,7 +22,8 @@ import {
   TaskRepeatCfgCopy,
 } from '../task-repeat-cfg.model';
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
-import { UntypedFormGroup } from '@angular/forms';
+import { FormsModule, UntypedFormGroup } from '@angular/forms';
+import { DatePickerInputComponent } from '../../../ui/date-picker-input/date-picker-input.component';
 import {
   TASK_REPEAT_CFG_ADVANCED_FORM_CFG,
   TASK_REPEAT_CFG_ESSENTIAL_FORM_CFG,
@@ -106,6 +107,8 @@ const WEEKDAY_KEYS: (keyof TaskRepeatCfgCopy)[] = [
     MatIcon,
     RepeatTaskHeatmapComponent,
     CollapsibleComponent,
+    FormsModule,
+    DatePickerInputComponent,
   ],
 })
 export class DialogEditTaskRepeatCfgComponent {
@@ -231,6 +234,22 @@ export class DialogEditTaskRepeatCfgComponent {
     this._initializeRepeatCfg(),
   );
   isLoading = signal<boolean>(false);
+  readonly isEndDateInputValid = signal(true);
+  isEndDateInvalid = computed(() => {
+    const cfg = this.repeatCfg();
+    return (
+      !this.isEndDateInputValid() ||
+      (!!cfg.endDate &&
+        (!isDBDateStr(cfg.endDate) || (!!cfg.startDate && cfg.endDate < cfg.startDate)))
+    );
+  });
+
+  setEndDate(date: Date | null): void {
+    this.repeatCfg.update((cfg) => ({
+      ...cfg,
+      endDate: date ? getDbDateStr(date) : null,
+    }));
+  }
   isEdit = computed(() => {
     if (this._data.repeatCfg) return true;
     if (this._data.task?.repeatCfgId) return true;
@@ -443,7 +462,7 @@ export class DialogEditTaskRepeatCfgComponent {
     }
 
     // Enter-key submit bypasses the disabled Save button, so re-check here (#8025).
-    if (this.isWeekdaySelectionInvalid()) {
+    if (this.isWeekdaySelectionInvalid() || this.isEndDateInvalid()) {
       return;
     }
 

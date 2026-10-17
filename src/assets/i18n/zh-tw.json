@@ -2257,7 +2257,13 @@
         "ORD_THIRD_NTH": "第三個",
         "WAIT_FOR_COMPLETION": "完成後才建立下一個任務",
         "WAIT_FOR_COMPLETION_DESCRIPTION": "避免多個待處理的重複任務不斷堆積。只有目前任務完成後，才會建立下一個任務",
-        "WEEKDAY_REQUIRED": "請至少選擇一個星期幾"
+        "WEEKDAY_REQUIRED": "請至少選擇一個星期幾",
+        "END_DATE": "結束日期（選填）",
+        "END_DATE_DESCRIPTION": "留空表示持續重複。包含結束日期當天，已產生的工作保留。",
+        "END_DATE_ERROR": "結束日期不能早於開始日期。",
+        "SUB_TASK_END_DATE": "重複截止日期",
+        "SUB_TASK_END_DATE_DESCRIPTION": "開啟繼承子工作後，重複產生至所選日期當天。父工作的較早結束日期也會生效，已產生的工作保留。",
+        "REPEAT_UNTIL": "重複至"
       },
       "SNACK_REPEAT_DIALOG_FAIL": "無法開啟重複設定對話方塊。您可以從任務選單中設定。",
       "D_SKIP_INSTANCE": {

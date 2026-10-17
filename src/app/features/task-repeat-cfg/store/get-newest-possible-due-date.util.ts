@@ -11,11 +11,14 @@ import {
   hasNthWeekdayAnchor,
 } from './get-nth-weekday-of-month.util';
 import { Log } from '../../../core/log';
+import { isWithinRepeatEndDate } from '../repeat-end-date.util';
+import { getDbDateStr } from '../../../util/get-db-date-str';
 
 export const getNewestPossibleDueDate = (
   taskRepeatCfg: TaskRepeatCfg,
   today: Date,
 ): Date | null => {
+  if (!isWithinRepeatEndDate(taskRepeatCfg.endDate, getDbDateStr(today))) return null;
   // FOR DEBUG
   // return new Date();
 

@@ -176,6 +176,18 @@
     </button>
   }
 
+  @if (canSetRepeatEndDate()) {
+    <button
+      mat-menu-item
+      (click)="editSubTaskRepeatEndDate()"
+    >
+      <span class="menuItemLeft">
+        <mat-icon>event_busy</mat-icon>
+        {{ T.F.TASK_REPEAT.F.SUB_TASK_END_DATE | translate }}
+      </span>
+    </button>
+  }
+
   @if (!task.isDone || !task.isAbandoned) {
     <button
       (click)="abandonTask()"

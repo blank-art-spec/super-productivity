@@ -44,6 +44,7 @@ import { remindOptionToMilliseconds } from '../../tasks/util/remind-option-to-mi
 import { devError } from '../../../util/dev-error';
 import { getFirstRepeatOccurrence } from './get-first-repeat-occurrence.util';
 import { getNextRepeatOccurrence } from './get-next-repeat-occurrence.util';
+import { buildRepeatSubTaskTemplates } from '../repeat-end-date.util';
 import { clampPastTimedOccurrence } from './clamp-past-timed-occurrence.util';
 
 // Exhaustive classification: `true` = editing this field changes which day
@@ -71,6 +72,7 @@ const SCHEDULE_AFFECTING_BY_FIELD: Record<keyof TaskRepeatCfgCopy, boolean> = {
   quickSetting: false,
   repeatCycle: true,
   startDate: true,
+  endDate: false,
   repeatEvery: true,
   monday: true,
   tuesday: true,
@@ -536,8 +538,12 @@ export class TaskRepeatCfgEffects {
                 map((subs) => ({ cfg, newest, subs })),
               ),
             ),
-            mergeMap(({ cfg, subs }) => {
-              const newTemplates = this._toSubTaskTemplates(subs || []);
+            mergeMap(({ cfg, newest, subs }) => {
+              const newTemplates = buildRepeatSubTaskTemplates(
+                subs || [],
+                cfg.subTaskTemplates,
+                newest,
+              );
               if (this._templatesEqual(cfg.subTaskTemplates, newTemplates)) {
                 return EMPTY;
               }
@@ -600,7 +606,7 @@ export class TaskRepeatCfgEffects {
                 if (newestLive) {
                   return this._taskService.getByIdsLive$(newestLive.subTaskIds).pipe(
                     first(),
-                    map((subs) => ({ cfg, subs })),
+                    map((subs) => ({ cfg, subs, parent: newestLive })),
                   );
                 }
 
@@ -610,7 +616,7 @@ export class TaskRepeatCfgEffects {
                 ).pipe(
                   switchMap((arch) => {
                     if (!arch || arch.length === 0) {
-                      return rxOf({ cfg, subs: [] as Task[] });
+                      return rxOf({ cfg, subs: [] as Task[], parent: null });
                     }
                     const newest = arch.reduce((a, b) => (a.created > b.created ? a : b));
                     return from(this._taskArchiveService.load()).pipe(
@@ -618,14 +624,18 @@ export class TaskRepeatCfgEffects {
                         const subs = newest.subTaskIds
                           .map((id) => archiveState.entities[id])
                           .filter(Boolean) as unknown as Task[];
-                        return { cfg, subs };
+                        return { cfg, subs, parent: newest };
                       }),
                     );
                   }),
                 );
               }),
-              mergeMap(({ cfg: config, subs }) => {
-                const newTemplates = this._toSubTaskTemplates(subs || []);
+              mergeMap(({ cfg: config, subs, parent }) => {
+                const newTemplates = buildRepeatSubTaskTemplates(
+                  subs || [],
+                  config.subTaskTemplates,
+                  parent ?? undefined,
+                );
                 if (this._templatesEqual(config.subTaskTemplates, newTemplates)) {
                   return EMPTY;
                 }
@@ -878,6 +888,9 @@ export class TaskRepeatCfgEffects {
       const bi = b[i];
       if (
         ai.title !== bi.title ||
+        ai.id !== bi.id ||
+        ai.sourceTaskId !== bi.sourceTaskId ||
+        (ai.repeatEndDate ?? null) !== (bi.repeatEndDate ?? null) ||
         (ai.notes || '') !== (bi.notes || '') ||
         (ai.timeEstimate || 0) !== (bi.timeEstimate || 0)
       ) {
@@ -931,11 +944,7 @@ export class TaskRepeatCfgEffects {
   private _toSubTaskTemplates(
     subs: Task[],
   ): NonNullable<TaskRepeatCfgCopy['subTaskTemplates']> {
-    return subs.map((st) => ({
-      title: st.title,
-      notes: st.notes,
-      timeEstimate: st.timeEstimate,
-    }));
+    return buildRepeatSubTaskTemplates(subs);
   }
 
   private _isLatestInstance(task: Task, cfg: TaskRepeatCfgCopy): boolean {

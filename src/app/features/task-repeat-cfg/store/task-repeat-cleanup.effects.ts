@@ -22,6 +22,7 @@ import { isValidSplitTime } from '../../../util/is-valid-split-time';
 import { getDateTimeFromClockString } from '../../../util/get-date-time-from-clock-string';
 import { dateStrToUtcDate } from '../../../util/date-str-to-utc-date';
 import { TaskTimeSyncService } from '../../tasks/task-time-sync.service';
+import { isWithinRepeatEndDate } from '../repeat-end-date.util';
 
 const _sameStringSet = (a: readonly string[], b: readonly string[]): boolean => {
   if (a.length !== b.length) {
@@ -77,7 +78,11 @@ const _hasTemplateSchedule = (
 };
 
 const _hasTemplateSubTasks = (task: TaskWithSubTasks, cfg: TaskRepeatCfg): boolean => {
-  const templates = cfg.shouldInheritSubtasks ? (cfg.subTaskTemplates ?? []) : [];
+  const templates = cfg.shouldInheritSubtasks
+    ? (cfg.subTaskTemplates ?? []).filter((template) =>
+        isWithinRepeatEndDate(template.repeatEndDate, getDbDateStr(task.created)),
+      )
+    : [];
   if (task.subTasks.length !== templates.length) {
     return false;
   }
@@ -88,6 +93,7 @@ const _hasTemplateSubTasks = (task: TaskWithSubTasks, cfg: TaskRepeatCfg): boole
       subTask.title === template.title &&
       (subTask.timeEstimate ?? 0) === (template.timeEstimate ?? 0) &&
       (subTask.notes ?? '').trim() === (template.notes ?? '').trim() &&
+      (subTask.repeatEndDate ?? null) === (template.repeatEndDate ?? null) &&
       (subTask.attachments?.length ?? 0) === 0 &&
       _sameStringSet(subTask.tagIds ?? [], []) &&
       subTask.parentId === task.id &&
@@ -214,6 +220,8 @@ export class TaskRepeatCleanupEffects {
                 }
 
                 const cfg = cfgById.get(tasks[0].repeatCfgId as string);
+                // Ending a series is not a request to delete already generated tasks.
+                if (cfg?.endDate) continue;
                 const isSkipOverdueGroup = !!cfg?.skipOverdue;
 
                 // Sort by raw creation timestamp descending — true newest first.

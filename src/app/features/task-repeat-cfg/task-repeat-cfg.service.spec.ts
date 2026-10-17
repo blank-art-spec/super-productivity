@@ -999,6 +999,52 @@ describe('TaskRepeatCfgService', () => {
   });
 
   describe('Subtask Templates', () => {
+    it('includes the cutoff day, skips only expired children, and retains deterministic indices', async () => {
+      taskService.getTasksWithSubTasksByRepeatCfgId$.and.returnValue(of([]));
+      taskService.createNewTaskWithDefaults.and.callFake((args) => ({
+        ...DEFAULT_TASK,
+        projectId: 'test-project',
+        id: args.id!,
+        title: args.title || '',
+        ...args.additional,
+      }));
+      const cfg: TaskRepeatCfg = {
+        ...mockTaskRepeatCfg,
+        startDate: '2026-10-18',
+        lastTaskCreationDay: '2026-10-18',
+        endDate: '2026-10-21',
+        skipOverdue: false,
+        shouldInheritSubtasks: true,
+        subTaskTemplates: [
+          { id: 'first', title: 'Stops on 19', repeatEndDate: '2026-10-19' },
+          { id: 'second', title: 'Continues' },
+        ],
+      };
+      const on19 = await service._getActionsForTaskRepeatCfg(
+        cfg,
+        new Date(2026, 9, 19, 12).getTime(),
+      );
+      expect(on19.filter((action) => action.type.includes('Add SubTask'))).toHaveSize(2);
+      const on20 = await service._getActionsForTaskRepeatCfg(
+        cfg,
+        new Date(2026, 9, 20, 12).getTime(),
+      );
+      const children = on20.filter((action) => 'parentId' in action) as {
+        task: Task;
+        parentId: string;
+      }[];
+      expect(children).toHaveSize(1);
+      expect(children[0].task.title).toBe('Continues');
+      expect(children[0].task.id).toMatch(/_sub_1$/);
+      expect(children[0].task.repeatSubTaskId).toBe('second');
+      expect(
+        await service._getActionsForTaskRepeatCfg(
+          cfg,
+          new Date(2026, 9, 22, 12).getTime(),
+        ),
+      ).toEqual([]);
+    });
+
     const mockRepeatCfgWithSubtasks: TaskRepeatCfg = {
       ...mockTaskRepeatCfg,
       shouldInheritSubtasks: true,

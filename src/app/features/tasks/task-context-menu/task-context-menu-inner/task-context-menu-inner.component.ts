@@ -44,6 +44,8 @@ import {
 import { Project } from '../../../project/project.model';
 import { TaskService } from '../../task.service';
 import { TaskStatusService } from '../../task-status.service';
+import { SubTaskRepeatEndService } from '../../../task-repeat-cfg/sub-task-repeat-end.service';
+import { DialogSubTaskRepeatEndComponent } from '../../../task-repeat-cfg/dialog-sub-task-repeat-end/dialog-sub-task-repeat-end.component';
 import { MatDialog } from '@angular/material/dialog';
 import { IssueService } from '../../../issue/issue.service';
 import { SnackService } from '../../../../core/snack/snack.service';
@@ -122,6 +124,8 @@ export class TaskContextMenuInnerComponent implements AfterViewInit, OnDestroy {
   private readonly _datePipe = inject(LocaleDatePipe);
   private readonly _taskService = inject(TaskService);
   private readonly _taskStatus = inject(TaskStatusService);
+  private readonly _subTaskRepeatEnd = inject(SubTaskRepeatEndService);
+  readonly canSetRepeatEndDate = signal(false);
   private readonly _matDialog = inject(MatDialog);
   private readonly _issueService = inject(IssueService);
   private readonly _elementRef = inject(ElementRef);
@@ -226,6 +230,7 @@ export class TaskContextMenuInnerComponent implements AfterViewInit, OnDestroy {
   //  Accessor inputs cannot be migrated as they are too complex.
   @Input('task') set taskSet(v: TaskWithSubTasks | Task) {
     this.task = v;
+    this.canSetRepeatEndDate.set(!!this._subTaskRepeatEnd.getContext(v));
     this.priority = getTaskPriority(v.priority);
     this._pluginTaskContextMenuTarget.set(v.parentId ? 'SUBTASK' : 'TASK');
     this.isCurrent = this._taskService.currentTaskId() === v.id;
@@ -606,6 +611,21 @@ export class TaskContextMenuInnerComponent implements AfterViewInit, OnDestroy {
 
   abandonTask(): void {
     this._taskStatus.abandon(this.task.id);
+  }
+
+  editSubTaskRepeatEndDate(): void {
+    const context = this._subTaskRepeatEnd.getContext(this.task);
+    if (!context) return;
+    this._matDialog
+      .open(DialogSubTaskRepeatEndComponent, {
+        data: { endDate: context.endDate, parentEndDate: context.cfg.endDate ?? null },
+      })
+      .afterClosed()
+      .pipe(first())
+      .subscribe((endDate: string | null | undefined) => {
+        if (endDate !== undefined)
+          this._subTaskRepeatEnd.setEndDate(this.task.id, endDate);
+      });
   }
 
   addToMyDay(): void {

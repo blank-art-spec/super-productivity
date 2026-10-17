@@ -1,5 +1,6 @@
 import { TASK_REPEAT_WEEKDAY_MAP, TaskRepeatCfg } from '../task-repeat-cfg.model';
 import { dateStrToUtcDate } from '../../../util/date-str-to-utc-date';
+import { limitRepeatOccurrence } from '../repeat-end-date.util';
 import {
   findMonthlyNthWeekdayOccurrence,
   hasNthWeekdayAnchor,
@@ -20,7 +21,10 @@ import {
  * @param taskRepeatCfg The repeat configuration
  * @returns The first valid occurrence date at noon, or null if none found
  */
-export const getFirstRepeatOccurrence = (taskRepeatCfg: TaskRepeatCfg): Date | null => {
+export const getFirstRepeatOccurrence = (taskRepeatCfg: TaskRepeatCfg): Date | null =>
+  limitRepeatOccurrence(taskRepeatCfg, getFirstOccurrence(taskRepeatCfg));
+
+const getFirstOccurrence = (taskRepeatCfg: TaskRepeatCfg): Date | null => {
   if (!Number.isInteger(taskRepeatCfg.repeatEvery) || taskRepeatCfg.repeatEvery < 1) {
     return null;
   }

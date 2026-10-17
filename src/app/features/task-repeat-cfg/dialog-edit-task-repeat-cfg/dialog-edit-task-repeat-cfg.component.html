@@ -45,6 +45,29 @@
         </button>
       </div>
 
+      <date-picker-input
+        [label]="T.F.TASK_REPEAT.F.END_DATE | translate"
+        [ngModel]="repeatCfg().endDate"
+        (ngModelChange)="setEndDate($event)"
+        (isValidChange)="isEndDateInputValid.set($event)"
+        [ngModelOptions]="{ standalone: true }"
+        [isInvalid]="isEndDateInvalid()"
+        [errorMessage]="T.F.TASK_REPEAT.F.END_DATE_ERROR | translate"
+      ></date-picker-input>
+      <p>{{ T.F.TASK_REPEAT.F.END_DATE_DESCRIPTION | translate }}</p>
+      @if (repeatCfg().endDate) {
+        <button
+          type="button"
+          mat-button
+          (click)="setEndDate(null)"
+        >
+          {{ T.G.CLEAR | translate }}
+        </button>
+      }
+      @if (isEndDateInvalid()) {
+        <p role="alert">{{ T.F.TASK_REPEAT.F.END_DATE_ERROR | translate }}</p>
+      }
+
       <formly-form
         (modelChange)="repeatCfg.set($event)"
         [form]="formGroup1()"
@@ -126,6 +149,7 @@
         !formGroup1().valid ||
         !formGroup2().valid ||
         isLoading() ||
+        isEndDateInvalid() ||
         isWeekdaySelectionInvalid()
       "
       [attr.aria-label]="T.G.SAVE | translate"

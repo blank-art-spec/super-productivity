@@ -95,6 +95,10 @@ export interface TaskCopy
   // Additional app-specific fields
   /** A resolved task that was abandoned. Older clients display it as done. */
   isAbandoned?: boolean;
+  /** Inclusive end of future inherited occurrences; independent of the deadline. */
+  repeatEndDate?: string | null;
+  /** Links an inherited child to its template even after other children expire. */
+  repeatSubTaskId?: string | null;
 
   /**
    * Optional priority: 1/low = Low, 2/medium = Medium, 3/high = High. `undefined` and `null` both

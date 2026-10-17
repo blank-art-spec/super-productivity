@@ -2222,7 +2222,13 @@
         "WEDNESDAY": "Wednesday",
         "WEEK_OF_MONTH": "Monthly pattern",
         "WEEKDAY": "Weekday",
-        "WEEKDAY_REQUIRED": "Select at least one weekday"
+        "WEEKDAY_REQUIRED": "Select at least one weekday",
+        "END_DATE": "End date (optional)",
+        "END_DATE_DESCRIPTION": "Leave empty to keep repeating. The selected end day is included; existing tasks are kept.",
+        "END_DATE_ERROR": "The end date must be on or after the start date.",
+        "SUB_TASK_END_DATE": "Repeat end date",
+        "SUB_TASK_END_DATE_DESCRIPTION": "When subtask inheritance is enabled, repeat this subtask through the selected day. An earlier parent end date also applies. Existing tasks are kept.",
+        "REPEAT_UNTIL": "Repeat until"
       },
       "SNACK_REPEAT_DIALOG_FAIL": "Could not open repeat config dialog. You can configure it from the task menu."
     },

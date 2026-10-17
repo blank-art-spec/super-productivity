@@ -16,7 +16,10 @@ import { TaskFocusService } from '../../task-focus.service';
 import { LocaleDatePipe } from 'src/app/ui/pipes/locale-date.pipe';
 import { DateAdapter } from '@angular/material/core';
 import { of, throwError } from 'rxjs';
-import { selectTaskByIdWithSubTaskData } from '../../store/task.selectors';
+import {
+  selectTaskByIdWithSubTaskData,
+  selectTaskEntities,
+} from '../../store/task.selectors';
 import { TaskSharedActions } from '../../../../root-store/meta/task-shared.actions';
 import { DateService } from '../../../../core/date/date.service';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -88,7 +91,7 @@ describe('TaskContextMenuInnerComponent', () => {
         TranslateModule.forRoot(),
       ],
       providers: [
-        provideMockStore(),
+        provideMockStore({ selectors: [{ selector: selectTaskEntities, value: {} }] }),
         { provide: TaskService, useValue: taskService },
         { provide: TaskDuplicateService, useValue: taskDuplicateService },
         { provide: AddSubtaskInputService, useValue: addSubtaskInputService },

@@ -78,6 +78,26 @@ describe('DatePickerInputComponent', () => {
   });
 
   describe('onValueChange', () => {
+    it('reports malformed text separately from an intentionally empty optional date', async () => {
+      const fixture = TestBed.createComponent(DatePickerInputComponent);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const emit = spyOn(fixture.componentInstance.isValidChange, 'emit');
+      const input: HTMLInputElement = fixture.nativeElement.querySelector('input');
+      input.value = 'not-a-date';
+      input.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      input.dispatchEvent(new Event('change'));
+      expect(emit).toHaveBeenCalledWith(false);
+      input.value = '';
+      input.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      input.dispatchEvent(new Event('change'));
+      expect(emit).toHaveBeenCalledWith(true);
+    });
+
     it('should emit the date when validation passes', () => {
       const spy = jasmine.createSpy('onChange');
       component.registerOnChange(spy);

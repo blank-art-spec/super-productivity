@@ -5,6 +5,7 @@ import {
   forwardRef,
   inject,
   input,
+  output,
   signal,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/forms';
@@ -69,6 +70,7 @@ export class DatePickerInputComponent implements ControlValueAccessor {
   required = input<boolean>(false);
   isInvalid = input<boolean | undefined>(undefined); // boolean - validation control by parent, undefined - internal validation
   errorMessage = input<string | undefined>(undefined); // instead of default error message
+  readonly isValidChange = output<boolean>();
 
   innerValue = signal<DateValue>(null);
   private _cd = inject(ChangeDetectorRef);
@@ -116,7 +118,8 @@ export class DatePickerInputComponent implements ControlValueAccessor {
     this._cd.markForCheck();
   }
 
-  onValueChange(value: DateValue): void {
+  onValueChange(value: DateValue, isValid = true): void {
+    this.isValidChange.emit(isValid && (!value || this.validateDate(value)));
     if (!value) {
       this.innerValue.set(null);
       this.onChange(null);

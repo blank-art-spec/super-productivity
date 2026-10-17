@@ -11,8 +11,10 @@ import {
   hasNthWeekdayAnchor,
 } from './get-nth-weekday-of-month.util';
 import { Log } from '../../../core/log';
+import { isWithinRepeatEndDate, limitRepeatOccurrence } from '../repeat-end-date.util';
+import { getDbDateStr } from '../../../util/get-db-date-str';
 
-export const getNextRepeatOccurrence = (
+const getNextOccurrence = (
   taskRepeatCfg: TaskRepeatCfg,
   fromDate: Date = new Date(),
   // When `inclusive` is true the scan starts from `fromDate` itself instead of
@@ -217,3 +219,12 @@ export const getNextRepeatOccurrence = (
       return null;
   }
 };
+
+export const getNextRepeatOccurrence = (
+  cfg: TaskRepeatCfg,
+  fromDate: Date = new Date(),
+  options: { inclusive?: boolean } = {},
+): Date | null =>
+  isWithinRepeatEndDate(cfg.endDate, getDbDateStr(fromDate))
+    ? limitRepeatOccurrence(cfg, getNextOccurrence(cfg, fromDate, options))
+    : null;

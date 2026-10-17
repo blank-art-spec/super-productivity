@@ -43,6 +43,7 @@ import {
 } from 'rxjs/operators';
 import { Project } from '../../../project/project.model';
 import { TaskService } from '../../task.service';
+import { TaskStatusService } from '../../task-status.service';
 import { MatDialog } from '@angular/material/dialog';
 import { IssueService } from '../../../issue/issue.service';
 import { SnackService } from '../../../../core/snack/snack.service';
@@ -120,6 +121,7 @@ import { PluginTaskContextMenuTarget } from '@super-productivity/plugin-api';
 export class TaskContextMenuInnerComponent implements AfterViewInit, OnDestroy {
   private readonly _datePipe = inject(LocaleDatePipe);
   private readonly _taskService = inject(TaskService);
+  private readonly _taskStatus = inject(TaskStatusService);
   private readonly _matDialog = inject(MatDialog);
   private readonly _issueService = inject(IssueService);
   private readonly _elementRef = inject(ElementRef);
@@ -600,6 +602,10 @@ export class TaskContextMenuInnerComponent implements AfterViewInit, OnDestroy {
     } else {
       this._taskService.setDone(this.task.id);
     }
+  }
+
+  abandonTask(): void {
+    this._taskStatus.abandon(this.task.id);
   }
 
   addToMyDay(): void {

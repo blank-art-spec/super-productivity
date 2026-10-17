@@ -63,6 +63,7 @@ const SCHEDULE_AFFECTING_BY_FIELD: Record<keyof TaskRepeatCfgCopy, boolean> = {
   title: false,
   tagIds: false,
   order: false,
+  listOrder: false,
   defaultEstimate: false,
   startTime: false,
   remindAt: false,

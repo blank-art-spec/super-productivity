@@ -38,6 +38,7 @@ describe('workContext selectors', () => {
         [],
         todayStr,
         0,
+        [],
       );
       expect(result).toEqual(
         jasmine.objectContaining({
@@ -107,6 +108,7 @@ describe('workContext selectors', () => {
         [],
         todayStr,
         0,
+        [],
       );
 
       // Should filter out task3 (stale) and auto-add task2 (missing from order)
@@ -142,6 +144,7 @@ describe('workContext selectors', () => {
           [],
           offsetTodayStr,
           FOUR_HOURS_MS,
+          [],
         );
 
         expect(result.taskIds).toEqual(['task1']);
@@ -192,6 +195,7 @@ describe('workContext selectors', () => {
           [],
           offsetTodayStr,
           FOUR_HOURS_MS,
+          [],
         );
 
         // task-not-today excluded (5 AM - 4h = 1 AM Feb 16 != Feb 15)
@@ -215,6 +219,7 @@ describe('workContext selectors', () => {
         [],
         todayStr,
         0,
+        [],
       );
 
       expect(result.taskIds).toEqual(['active']);
@@ -237,6 +242,7 @@ describe('workContext selectors', () => {
         [],
         todayStr,
         0,
+        [],
       );
 
       expect(result.icon).toBe('rocket');
@@ -258,6 +264,7 @@ describe('workContext selectors', () => {
         [],
         todayStr,
         0,
+        [],
       );
 
       expect(result.icon).toBeNull();

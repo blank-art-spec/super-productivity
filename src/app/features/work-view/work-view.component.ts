@@ -7,8 +7,10 @@ import {
   effect,
   ElementRef,
   afterNextRender,
+  afterRenderEffect,
   inject,
   input,
+  linkedSignal,
   OnDestroy,
   OnInit,
   signal,
@@ -106,6 +108,7 @@ import { PluginIndexComponent } from '../../plugins/ui/plugin-index/plugin-index
 import { PluginBridgeService } from '../../plugins/plugin-bridge.service';
 import { PlainspaceClaimPoolComponent } from '../plainspace/claim-pool/claim-pool.component';
 import { PlainspaceSharedTask } from '../plainspace/plainspace-shared-task.model';
+import { DONE_TASK_PAGE_SIZE, TodayViewStateService } from './today-view-state.service';
 
 // Stable reference used as the toSignal initial value below so the deselect
 // effect can tell "the customized list hasn't emitted yet" apart from a
@@ -170,6 +173,7 @@ export class WorkViewComponent implements OnInit, OnDestroy {
   private _dateService = inject(DateService);
   private _pluginBridge = inject(PluginBridgeService);
   private _calendarIntegrationService = inject(CalendarIntegrationService);
+  private _todayViewState = inject(TodayViewStateService);
   private _globalTrackingIntervalService = inject(GlobalTrackingIntervalService);
   protected readonly dragDelayForTouch = dragDelayForTouch;
 
@@ -293,7 +297,19 @@ export class WorkViewComponent implements OnInit, OnDestroy {
   });
   selectedTaskId = this.taskService.selectedTaskId;
   isOnTodayList = toSignal(this.workContextService.isTodayList$, { initialValue: false });
-  isDoneHidden = signal(!!localStorage.getItem(LS.DONE_TASKS_HIDDEN));
+  isDoneHidden = linkedSignal(() =>
+    this.isOnTodayList()
+      ? this._todayViewState.doneTasksHidden()
+      : !!localStorage.getItem(LS.DONE_TASKS_HIDDEN),
+  );
+  visibleDoneTaskCount = linkedSignal(() =>
+    this.isOnTodayList()
+      ? this._todayViewState.visibleDoneTaskCount()
+      : DONE_TASK_PAGE_SIZE,
+  );
+  hasMoreDoneTasks = computed(
+    () => this.isOnTodayList() && this.doneTasks().length > this.visibleDoneTaskCount(),
+  );
   isLaterTodayHidden = signal(!!localStorage.getItem(LS.LATER_TODAY_TASKS_HIDDEN));
   isOverdueHidden = signal(!!localStorage.getItem(LS.OVERDUE_TASKS_HIDDEN));
   isRepeatCfgsHidden = signal(!!localStorage.getItem(LS.REPEAT_CFGS_HIDDEN));
@@ -411,6 +427,8 @@ export class WorkViewComponent implements OnInit, OnDestroy {
   private _isPendingFocusItemFromSearch = false;
   private _pendingFocusItemTimeout?: number;
   private _splitTopElement?: HTMLElement;
+  private _scrollContainer = signal<HTMLElement | null>(null);
+  private _hasRestoredTodayScroll = false;
   private _switchListAnimationTimeout?: number;
 
   // TODO: Skipped for migration because:
@@ -418,6 +436,7 @@ export class WorkViewComponent implements OnInit, OnDestroy {
   @ViewChild('splitTopEl', { read: ElementRef }) set splitTopElRef(ref: ElementRef) {
     if (ref) {
       this._splitTopElement = ref.nativeElement;
+      this._scrollContainer.set(ref.nativeElement);
       recordSearchNavDebug('workView:splitTopElReady', {
         selectedTaskId: this.selectedTaskId(),
         clientHeight: ref.nativeElement.clientHeight,
@@ -427,6 +446,9 @@ export class WorkViewComponent implements OnInit, OnDestroy {
       if (this._pendingFocusItemTaskId) {
         this._focusItemInWorkViewWhenReady(this._pendingFocusItemTaskId);
       }
+    } else {
+      this._splitTopElement = undefined;
+      this._scrollContainer.set(null);
     }
   }
 
@@ -457,11 +479,44 @@ export class WorkViewComponent implements OnInit, OnDestroy {
     });
 
     effect(() => {
-      const isExpanded = this.isDoneHidden();
-      if (isExpanded) {
+      const isHidden = this.isDoneHidden();
+      if (this.isOnTodayList()) {
+        this._todayViewState.doneTasksHidden.set(isHidden);
+      } else if (isHidden) {
         localStorage.setItem(LS.DONE_TASKS_HIDDEN, 'true');
       } else {
         localStorage.removeItem(LS.DONE_TASKS_HIDDEN);
+      }
+    });
+
+    effect(() => {
+      const count = this.visibleDoneTaskCount();
+      if (this.isOnTodayList()) {
+        this._todayViewState.visibleDoneTaskCount.set(count);
+      }
+    });
+
+    afterRenderEffect(() => {
+      const isToday = this.isOnTodayList();
+      const container = this._scrollContainer();
+      const customized = this.customizedUndoneTasks();
+      if (!isToday) {
+        this._hasRestoredTodayScroll = false;
+        return;
+      }
+      if (
+        !container ||
+        customized === INITIAL_CUSTOMIZED_UNDONE_TASKS ||
+        this._hasRestoredTodayScroll ||
+        this.pluginEmbedId()
+      ) {
+        return;
+      }
+      this._hasRestoredTodayScroll = true;
+      // Explicit search/reminder navigation owns its scroll position.
+      if (!this._pendingFocusItemTaskId) {
+        container.scrollTop = this._todayViewState.scrollTop;
+        this.layoutService.isWorkViewScrolled.set(container.scrollTop !== 0);
       }
     });
 
@@ -543,6 +598,9 @@ export class WorkViewComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.isOnTodayList() && this._splitTopElement && !this.pluginEmbedId()) {
+      this._todayViewState.scrollTop = this._splitTopElement.scrollTop;
+    }
     if (this._pendingFocusItemTimeout) {
       window.clearTimeout(this._pendingFocusItemTimeout);
     }
@@ -639,6 +697,9 @@ export class WorkViewComponent implements OnInit, OnDestroy {
   private _initScrollTracking(): void {
     this._subs.add(
       this.upperContainerScroll$.subscribe(({ target }) => {
+        if (this.isOnTodayList() && !this.pluginEmbedId()) {
+          this._todayViewState.scrollTop = (target as HTMLElement).scrollTop;
+        }
         if ((target as HTMLElement).scrollTop !== 0) {
           this.layoutService.isWorkViewScrolled.set(true);
         } else {
@@ -646,6 +707,10 @@ export class WorkViewComponent implements OnInit, OnDestroy {
         }
       }),
     );
+  }
+
+  showMoreDoneTasks(): void {
+    this.visibleDoneTaskCount.update((count) => count + DONE_TASK_PAGE_SIZE);
   }
 
   /**
@@ -799,8 +864,16 @@ export class WorkViewComponent implements OnInit, OnDestroy {
     // parent) AND in `overdueTasks` (top-level). The `else if` therefore picks a
     // winner rather than stating an impossibility, and opening only the first
     // match is correct: the row is rendered in that panel too.
-    if (this.isDoneHidden() && this._hasTaskInList(this.doneTasks(), taskId)) {
+    const doneTaskIndex = this.doneTasks().findIndex(
+      (task) =>
+        task.id === taskId || task.subTasks.some((subTask) => subTask.id === taskId),
+    );
+    if (doneTaskIndex >= 0) {
       this.isDoneHidden.set(false);
+      if (this.isOnTodayList() && doneTaskIndex >= this.visibleDoneTaskCount()) {
+        const pageCount = Math.floor(doneTaskIndex / DONE_TASK_PAGE_SIZE) + 1;
+        this.visibleDoneTaskCount.set(pageCount * DONE_TASK_PAGE_SIZE);
+      }
     } else if (
       this.isShowOverduePanel() &&
       this.isOverdueHidden() &&

@@ -93,6 +93,8 @@ export interface TaskCopy
   timeSpentOnDay: TimeSpentOnDay;
 
   // Additional app-specific fields
+  /** A resolved task that was abandoned. Older clients display it as done. */
+  isAbandoned?: boolean;
 
   /**
    * Optional priority: 1/low = Low, 2/medium = Medium, 3/high = High. `undefined` and `null` both
@@ -219,6 +221,7 @@ export const DEFAULT_TASK: Omit<TaskCopy, 'projectId'> = {
   timeSpent: 0,
   timeEstimate: 0,
   isDone: false,
+  isAbandoned: false,
   title: '',
   tagIds: [],
   created: Date.now(),

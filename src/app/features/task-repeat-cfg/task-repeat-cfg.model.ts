@@ -45,6 +45,8 @@ export interface TaskRepeatCfgCopy {
    * order<=0 → task inserted at top; order>0 → task inserted at bottom.
    */
   order: number;
+  /** Shared manual rank for all occurrences. Missing preserves legacy ordering. */
+  listOrder?: number;
   defaultEstimate?: number;
   startTime?: string;
   remindAt?: TaskReminderOptionId;

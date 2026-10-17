@@ -143,11 +143,16 @@ export class PlannerDayComponent {
             }),
           );
         } else {
+          const orderedIds = allItems.map((item) => item.id);
+          orderedIds.splice(ev.previousIndex, 1);
+          orderedIds.splice(ev.currentIndex, 0, task.id);
           this._store.dispatch(
             PlannerActions.moveInList({
               targetDay: ev.container.data,
               fromIndex: ev.previousIndex,
               toIndex: ev.currentIndex,
+              taskId: task.id,
+              afterTaskId: orderedIds[ev.currentIndex - 1] ?? null,
             }),
           );
         }

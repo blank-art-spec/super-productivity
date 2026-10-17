@@ -40,7 +40,7 @@ import {
 import {
   flattenTasks,
   selectAllTasks,
-  selectAllTasksWithSubTasks,
+  selectAllDoneTasksWithSubTasks,
   selectCurrentTaskId,
   selectTasksWithSubTasksByIdsFactory,
 } from '../tasks/store/task.selectors';
@@ -368,6 +368,7 @@ export class WorkContextService {
     // SPAP-19: see mainListTasks$ — suppress no-op re-emissions of an
     // unchanged (element-wise identical) backlog array.
     distinctUntilChanged(fastArrayCompare),
+    shareReplay({ bufferSize: 1, refCount: false }),
   );
 
   allTasksForCurrentContext$: Observable<TaskWithSubTasks[]> = combineLatest([
@@ -484,6 +485,7 @@ export class WorkContextService {
     ),
     // the tick above re-emits every minute; only pass on real changes
     distinctUntilChanged(fastArrayCompare),
+    shareReplay({ bufferSize: 1, refCount: false }),
   );
 
   isHasTasksToWorkOn$: Observable<boolean> = this.undoneTasks$.pipe(
@@ -492,16 +494,19 @@ export class WorkContextService {
   );
 
   doneTasks$: Observable<TaskWithSubTasks[]> = this.isTodayList$.pipe(
-    // Perf note: the isToday branch hydrates EVERY task in the workspace, not
-    // just today's, so this is O(all tasks) whenever Today is the active
-    // context. Tracking done IDs per context (Today included) would avoid the
-    // workspace-wide scan.
     switchMap((isToday) =>
-      isToday ? this._store$.select(selectAllTasksWithSubTasks) : this.mainListTasks$,
+      isToday
+        ? this._store$.select(selectAllDoneTasksWithSubTasks)
+        : this.mainListTasks$.pipe(
+            map((tasks) => tasks.filter((task) => task && task.isDone)),
+            distinctUntilChanged(fastArrayCompare),
+            map(sortDoneTasksByDoneDate),
+          ),
     ),
-    // Show completed tasks newest-first (by completion time) so the task you
-    // just finished is at the top of the Done list.
-    map((tasks) => sortDoneTasksByDoneDate(tasks.filter((task) => task && task.isDone))),
+    distinctUntilChanged(fastArrayCompare),
+    // WorkContextService lives for the app session: retain one live projection
+    // while navigating away, and replay its current value on return.
+    shareReplay({ bufferSize: 1, refCount: false }),
   );
 
   constructor() {

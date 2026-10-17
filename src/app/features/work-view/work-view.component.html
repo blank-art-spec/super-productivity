@@ -364,29 +364,40 @@
                 [isIconBefore]="true"
                 [isGroup]="true"
               >
-                <task-list
-                  class="tour-doneList"
-                  [noTasksMsg]="
-                    (nrOfDoneArchived ? T.WW.DONE_TASKS_IN_ARCHIVE : T.WW.NO_DONE_TASKS)
-                      | translate
-                  "
-                  [tasks]="doneTasks()"
-                  listId="PARENT"
-                  listModelId="DONE"
-                ></task-list>
-                <div class="finish-day-button-wrapper">
-                  @if (hasDoneTasks() && (!isOnTodayList() || !isFinishDayEnabled())) {
-                    <button
-                      class="e2e-move-done-to-archive"
-                      mat-stroked-button
-                      (click)="moveDoneToArchive()"
-                      tabindex="1"
-                    >
-                      <mat-icon>done_all</mat-icon>
-                      {{ T.WW.MOVE_DONE_TO_ARCHIVE | translate }}
-                    </button>
-                  }
-                </div>
+                @if (!isDoneHidden()) {
+                  <task-list
+                    class="tour-doneList"
+                    [noTasksMsg]="
+                      (nrOfDoneArchived ? T.WW.DONE_TASKS_IN_ARCHIVE : T.WW.NO_DONE_TASKS)
+                        | translate
+                    "
+                    [tasks]="doneTasks()"
+                    [renderLimit]="isOnTodayList() ? visibleDoneTaskCount() : undefined"
+                    listId="PARENT"
+                    listModelId="DONE"
+                  ></task-list>
+                  <div class="finish-day-button-wrapper">
+                    @if (hasMoreDoneTasks()) {
+                      <button
+                        mat-button
+                        (click)="showMoreDoneTasks()"
+                      >
+                        {{ T.WW.SHOW_MORE_DONE_TASKS | translate }}
+                      </button>
+                    }
+                    @if (hasDoneTasks() && (!isOnTodayList() || !isFinishDayEnabled())) {
+                      <button
+                        class="e2e-move-done-to-archive"
+                        mat-stroked-button
+                        (click)="moveDoneToArchive()"
+                        tabindex="1"
+                      >
+                        <mat-icon>done_all</mat-icon>
+                        {{ T.WW.MOVE_DONE_TO_ARCHIVE | translate }}
+                      </button>
+                    }
+                  </div>
+                }
               </collapsible>
             </div>
           }

@@ -48,6 +48,8 @@ export const PlannerActions = createActionGroup({
       targetDay: string;
       fromIndex: number;
       toIndex: number;
+      taskId?: string;
+      afterTaskId?: string | null;
     }) => ({
       ...plannerProps,
       meta: {

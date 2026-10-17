@@ -246,6 +246,12 @@ The atomic op's headline benefit — reversing the whole thing as one unit — w
 
 ---
 
+**Task status cascades (2026-10)**
+
+Parent completion and abandonment use the same decoupled resolution approach as project completion above. The new `TaskStatusService` resolves children through ordinary `updateTask` actions, then resolves the parent, and yields after the dispatch loop. The tasks are independent conflict boundaries: reopening a parent does not reopen its children, and a concurrent subtask edit must remain independently resolvable. Each ordinary update retains reminder cancellation, time tracking, issue updates and repeat-plan completion effects. This deliberately accepts one operation per changed task and a brief intermediate state rather than introducing a bulk status action with an unsupported multi-entity conflict path. Already completed children retain their timestamps when completing a parent; explicit abandonment updates every child's status.
+
+Recurring ordering similarly composes an occurrence move with an independent, ordinary single-config update of optional `listOrder`. List selectors derive the relative order of recurring peers from those ranks, leaving ordinary and completed tasks in their slots. No new persisted parent list, action type, schema bump or public plugin API is needed. Missing ranks retain legacy order until the first manual reorder; older clients ignore ranks and render abandoned tasks as done.
+
 ### 6. Passkeys Stay Pending Until Email Verification
 
 **Status**: ✅ Active (since July 2026)

@@ -13,6 +13,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
 
 import { WorkViewComponent } from './work-view.component';
+import { DONE_TASK_PAGE_SIZE, TodayViewStateService } from './today-view-state.service';
 import { TaskService } from '../tasks/task.service';
 import { TakeABreakService } from '../take-a-break/take-a-break.service';
 import { LayoutService } from '../../core-ui/layout/layout.service';
@@ -207,6 +208,57 @@ describe('WorkViewComponent', () => {
   // randomized spec order and make their "today" assertions fail intermittently.
   afterEach(() => {
     store?.resetSelectors();
+  });
+
+  describe('Today completed history display state', () => {
+    const history = Array.from({ length: 120 }, (_, i) => buildTask(`done-${i}`));
+    const create = (): ComponentFixture<WorkViewComponent> => {
+      const fixture = TestBed.createComponent(WorkViewComponent);
+      fixture.componentRef.setInput('undoneTasks', []);
+      fixture.componentRef.setInput('doneTasks', history);
+      fixture.componentRef.setInput('backlogTasks', []);
+      fixture.detectChanges();
+      return fixture;
+    };
+
+    beforeEach(() => {
+      configureWorkViewTestBed({ isTodayList: true });
+      store = TestBed.inject(MockStore);
+      overrideDefaultSelectors(store);
+    });
+
+    it('starts folded and reveals completed history in batches without changing its data', () => {
+      const fixture = create();
+      const cmp = fixture.componentInstance;
+      expect(cmp.isDoneHidden()).toBe(true);
+      expect(cmp.visibleDoneTaskCount()).toBe(DONE_TASK_PAGE_SIZE);
+      expect(cmp.hasMoreDoneTasks()).toBe(true);
+      cmp.showMoreDoneTasks();
+      expect(cmp.visibleDoneTaskCount()).toBe(100);
+      cmp.showMoreDoneTasks();
+      expect(cmp.hasMoreDoneTasks()).toBe(false);
+      expect(cmp.doneTasks()).toBe(history);
+    });
+
+    it('retains expansion and the visible batch when the Today page is recreated', () => {
+      const first = create();
+      first.componentInstance.isDoneHidden.set(false);
+      first.componentInstance.showMoreDoneTasks();
+      first.detectChanges();
+      first.destroy();
+      const second = create();
+      expect(second.componentInstance.isDoneHidden()).toBe(false);
+      expect(second.componentInstance.visibleDoneTaskCount()).toBe(100);
+    });
+
+    it('saves the current Today scroll position before destroying its view', () => {
+      const fixture = create();
+      const container = document.createElement('div');
+      Object.defineProperty(container, 'scrollTop', { value: 230, writable: true });
+      fixture.componentInstance.splitTopElRef = new ElementRef(container);
+      fixture.destroy();
+      expect(TestBed.inject(TodayViewStateService).scrollTop).toBe(230);
+    });
   });
 
   describe('selected task retention effect', () => {
@@ -678,6 +730,17 @@ describe('WorkViewComponent', () => {
       retriggerFocusAttempt(cmp);
 
       expect(cmp.isDoneHidden()).toBe(false);
+    });
+
+    it('reveals a searched completed task beyond the first history batch', () => {
+      const { cmp } = setup({
+        focusItem: 'done-110',
+        doneTasks: Array.from({ length: 120 }, (_, i) => buildTask(`done-${i}`)),
+        isTodayList: true,
+      });
+      retriggerFocusAttempt(cmp);
+      expect(cmp.isDoneHidden()).toBe(false);
+      expect(cmp.visibleDoneTaskCount()).toBe(150);
     });
 
     it('expands the collapsed Overdue panel for an overdue task', () => {

@@ -483,11 +483,20 @@ describe('TaskService', () => {
 
   describe('setDone', () => {
     it('should update task with isDone: true', () => {
+      store.overrideSelector(
+        selectTaskEntities,
+        Object.fromEntries([['task-1', createMockTask('task-1')]]),
+      );
+      store.refreshState();
       service.setDone('task-1');
 
       expect(store.dispatch).toHaveBeenCalledWith(
-        TaskSharedActions.updateTask({
-          task: { id: 'task-1', changes: { isDone: true } },
+        jasmine.objectContaining({
+          type: TaskSharedActions.updateTask.type,
+          task: {
+            id: 'task-1',
+            changes: { isDone: true, isAbandoned: false, doneOn: jasmine.any(Number) },
+          },
         }),
       );
     });
@@ -499,7 +508,7 @@ describe('TaskService', () => {
 
       expect(store.dispatch).toHaveBeenCalledWith(
         TaskSharedActions.updateTask({
-          task: { id: 'task-1', changes: { isDone: false } },
+          task: { id: 'task-1', changes: { isDone: false, isAbandoned: false } },
         }),
       );
     });

@@ -37,7 +37,7 @@
   [class.is-multi-dragging]="multiDrag.ids().length > 1"
   class="task-list-inner"
 >
-  @for (task of filteredTasks(); track trackByFn($index, task); let i = $index) {
+  @for (task of renderedTasks(); track trackByFn($index, task); let i = $index) {
     <task
       [isInSubTaskList]="isSubTaskList()"
       [isBacklog]="isBacklog()"

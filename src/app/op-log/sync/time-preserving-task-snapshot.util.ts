@@ -27,6 +27,7 @@ const OPTIONAL_TASK_FIELDS = Object.keys({
   notes: true,
   updated: true,
   doneOn: true,
+  isAbandoned: true,
   parentId: true,
   remindAt: true,
   repeatCfgId: true,

@@ -1,4 +1,8 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+import {
+  getRepeatTaskRanks,
+  orderRepeatTaskIds,
+} from '../../task-repeat-cfg/repeat-task-order';
 import * as fromPlanner from './planner.reducer';
 import {
   selectMapOfAllTasksInActiveProjects,
@@ -240,6 +244,7 @@ const getPlannerDay = (
   );
 
   const totalTimeEstimate = timeEstimate + calendarEventsTime;
+  const repeatTaskRanks = getRepeatTaskRanks(taskRepeatCfgs);
 
   // Calculate available hours and progress percentage
   let availableHours;
@@ -266,9 +271,20 @@ const getPlannerDay = (
       ...timedEvents,
       ...scheduledTaskItems,
     ].sort((a, b) => a.start - b.start),
-    tasks: normalTasks,
+    tasks: orderRepeatTaskIds(
+      normalTasks.map((t) => t.id),
+      Object.fromEntries(normalTasks.map((t) => [t.id, t])),
+      taskRepeatCfgs,
+    ).map((id) => taskMap.get(id) as TaskCopy),
     deadlineTasks,
-    noStartTimeRepeatProjections,
+    noStartTimeRepeatProjections: taskRepeatCfgs.some(
+      (cfg) => cfg.listOrder !== undefined,
+    )
+      ? [...noStartTimeRepeatProjections].sort(
+          (a, b) =>
+            repeatTaskRanks.get(a.repeatCfg.id)! - repeatTaskRanks.get(b.repeatCfg.id)!,
+        )
+      : noStartTimeRepeatProjections,
     allDayEvents,
     timeEstimate: totalTimeEstimate,
     availableHours,

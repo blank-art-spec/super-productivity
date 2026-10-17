@@ -106,11 +106,13 @@ import { DeletedTaskIssueSidecarService } from '../issue/two-way-sync/deleted-ta
 import { TimeBlockDeleteSidecarService } from '../calendar-integration/time-block/time-block-delete-sidecar.service';
 import { getDeadlineAutoPlanFields } from './util/get-deadline-auto-plan-fields';
 import { TaskTimeSyncService } from './task-time-sync.service';
+import { TaskStatusService } from './task-status.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TaskService {
+  private readonly _taskStatus = inject(TaskStatusService);
   private readonly _store = inject<Store<RootState>>(Store);
   private readonly _workContextService = inject(WorkContextService);
   private readonly _imexMetaService = inject(ImexViewService);
@@ -1225,7 +1227,7 @@ export class TaskService {
   }
 
   setDone(id: string): void {
-    this.update(id, { isDone: true });
+    this._taskStatus.complete(id);
   }
 
   markIssueUpdatesAsRead(id: string): void {
@@ -1233,7 +1235,7 @@ export class TaskService {
   }
 
   setUnDone(id: string): void {
-    this.update(id, { isDone: false });
+    this._taskStatus.reopen(id);
   }
 
   /**
@@ -1245,14 +1247,7 @@ export class TaskService {
     isDone: boolean,
     setAnimation: (animate: boolean) => void,
   ): number | undefined {
-    if (isDone) {
-      setAnimation(false);
-      this.setUnDone(taskId);
-      return undefined;
-    } else {
-      setAnimation(true);
-      return window.setTimeout(() => this.setDone(taskId), 200);
-    }
+    return this._taskStatus.toggleDoneWithAnimation(taskId, isDone, setAnimation);
   }
 
   showSubTasks(id: string): void {

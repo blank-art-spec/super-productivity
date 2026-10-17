@@ -818,6 +818,17 @@ const handleUpdateTask = (
     sanitizedTaskUpdate,
     currentTask,
   );
+  if (typeof cleanedTaskUpdate.changes.isDone === 'boolean') {
+    cleanedTaskUpdate = {
+      ...cleanedTaskUpdate,
+      changes: {
+        ...cleanedTaskUpdate.changes,
+        isAbandoned:
+          cleanedTaskUpdate.changes.isDone &&
+          cleanedTaskUpdate.changes.isAbandoned === true,
+      },
+    };
+  }
 
   // Subtasks inherit their project from the parent, and only an existing
   // project (or '' for no project) is a usable destination for a top-level

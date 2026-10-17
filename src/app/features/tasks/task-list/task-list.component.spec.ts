@@ -18,7 +18,7 @@ import { moveSubTask } from '../store/task.actions';
 import { moveTaskInTodayList } from '../../work-context/store/work-context-meta.actions';
 import { WorkContextType } from '../../work-context/work-context.model';
 import { TaskSharedActions } from '../../../root-store/meta/task-shared.actions';
-import { Task } from '../task.model';
+import { DEFAULT_TASK, Task } from '../task.model';
 
 describe('TaskListComponent', () => {
   let component: TaskListComponent;
@@ -142,6 +142,29 @@ describe('TaskListComponent', () => {
     fixture.componentRef.setInput('listId', 'PARENT');
     fixture.componentRef.setInput('listModelId', 'UNDONE');
     fixture.detectChanges();
+  });
+
+  it('limits rendered history without truncating drag/drop data or task counts', () => {
+    const tasks = Array.from(
+      { length: 120 },
+      (_, index): TaskWithSubTasks => ({
+        ...DEFAULT_TASK,
+        id: `done-${index}`,
+        title: 'Completed task',
+        projectId: 'project',
+        isDone: true,
+        subTasks: [],
+      }),
+    );
+    fixture.componentRef.setInput('tasks', tasks);
+    fixture.componentRef.setInput('renderLimit', 50);
+    expect(component.renderedTasks().length).toBe(50);
+    expect(component.dropModelDataForList().filteredTasks).toBe(tasks);
+    expect(component.allTasksLength()).toBe(120);
+    fixture.componentRef.setInput('renderLimit', 100);
+    expect(component.renderedTasks().length).toBe(100);
+    fixture.componentRef.setInput('renderLimit', undefined);
+    expect(component.renderedTasks()).toBe(tasks);
   });
 
   describe('enterPredicate', () => {

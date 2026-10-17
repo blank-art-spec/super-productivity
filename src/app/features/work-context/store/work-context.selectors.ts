@@ -21,6 +21,9 @@ import { TODAY_TAG } from '../../tag/tag.const';
 import { Log } from '../../../core/log';
 import { isTodayWithOffset } from '../../../util/is-today.util';
 import { Tag } from '../../tag/tag.model';
+import { selectAllTaskRepeatCfgs } from '../../task-repeat-cfg/store/task-repeat-cfg.selectors';
+import { TaskRepeatCfg } from '../../task-repeat-cfg/task-repeat-cfg.model';
+import { orderRepeatTaskIds } from '../../task-repeat-cfg/repeat-task-order';
 import {
   selectStartOfNextDayDiffMs,
   selectTodayStr,
@@ -150,6 +153,7 @@ export const selectActiveWorkContext = createSelector(
   selectNoteTodayOrder,
   selectTodayStr,
   selectStartOfNextDayDiffMs,
+  selectAllTaskRepeatCfgs,
   (
     { activeId, activeType },
     projectState,
@@ -158,6 +162,7 @@ export const selectActiveWorkContext = createSelector(
     todayOrder,
     todayStr,
     startOfNextDayDiffMs,
+    repeatCfgs: TaskRepeatCfg[] = [],
   ): WorkContext => {
     if (activeType === WorkContextType.TAG) {
       const tag = selectTagById.projector(tagState, { id: activeId });
@@ -176,7 +181,7 @@ export const selectActiveWorkContext = createSelector(
 
       return {
         ...tag,
-        taskIds: orderedTaskIds,
+        taskIds: orderRepeatTaskIds(orderedTaskIds, activeTaskEntities, repeatCfgs),
         type: WorkContextType.TAG,
         routerLink: `tag/${tag.id}`,
         noteIds: todayOrder,
@@ -201,7 +206,7 @@ export const selectActiveWorkContext = createSelector(
         );
         return {
           ...tag,
-          taskIds: orderedTaskIds,
+          taskIds: orderRepeatTaskIds(orderedTaskIds, activeTaskEntities, repeatCfgs),
           type: WorkContextType.TAG,
           routerLink: `tag/${tag.id}`,
           noteIds: todayOrder,
@@ -213,9 +218,17 @@ export const selectActiveWorkContext = createSelector(
         // match the side nav; fall back to null when unset. `...project` already
         // carries `icon`, but stay explicit since this used to force null.
         icon: project.icon ?? null,
-        taskIds: project.taskIds || [],
+        taskIds: orderRepeatTaskIds(
+          project.taskIds || [],
+          activeTaskEntities,
+          repeatCfgs,
+        ),
         isEnableBacklog: project.isEnableBacklog,
-        backlogTaskIds: project.backlogTaskIds || [],
+        backlogTaskIds: orderRepeatTaskIds(
+          project.backlogTaskIds || [],
+          activeTaskEntities,
+          repeatCfgs,
+        ),
         type: WorkContextType.PROJECT,
         routerLink: `project/${project.id}`,
       };

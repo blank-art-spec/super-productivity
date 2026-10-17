@@ -143,6 +143,7 @@ const isInteractiveTarget = (target: EventTarget | null): boolean =>
     '[attr.data-task-id]': 'task().id',
     '[tabindex]': '0',
     '[class.isDone]': 'task().isDone',
+    '[class.isAbandoned]': 'task().isDone && task().isAbandoned',
     '[class.isCurrent]': 'isCurrent()',
     '[class.isSelected]': 'isSelected()',
     '[class.isMultiSelected]': 'isMultiSelected()',

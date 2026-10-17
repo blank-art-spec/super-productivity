@@ -664,8 +664,17 @@ export class PlannerTaskComponent implements OnInit, OnDestroy, AfterViewInit {
               : moveTaskToBottomInTodayList(props);
       this._store.dispatch(action);
     } else {
+      const orderedIds = rows.map((row) => row.getAttribute('data-task-id') as string);
+      orderedIds.splice(fromIndex, 1);
+      orderedIds.splice(toIndex, 0, this.task().id);
       this._store.dispatch(
-        PlannerActions.moveInList({ targetDay: day, fromIndex, toIndex }),
+        PlannerActions.moveInList({
+          targetDay: day,
+          fromIndex,
+          toIndex,
+          taskId: this.task().id,
+          afterTaskId: orderedIds[toIndex - 1] ?? null,
+        }),
       );
     }
     this._restoreFocus(this.task().id, null, fallbackEl);

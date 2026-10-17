@@ -176,6 +176,29 @@
     </button>
   }
 
+  @if (!task.isDone || !task.isAbandoned) {
+    <button
+      (click)="abandonTask()"
+      mat-menu-item
+    >
+      <span class="menuItemLeft">
+        <mat-icon>do_not_disturb_on</mat-icon>
+        {{ T.F.TASK.CMP.MARK_ABANDONED | translate }}
+      </span>
+    </button>
+  }
+  @if (task.isDone && task.isAbandoned && (isTouchActive() || isAdvancedControls())) {
+    <button
+      (click)="toggleTaskDone()"
+      mat-menu-item
+    >
+      <span class="menuItemLeft">
+        <mat-icon>undo</mat-icon>
+        {{ T.F.TASK.CMP.MARK_UNDONE | translate }}
+      </span>
+    </button>
+  }
+
   @if (isAdvancedControls() && !task.isDone && (!task.parentId || isInSubTaskList)) {
     <button
       (click)="moveToTop()"

@@ -51,6 +51,7 @@ import {
   taskRepeatCfgReducer,
 } from '../features/task-repeat-cfg/store/task-repeat-cfg.reducer';
 import { TaskRepeatCfgEffects } from '../features/task-repeat-cfg/store/task-repeat-cfg.effects';
+import { RepeatTaskOrderEffects } from '../features/task-repeat-cfg/store/repeat-task-order.effects';
 import { TaskRepeatCleanupEffects } from '../features/task-repeat-cfg/store/task-repeat-cleanup.effects';
 import { TaskDueEffects } from '../features/tasks/store/task-due.effects';
 import { TASK_FEATURE_NAME, taskReducer } from '../features/tasks/store/task.reducer';
@@ -151,7 +152,11 @@ import { ReducerFailureSnackEffects } from './meta/reducer-failure-snack.effects
     EffectsModule.forFeature([TagEffects]),
 
     StoreModule.forFeature(TASK_REPEAT_CFG_FEATURE_NAME, taskRepeatCfgReducer),
-    EffectsModule.forFeature([TaskRepeatCfgEffects, TaskRepeatCleanupEffects]),
+    EffectsModule.forFeature([
+      TaskRepeatCfgEffects,
+      TaskRepeatCleanupEffects,
+      RepeatTaskOrderEffects,
+    ]),
 
     StoreModule.forFeature(TASK_FEATURE_NAME, taskReducer),
     EffectsModule.forFeature([

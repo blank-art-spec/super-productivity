@@ -136,6 +136,8 @@ export class TaskListComponent implements OnDestroy, AfterViewInit {
   protected readonly isXs = this._layoutService.isXs;
 
   tasks = input<TaskWithSubTasks[]>([]);
+  // Keep the full list in drag/drop data; only bound the rendered task rows.
+  renderLimit = input<number | undefined>(undefined);
   isHideDone = input(false);
   isHideAll = input(false);
   isSortingDisabled = input(false);
@@ -176,6 +178,11 @@ export class TaskListComponent implements OnDestroy, AfterViewInit {
 
   doneTasksLength = computed(() => {
     return this.tasks()?.filter((task) => task.isDone).length ?? 0;
+  });
+  renderedTasks = computed(() => {
+    const tasks = this.filteredTasks();
+    const limit = this.renderLimit();
+    return limit === undefined ? tasks : tasks.slice(0, limit);
   });
   allTasksLength = computed(() => this.tasks()?.length ?? 0);
 

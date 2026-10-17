@@ -420,6 +420,25 @@ export const selectAllTasksWithSubTasks = createSelector(
   _allTasksWithSubTasksMapper,
 );
 
+const selectDoneTasksStructure = createSelector(
+  selectAllTasksSchedulingSnapshot,
+  (snapshot): SnapshotStructureEntry[] =>
+    snapshot
+      .filter((task) => !task.parentId && task.isDone)
+      .map(({ id, subTaskIds }) => ({ id, subTaskIds })),
+);
+const selectDoneTasksWithSubTasks = createSelector(
+  selectDoneTasksStructure,
+  selectTaskEntities,
+  createStableWithSubTasksMapper(),
+);
+// Unfinished task updates reuse the same completed array, so they cannot
+// trigger another full completed-history sort or rebuild unchanged parents.
+export const selectAllDoneTasksWithSubTasks = createSelector(
+  selectDoneTasksWithSubTasks,
+  (tasks) => [...tasks].sort((a, b) => (b.doneOn ?? 0) - (a.doneOn ?? 0)),
+);
+
 // selectOverdueTasks (rebased): decision reads only dueDay/dueWithTime from the
 // snapshot; public re-maps ids to live Task refs. Shares the overdue comparison
 // with the isTaskOverdue util via isTaskOverdueByThreshold so the two definitions

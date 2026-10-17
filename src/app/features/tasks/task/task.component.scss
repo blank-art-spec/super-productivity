@@ -3,6 +3,12 @@
 @use './task-base';
 @use './task-controls';
 
+:host.isAbandoned .inner-wrapper > .first-line .task-title ::ng-deep .display-value {
+  text-decoration-line: line-through;
+  text-decoration-color: var(--color-danger);
+  text-decoration-thickness: 2px;
+}
+
 :host.isDragReady:not(.cdk-drag-placeholder) {
   background: var(--bg-lighter);
   box-shadow: var(--whiteframe-shadow-8dp);

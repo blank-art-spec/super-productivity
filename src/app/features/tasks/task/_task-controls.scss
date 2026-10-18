@@ -63,6 +63,36 @@
 
 // OTHER UI ELEMENTS
 // -----------------
+.repeat-end-date {
+  align-self: center;
+  margin-inline: var(--s-half);
+  font-size: var(--font-size-sm);
+  color: var(--text-color-muted);
+  white-space: nowrap;
+
+  @include isDoneForFirstLine {
+    opacity: var(--task-is-done-dim-opacity);
+  }
+}
+
+// Let the title wrap within its own column on narrow screens, keeping the
+// repeat limit beside the notes/checklist icon in the same row.
+.first-line:has(.repeat-end-date) {
+  flex-wrap: nowrap;
+
+  .title-and-left-btns-wrapper {
+    flex-basis: auto;
+  }
+
+  .title-and-tags-wrapper {
+    min-width: 0;
+  }
+
+  .all-controls-wrapper {
+    flex-shrink: 0;
+  }
+}
+
 .title-and-tags-wrapper {
   flex-grow: 1;
   flex-shrink: 1;

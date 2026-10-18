@@ -62,15 +62,6 @@
               [isShowProjectTagNever]="isInSubTaskList()"
             ></tag-list>
           }
-          @if (t.parentId && t.repeatEndDate) {
-            <span class="repeat-end-date">
-              {{ T.F.TASK_REPEAT.F.REPEAT_UNTIL | translate }}
-              {{
-                t.repeatEndDate
-                  | localDateStr: globalTrackingIntervalService.todayDateStr()
-              }}
-            </span>
-          }
         </div>
       </div>
 
@@ -261,6 +252,16 @@
                 </div>
               }
             </button>
+          }
+
+          @if (t.parentId && t.repeatEndDate) {
+            <span class="repeat-end-date">
+              {{ T.F.TASK_REPEAT.F.REPEAT_UNTIL | translate }}
+              {{
+                t.repeatEndDate
+                  | localDateStr: globalTrackingIntervalService.todayDateStr()
+              }}
+            </span>
           }
 
           <!-- Stands in for the notes icon; like it, yields to the close (X) button -->

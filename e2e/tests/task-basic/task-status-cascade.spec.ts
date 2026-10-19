@@ -60,6 +60,84 @@ test.describe('Task completion and abandonment', () => {
     await expect(parent.locator('.sub-tasks task.isAbandoned')).toHaveCount(2);
   });
 
+  test('取消父任务完成时只恢复联动完成的子任务，重新加载后规则仍然有效', async ({
+    page,
+    workViewPage,
+    taskPage,
+  }) => {
+    await workViewPage.waitForTaskList();
+    await workViewPage.addTask('Selective reopen parent');
+    const parent = taskPage.getTaskByText('Selective reopen parent').first();
+    await workViewPage.addSubTask(parent, 'Manually completed child');
+    await workViewPage.addSubTask(parent, 'Parent completed child');
+    const manualChild = parent
+      .locator('.sub-tasks task')
+      .filter({ hasText: 'Manually completed child' });
+    const automaticChild = parent
+      .locator('.sub-tasks task')
+      .filter({ hasText: 'Parent completed child' });
+
+    // 先独立完成一个子任务，再完成父任务，制造两种不同的完成来源。
+    await manualChild.locator('done-toggle').click();
+    await expect(manualChild).toHaveClass(/isDone/);
+    await parent.locator('done-toggle').first().click();
+    await expect(parent).toHaveClass(/isDone/);
+    await expect(automaticChild).toHaveClass(/isDone/);
+    await page.reload();
+    await workViewPage.waitForTaskList();
+    await expect(parent).toHaveClass(/isDone/);
+
+    await parent.locator('done-toggle').first().click();
+    await expect(parent).not.toHaveClass(/isDone/);
+    await expect(manualChild).toHaveClass(/isDone/);
+    await expect(automaticChild).not.toHaveClass(/isDone/);
+    await page.reload();
+    await workViewPage.waitForTaskList();
+    await expect(parent).not.toHaveClass(/isDone/);
+    await expect(manualChild).toHaveClass(/isDone/);
+    await expect(automaticChild).not.toHaveClass(/isDone/);
+
+    // 再次切换，确认取消完成时的来源清理不会破坏下一轮联动。
+    await parent.locator('done-toggle').first().click();
+    await expect(parent).toHaveClass(/isDone/);
+    await parent.locator('done-toggle').first().click();
+    await expect(parent).not.toHaveClass(/isDone/);
+    await expect(manualChild).toHaveClass(/isDone/);
+    await expect(automaticChild).not.toHaveClass(/isDone/);
+  });
+
+  test('联动完成的子任务被手动取消并重新完成后，取消父任务会保留它', async ({
+    page,
+    workViewPage,
+    taskPage,
+  }) => {
+    await workViewPage.waitForTaskList();
+    await workViewPage.addTask('Manual override parent');
+    const parent = taskPage.getTaskByText('Manual override parent').first();
+    await workViewPage.addSubTask(parent, 'Manually changed child');
+    await workViewPage.addSubTask(parent, 'Unchanged automatic child');
+    const manualChild = parent
+      .locator('.sub-tasks task')
+      .filter({ hasText: 'Manually changed child' });
+    const automaticChild = parent
+      .locator('.sub-tasks task')
+      .filter({ hasText: 'Unchanged automatic child' });
+    await parent.locator('done-toggle').first().click();
+    await expect(parent).toHaveClass(/isDone/);
+    await manualChild.locator('done-toggle').click();
+    await expect(manualChild).not.toHaveClass(/isDone/);
+    await manualChild.locator('done-toggle').click();
+    await expect(manualChild).toHaveClass(/isDone/);
+    await page.reload();
+    await workViewPage.waitForTaskList();
+    await expect(parent).toHaveClass(/isDone/);
+    await parent.locator('done-toggle').first().click();
+
+    await expect(parent).not.toHaveClass(/isDone/);
+    await expect(manualChild).toHaveClass(/isDone/);
+    await expect(automaticChild).not.toHaveClass(/isDone/);
+  });
+
   test('abandoning one child leaves its parent and sibling unfinished', async ({
     page,
     workViewPage,

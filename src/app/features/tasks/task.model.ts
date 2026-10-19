@@ -95,6 +95,12 @@ export interface TaskCopy
   // Additional app-specific fields
   /** A resolved task that was abandoned. Older clients display it as done. */
   isAbandoned?: boolean;
+  /**
+   * 本次完成由哪个父任务联动触发；独立完成、取消完成或放弃完成时为 null。
+   * 可选字段用于兼容旧数据：缺失时按 null 处理，保留已有子任务完成状态。
+   * 与任务一起保存和同步，避免刷新后丢失来源；不依赖完成时间来推测用户操作。
+   */
+  doneByParentId?: string | null;
   /** Inclusive end of future inherited occurrences; independent of the deadline. */
   repeatEndDate?: string | null;
   /** Links an inherited child to its template even after other children expire. */
@@ -226,6 +232,7 @@ export const DEFAULT_TASK: Omit<TaskCopy, 'projectId'> = {
   timeEstimate: 0,
   isDone: false,
   isAbandoned: false,
+  doneByParentId: null,
   title: '',
   tagIds: [],
   created: Date.now(),

@@ -795,6 +795,13 @@ const removeInProgressTagOnCompletion = (
   };
 };
 
+/**
+ * 将一次任务修改应用到任务及相关列表，统一处理完成状态、项目移动等关联数据。
+ * @param state 修改前的根状态；通过不可变更新返回新状态。
+ * @param taskUpdate 任务标识与待修改字段；完成来源仅在载荷明确给出时保留。
+ * @param projectMoveSubTaskIds 项目移动操作声明的子任务标识，供关联列表保持一致。
+ * @returns 应用修改后的根状态；任务不存在时返回原状态。
+ */
 const handleUpdateTask = (
   state: RootState,
   taskUpdate: Update<Task>,
@@ -826,6 +833,13 @@ const handleUpdateTask = (
         isAbandoned:
           cleanedTaskUpdate.changes.isDone &&
           cleanedTaskUpdate.changes.isAbandoned === true,
+        // 所有入口（含快捷键、插件及远端重放）都遵守相同规则：
+        // 普通手动完成、取消完成或放弃完成会清空旧来源，只有显式联动完成可保留。
+        doneByParentId:
+          cleanedTaskUpdate.changes.isDone &&
+          cleanedTaskUpdate.changes.isAbandoned !== true
+            ? (cleanedTaskUpdate.changes.doneByParentId ?? null)
+            : null,
       },
     };
   }

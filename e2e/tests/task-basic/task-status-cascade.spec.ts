@@ -1,4 +1,94 @@
 import { test, expect } from '../../fixtures/test.fixture';
+import { waitForStatePersistence } from '../../utils/waits';
+import type { Page } from '@playwright/test';
+
+const showCompletedTasks = async (page: Page): Promise<void> => {
+  const toggle = page.getByRole('button', { name: /^Completed Tasks \(/ });
+  await expect(toggle).toBeVisible();
+  if ((await toggle.getAttribute('aria-expanded')) === 'false') {
+    await toggle.click();
+  }
+};
+
+test.describe('Automatic parent completion', () => {
+  test.beforeEach(async ({ page, settingsPage, workViewPage }) => {
+    await workViewPage.waitForTaskList();
+    await page.goto('/#/config?tab=1');
+    await settingsPage.expandSection('.section-tasks');
+    await page
+      .getByRole('switch', {
+        name: 'Automatically mark parent task as completed when all subtasks are completed',
+      })
+      .check();
+    await waitForStatePersistence(page);
+    await settingsPage.navigateBackToWorkView();
+  });
+
+  test('reopening an automatically completed parent reopens all children after reload', async ({
+    page,
+    workViewPage,
+    taskPage,
+  }) => {
+    await workViewPage.addTask('Automatically completed parent');
+    const parent = taskPage.getTaskByText('Automatically completed parent').first();
+    await workViewPage.addSubTask(parent, 'First independent child');
+    await workViewPage.addSubTask(parent, 'Last independent child');
+    const children = parent.locator('.sub-tasks task');
+    await children.nth(0).locator('done-toggle').click();
+    await expect(children.nth(0)).toHaveClass(/isDone/);
+    await expect(parent).not.toHaveClass(/isDone/);
+    await children.nth(1).locator('done-toggle').click();
+    await showCompletedTasks(page);
+    await expect(parent).toHaveClass(/isDone/);
+    await expect(parent.locator('.sub-tasks task.isDone')).toHaveCount(2);
+    await waitForStatePersistence(page);
+    await page.reload();
+    await workViewPage.waitForTaskList();
+    await showCompletedTasks(page);
+    await expect(parent).toHaveClass(/isDone/);
+
+    await parent.locator('done-toggle').first().click();
+    await expect(parent).not.toHaveClass(/isDone/);
+    await expect(parent.locator('.sub-tasks task.isDone')).toHaveCount(0);
+    await waitForStatePersistence(page);
+    await page.reload();
+    await workViewPage.waitForTaskList();
+    await expect(parent).not.toHaveClass(/isDone/);
+    await expect(parent.locator('.sub-tasks task')).toHaveCount(2);
+    await expect(parent.locator('.sub-tasks task.isDone')).toHaveCount(0);
+  });
+
+  test('manual parent completion still preserves independently completed children with auto completion enabled', async ({
+    page,
+    workViewPage,
+    taskPage,
+  }) => {
+    await workViewPage.addTask('Directly completed parent');
+    const parent = taskPage.getTaskByText('Directly completed parent').first();
+    await workViewPage.addSubTask(parent, 'Independent child');
+    await workViewPage.addSubTask(parent, 'Linked child');
+    const independentChild = parent
+      .locator('.sub-tasks task')
+      .filter({ hasText: 'Independent child' });
+    const linkedChild = parent
+      .locator('.sub-tasks task')
+      .filter({ hasText: 'Linked child' });
+    await independentChild.locator('done-toggle').click();
+    await expect(independentChild).toHaveClass(/isDone/);
+    await parent.locator('done-toggle').first().click();
+    await showCompletedTasks(page);
+    await expect(parent).toHaveClass(/isDone/);
+    // Updating a child after manual parent completion must not change its origin.
+    await independentChild.locator('done-toggle').click();
+    await expect(independentChild).not.toHaveClass(/isDone/);
+    await independentChild.locator('done-toggle').click();
+    await expect(independentChild).toHaveClass(/isDone/);
+    await parent.locator('done-toggle').first().click();
+    await expect(parent).not.toHaveClass(/isDone/);
+    await expect(independentChild).toHaveClass(/isDone/);
+    await expect(linkedChild).not.toHaveClass(/isDone/);
+  });
+});
 
 test.describe('Task completion and abandonment', () => {
   test('completing a parent checks all its subtasks and survives reload', async ({
@@ -12,10 +102,12 @@ test.describe('Task completion and abandonment', () => {
     await workViewPage.addSubTask(parent, 'First child');
     await workViewPage.addSubTask(parent, 'Second child');
     await parent.locator('done-toggle').first().click();
+    await showCompletedTasks(page);
     await expect(parent).toHaveClass(/isDone/);
     await expect(parent.locator('.sub-tasks task.isDone')).toHaveCount(2);
     await page.reload();
     await workViewPage.waitForTaskList();
+    await showCompletedTasks(page);
     await expect(parent).toHaveClass(/isDone/);
     await expect(parent.locator('.sub-tasks task.isDone')).toHaveCount(2);
   });
@@ -29,6 +121,7 @@ test.describe('Task completion and abandonment', () => {
     await workViewPage.addTask('Completed reference');
     const completed = taskPage.getTaskByText('Completed reference').first();
     await completed.locator('done-toggle').first().click();
+    await showCompletedTasks(page);
     await expect(completed).toHaveClass(/isDone/);
     const completedOpacity = await completed
       .locator('.title-and-left-btns-wrapper')
@@ -41,6 +134,7 @@ test.describe('Task completion and abandonment', () => {
     await workViewPage.addSubTask(parent, 'Second abandoned child');
     await parent.locator('task-title').first().click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Abandon task', exact: true }).click();
+    await showCompletedTasks(page);
     await expect(parent).toHaveClass(/isAbandoned/);
     await expect(parent.locator('.sub-tasks task.isAbandoned')).toHaveCount(2);
     const title = parent.locator('task-title .display-value').first();
@@ -51,6 +145,7 @@ test.describe('Task completion and abandonment', () => {
     }
     await page.reload();
     await workViewPage.waitForTaskList();
+    await showCompletedTasks(page);
     await expect(parent).toHaveClass(/isAbandoned/);
     await expect(parent.locator('.sub-tasks task.isAbandoned')).toHaveCount(2);
     await page.screenshot({ path: test.info().outputPath('abandoned-parent.png') });
@@ -81,10 +176,12 @@ test.describe('Task completion and abandonment', () => {
     await manualChild.locator('done-toggle').click();
     await expect(manualChild).toHaveClass(/isDone/);
     await parent.locator('done-toggle').first().click();
+    await showCompletedTasks(page);
     await expect(parent).toHaveClass(/isDone/);
     await expect(automaticChild).toHaveClass(/isDone/);
     await page.reload();
     await workViewPage.waitForTaskList();
+    await showCompletedTasks(page);
     await expect(parent).toHaveClass(/isDone/);
 
     await parent.locator('done-toggle').first().click();
@@ -99,6 +196,7 @@ test.describe('Task completion and abandonment', () => {
 
     // 再次切换，确认取消完成时的来源清理不会破坏下一轮联动。
     await parent.locator('done-toggle').first().click();
+    await showCompletedTasks(page);
     await expect(parent).toHaveClass(/isDone/);
     await parent.locator('done-toggle').first().click();
     await expect(parent).not.toHaveClass(/isDone/);
@@ -123,6 +221,7 @@ test.describe('Task completion and abandonment', () => {
       .locator('.sub-tasks task')
       .filter({ hasText: 'Unchanged automatic child' });
     await parent.locator('done-toggle').first().click();
+    await showCompletedTasks(page);
     await expect(parent).toHaveClass(/isDone/);
     await manualChild.locator('done-toggle').click();
     await expect(manualChild).not.toHaveClass(/isDone/);
@@ -130,6 +229,7 @@ test.describe('Task completion and abandonment', () => {
     await expect(manualChild).toHaveClass(/isDone/);
     await page.reload();
     await workViewPage.waitForTaskList();
+    await showCompletedTasks(page);
     await expect(parent).toHaveClass(/isDone/);
     await parent.locator('done-toggle').first().click();
 

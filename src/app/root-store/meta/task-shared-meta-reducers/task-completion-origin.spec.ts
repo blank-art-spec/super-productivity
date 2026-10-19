@@ -95,4 +95,46 @@ describe('任务完成来源的统一处理', () => {
     expect(next.tasks.entities.child!.doneByParentId).toBe('parent');
     expect(next.tasks.entities.child!.doneOn).toBe(123);
   });
+
+  it('父任务的自动完成来源随操作 JSON 重放保留，非完成修改不会清除来源', () => {
+    const action = TaskSharedActions.updateTask({
+      task: {
+        id: 'parent',
+        changes: { isDone: true, isDoneBySubTasks: true, doneOn: 456 },
+      },
+    });
+    const completed = reducer(state, JSON.parse(JSON.stringify(action))) as RootState;
+    const renamed = reducer(
+      completed,
+      TaskSharedActions.updateTask({
+        task: { id: 'parent', changes: { title: 'Renamed parent' } },
+      }),
+    ) as RootState;
+
+    expect(completed.tasks.entities.parent!.isDoneBySubTasks).toBeTrue();
+    expect(renamed.tasks.entities.parent!.isDoneBySubTasks).toBeTrue();
+    expect(state.tasks.entities.parent!.isDoneBySubTasks).toBeUndefined();
+  });
+
+  for (const changes of [
+    { isDone: false, isDoneBySubTasks: true },
+    { isDone: true, isAbandoned: true, isDoneBySubTasks: true },
+    { isDone: true },
+  ]) {
+    it(`手动完成、反选或放弃完成会清除父任务自动完成来源：${JSON.stringify(changes)}`, () => {
+      const completed = reducer(
+        state,
+        TaskSharedActions.updateTask({
+          task: { id: 'parent', changes: { isDone: true, isDoneBySubTasks: true } },
+        }),
+      ) as RootState;
+      const next = reducer(
+        completed,
+        TaskSharedActions.updateTask({ task: { id: 'parent', changes } }),
+      ) as RootState;
+
+      expect(next.tasks.entities.parent!.isDoneBySubTasks).toBeFalse();
+      expect(completed.tasks.entities.parent!.isDoneBySubTasks).toBeTrue();
+    });
+  }
 });

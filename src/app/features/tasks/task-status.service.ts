@@ -28,7 +28,7 @@ export class TaskStatusService {
 
   /**
    * 取消指定任务的完成状态，并恢复由它联动完成的子任务。
-   * 手动完成的子任务、没有来源记录的旧任务以及放弃完成的子任务均保留原状态。
+   * 因全部子任务完成而自动完成的父任务会恢复全部直属子任务；其他情况沿用选择性恢复规则。
    * @param id 用户直接反选的任务标识；反选子任务不会影响兄弟任务。
    */
   reopen(id: string): void {
@@ -86,6 +86,7 @@ export class TaskStatusService {
         doneOn,
         // 只为随父任务正常完成的子任务记录来源；手动完成和放弃操作显式清空来源。
         doneByParentId: taskId !== id && !isAbandoned ? id : null,
+        isDoneBySubTasks: false,
       };
       this._store.dispatch(
         TaskSharedActions.updateTask({ task: { id: taskId, changes } }),
@@ -96,21 +97,24 @@ export class TaskStatusService {
   }
 
   /**
-   * 从当前状态查出联动完成的直属子任务，然后逐个取消完成并清除来源标记。
+   * 自动完成的父任务恢复全部直属子任务；手动完成的父任务只恢复由它联动完成的子任务。
    * 以子任务自身的 parentId 为准，避免父任务列表中的过期条目误改已移动的任务。
    * @param id 被反选的任务标识；不存在时忽略本次操作。
    * @returns 所有取消完成操作已派发，并已让出一次事件循环以便记录操作日志。
    */
   private async _reopen(id: string): Promise<void> {
     const entities = this._entities();
-    if (!entities[id]) return;
+    const task = entities[id];
+    if (!task) return;
+    const isReopenAllChildren =
+      task.isDone && !task.isAbandoned && task.isDoneBySubTasks === true;
     const children = Object.values(entities).filter(
       (candidate): candidate is Task =>
         !!candidate &&
         candidate.parentId === id &&
         candidate.isDone &&
-        !candidate.isAbandoned &&
-        candidate.doneByParentId === id,
+        (isReopenAllChildren ||
+          (!candidate.isAbandoned && candidate.doneByParentId === id)),
     );
     for (const taskId of [...children.map((child) => child.id), id]) {
       this._store.dispatch(
@@ -118,7 +122,12 @@ export class TaskStatusService {
           task: {
             id: taskId,
             // null 在 JSON 保存和同步后仍然存在，避免旧的联动来源在重放时残留。
-            changes: { isDone: false, isAbandoned: false, doneByParentId: null },
+            changes: {
+              isDone: false,
+              isAbandoned: false,
+              doneByParentId: null,
+              isDoneBySubTasks: false,
+            },
           },
         }),
       );

@@ -54,7 +54,12 @@ describe('source task snapshots preserve additive time', () => {
       entityChanges: [],
       actionPayload: jasmine.objectContaining({ id: 'task', title: '', projectId: '' }),
       lwwUpdateMode: 'patch',
-      clearedFields: jasmine.arrayContaining(['notes', 'dueWithTime', 'remindAt']),
+      clearedFields: jasmine.arrayContaining([
+        'notes',
+        'dueWithTime',
+        'remindAt',
+        'isDoneBySubTasks',
+      ]),
     });
     const payload = actual.localWinOp.payload as { actionPayload: object };
     expect('timeSpent' in payload.actionPayload).toBeFalse();

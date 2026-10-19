@@ -114,6 +114,91 @@ describe('TaskStatusService', () => {
     expect(state.tasks.entities['reverse-only']!.isDone).toBeFalse();
   }));
 
+  it('因子任务全部完成而自动完成的父任务，反选后恢复全部直属子任务', fakeAsync(() => {
+    service.complete('one');
+    service.complete('reverse-only');
+    store.dispatch(
+      TaskSharedActions.updateTask({
+        task: {
+          id: 'parent',
+          changes: { isDone: true, isDoneBySubTasks: true, doneOn: 456 },
+        },
+      }),
+    );
+    tick();
+    // 自动完成来源必须在持久化后仍可使用，不能靠当前配置或完成时间推断。
+    state = JSON.parse(JSON.stringify(state)) as RootState;
+    store.overrideSelector(selectTaskEntities, state.tasks.entities);
+    store.refreshState();
+    service.reopen('parent');
+    tick();
+
+    for (const id of ['parent', 'one', 'two', 'reverse-only']) {
+      expect(state.tasks.entities[id]!.isDone).toBeFalse();
+      expect(state.tasks.entities[id]!.isAbandoned).toBeFalse();
+      expect(state.tasks.entities[id]!.doneOn).toBeUndefined();
+      expect(state.tasks.entities[id]!.isDoneBySubTasks).toBeFalse();
+    }
+    expect(state.tasks.entities.unrelated!.isDone).toBeFalse();
+    // 切回手动完成父任务后，仍保留之前独立完成的子任务。
+    service.complete('one');
+    service.complete('parent');
+    tick();
+    service.reopen('parent');
+    tick();
+    expect(state.tasks.entities.one!.isDone).toBeTrue();
+    expect(state.tasks.entities.two!.isDone).toBeFalse();
+  }));
+
+  it('自动完成父任务反选时也恢复已放弃的子任务，但不影响已移动的子任务', fakeAsync(() => {
+    const anotherParent = createMockTask({ id: 'another-parent', subTaskIds: ['two'] });
+    state = {
+      ...state,
+      tasks: {
+        ...state.tasks,
+        ids: [...state.tasks.ids, anotherParent.id],
+        entities: { ...state.tasks.entities, [anotherParent.id]: anotherParent },
+      },
+    };
+    service.abandon('one');
+    service.complete('reverse-only');
+    store.dispatch(
+      TaskSharedActions.updateTask({
+        task: { id: 'two', changes: { parentId: 'another-parent' } },
+      }),
+    );
+    store.dispatch(
+      TaskSharedActions.updateTask({
+        task: { id: 'parent', changes: { isDone: true, isDoneBySubTasks: true } },
+      }),
+    );
+    tick();
+    service.reopen('parent');
+    tick();
+
+    expect(state.tasks.entities.one!.isDone).toBeFalse();
+    expect(state.tasks.entities.one!.isAbandoned).toBeFalse();
+    expect(state.tasks.entities['reverse-only']!.isDone).toBeFalse();
+    expect(state.tasks.entities.two!.isDone).toBeTrue();
+    expect(state.tasks.entities.two!.doneOn).toBe(123);
+  }));
+
+  it('反选自动完成父任务的一个子任务时，兄弟任务仍然保持完成', fakeAsync(() => {
+    service.complete('one');
+    store.dispatch(
+      TaskSharedActions.updateTask({
+        task: { id: 'parent', changes: { isDone: true, isDoneBySubTasks: true } },
+      }),
+    );
+    tick();
+    service.reopen('one');
+    tick();
+
+    expect(state.tasks.entities.one!.isDone).toBeFalse();
+    expect(state.tasks.entities.two!.isDone).toBeTrue();
+    expect(state.tasks.entities.parent!.isDone).toBeTrue();
+  }));
+
   it('多次切换父任务时持续保留手动完成的子任务', fakeAsync(() => {
     for (let i = 0; i < 3; i++) {
       service.complete('parent');

@@ -54,6 +54,8 @@ export class TaskInternalEffects {
           return false;
         }
         const parent = state.entities[task.parentId] as Task;
+        // A later child update must not reclassify a manually completed parent.
+        if (parent.isDone) return false;
         const undoneSubTasks = parent.subTaskIds.filter(
           (id) => !(state.entities[id] as Task).isDone,
         );
@@ -63,7 +65,7 @@ export class TaskInternalEffects {
         TaskSharedActions.updateTask({
           task: {
             id: (state.entities[action.task.id] as Task).parentId as string,
-            changes: { isDone: true },
+            changes: { isDone: true, isDoneBySubTasks: true },
           },
         }),
       ),

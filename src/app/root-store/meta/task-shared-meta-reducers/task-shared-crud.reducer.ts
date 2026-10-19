@@ -840,6 +840,10 @@ const handleUpdateTask = (
           cleanedTaskUpdate.changes.isAbandoned !== true
             ? (cleanedTaskUpdate.changes.doneByParentId ?? null)
             : null,
+        isDoneBySubTasks:
+          cleanedTaskUpdate.changes.isDone &&
+          cleanedTaskUpdate.changes.isAbandoned !== true &&
+          cleanedTaskUpdate.changes.isDoneBySubTasks === true,
       },
     };
   }

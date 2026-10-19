@@ -364,6 +364,7 @@ describe('TaskInternalEffects', () => {
         expect(action.type).toBe(TaskSharedActions.updateTask.type);
         expect((action as any).task.id).toBe('parent');
         expect((action as any).task.changes.isDone).toBe(true);
+        expect((action as any).task.changes.isDoneBySubTasks).toBe(true);
         done();
       });
 
@@ -373,6 +374,24 @@ describe('TaskInternalEffects', () => {
           task: { id: 'sub2', changes: { isDone: true } },
         }),
       );
+    });
+
+    it('does not replace the completion origin of an already completed parent', () => {
+      const parent = createTask('parent', { subTaskIds: ['sub1'], isDone: true });
+      const child = createTask('sub1', { parentId: 'parent', isDone: true });
+      store.overrideSelector(selectTaskFeatureState, createTaskState([parent, child]));
+      store.refreshState();
+      const emitted = jasmine.createSpy('emitted');
+      const subscription = effects.onAllSubTasksDone$.subscribe(emitted);
+
+      actions$.next(
+        TaskSharedActions.updateTask({
+          task: { id: 'sub1', changes: { isDone: true } },
+        }),
+      );
+
+      expect(emitted).not.toHaveBeenCalled();
+      subscription.unsubscribe();
     });
 
     it('should NOT mark parent as done when config is disabled', (done) => {

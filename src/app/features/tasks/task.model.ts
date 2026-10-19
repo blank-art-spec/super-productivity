@@ -101,6 +101,11 @@ export interface TaskCopy
    * 与任务一起保存和同步，避免刷新后丢失来源；不依赖完成时间来推测用户操作。
    */
   doneByParentId?: string | null;
+  /**
+   * True when completing every subtask automatically completed this task.
+   * Missing on older data defaults to false; manual completion or reopening clears it.
+   */
+  isDoneBySubTasks?: boolean;
   /** Inclusive end of future inherited occurrences; independent of the deadline. */
   repeatEndDate?: string | null;
   /** Links an inherited child to its template even after other children expire. */
